@@ -1,0 +1,23 @@
+# Environments
+.env
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Credentials
+credentials.json
+*.pem
+*.key
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+logs/*.log
+
+# Large/raw data
+data/01_raw/
+data/02_interim/
