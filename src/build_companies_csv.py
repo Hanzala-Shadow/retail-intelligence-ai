@@ -5,8 +5,16 @@ import requests
 retail = pd.read_excel('data/00_reference/apparel_footwear_v3.xlsx', sheet_name='retail')
 apparel = pd.read_excel('data/00_reference/apparel_footwear_v3.xlsx', sheet_name='apparel & footwear')
 
+# Keep only the 15 priority broadline retailers from retail sheet
+priority_retail = [
+    'M', 'DDS', 'KSS', 'JWN', 'AMZN', 'EBAY',
+    'OLLI', 'SVV', 'CPNG', 'MELI', 'ETSY',
+    'GRPN', 'DIBS', 'HOUR', 'PTRN'
+]
+retail = retail[retail['(tic) Ticker Symbol'].isin(priority_retail)]
+
 # Add sector labels
-retail['sector'] = 'Retail'
+retail['sector'] = 'Broadline Retail'
 apparel['sector'] = 'Apparel & Footwear'
 
 # Combine and clean
@@ -34,6 +42,11 @@ ticker_to_cik = {}
 for entry in sec_data.values():
     ticker_to_cik[entry['ticker'].upper()] = str(entry['cik_str']).zfill(10)
 
+# Manual fixes for tickers not found in SEC file
+ticker_to_cik['JWN'] = '0000072333'
+ticker_to_cik['FL'] = '0000850209'
+ticker_to_cik['GES'] = '0000912463'
+
 # Look up CIK for each company
 combined['cik'] = combined['ticker'].str.upper().map(ticker_to_cik).fillna('')
 
@@ -48,12 +61,12 @@ found = (output['cik'] != '').sum()
 missing = (output['cik'] == '').sum()
 print(f"Done! {len(output)} companies saved.")
 print(f"CIK found: {found}, Missing: {missing}")
-print(output.head(10))
+print(output.to_string())
 
 # Show which companies are missing CIK
 missing_companies = output[output['cik'] == '']
-print("\nMissing CIK:")
-print(missing_companies[['ticker', 'name']])
-
-# NOTE: JWN, GES, FL tickers may differ in SEC database
-# These can be manually added later if needed
+if len(missing_companies) > 0:
+    print("\nMissing CIK:")
+    print(missing_companies[['ticker', 'name']])
+else:
+    print("\nAll companies have CIK numbers!")
