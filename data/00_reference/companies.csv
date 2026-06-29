@@ -1,0 +1,76 @@
+company_id,ticker,cik,name,sector,exchange
+1,DDS,0000028917,DILLARDS INC  -CL A,Broadline Retail,New York Stock Exchange (NYSE)
+2,M,0000794367,MACY'S INC,Broadline Retail,New York Stock Exchange (NYSE)
+3,KSS,0000885639,KOHL'S CORP,Broadline Retail,New York Stock Exchange (NYSE)
+4,CPNG,0001834584,COUPANG INC,Broadline Retail,New York Stock Exchange (NYSE)
+5,DIBS,0001600641,1STDIBS.COM INC,Broadline Retail,NASDAQ-NMS Stock Market
+6,OLLI,0001639300,OLLIE'S BARGAIN OUTLET HLDGS,Broadline Retail,NASDAQ-NMS Stock Market
+7,AMZN,0001018724,AMAZON.COM INC,Broadline Retail,NASDAQ-NMS Stock Market
+8,EBAY,0001065088,EBAY INC,Broadline Retail,NASDAQ-NMS Stock Market
+9,MELI,0001099590,MERCADOLIBRE INC,Broadline Retail,NASDAQ-NMS Stock Market
+10,GRPN,0001490281,GROUPON INC,Broadline Retail,NASDAQ-NMS Stock Market
+11,JWN,0000072333,NORDSTROM INC,Broadline Retail,New York Stock Exchange (NYSE)
+12,HOUR,0001874875,HOUR LOOP INC,Broadline Retail,NASDAQ-NMS Stock Market
+13,SVV,0001883313,SAVERS VALUE VILLAGE INC,Broadline Retail,New York Stock Exchange (NYSE)
+14,PTRN,0001811935,PATTERN GROUP INC,Broadline Retail,NASDAQ-NMS Stock Market
+15,ETSY,0001370637,ETSY INC,Broadline Retail,New York Stock Exchange (NYSE)
+16,GES,0000912463,GUESS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+17,AEO,0000919012,AMERN EAGLE OUTFITTERS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+18,TLYS,0001524025,TILLY'S INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+19,CATO,0000018255,CATO CORP  -CL A,Apparel & Footwear,New York Stock Exchange (NYSE)
+20,ROST,0000745732,ROSS STORES INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+21,TJX,0000109198,TJX COS INC (THE),Apparel & Footwear,New York Stock Exchange (NYSE)
+22,DXLG,0000813298,DESTINATION XL GROUP INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+23,GAP,0000039911,GAP INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+24,BURL,0001579298,BURLINGTON STORES INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+25,LE,0000799288,LANDS' END INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+26,BKE,0000885245,BUCKLE INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+27,DLTH,0001649744,DULUTH HOLDINGS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+28,JILL,0001687932,J JILL INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+29,SFIX,0001576942,STITCH FIX INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+30,RVLV,0001746618,REVOLVE GROUP INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+31,URBN,0000912615,URBAN OUTFITTERS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+32,DBGI,0001668010,DIGITAL BRANDS GRP INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+33,CURV,0001792781,TORRID HOLDINGS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+34,VSXY,0001856437,VICTORIAS SECRET AND CO,Apparel & Footwear,New York Stock Exchange (NYSE)
+35,AKA,0001865107,A.K.A. BRAND HOLD CORP,Apparel & Footwear,New York Stock Exchange (NYSE)
+36,LVLU,0001780201,LULU'S FASHION LOUN HOLD INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+37,ANF,0001018840,ABERCROMBIE & FITCH  -CL A,Apparel & Footwear,New York Stock Exchange (NYSE)
+38,PLCE,0001041859,CHILDRENS PLACE INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+39,CTRN,0001318484,CITI TRENDS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+40,ZUMZ,0001318008,ZUMIEZ INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+41,XELB,0001083220,XCEL BRANDS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+42,CAL,0000014707,CALERES INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+43,GCO,0000018498,GENESCO INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+44,FL,0000850209,FOOT LOCKER INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+45,BOOT,0001610250,BOOT BARN HOLDINGS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+46,DBI,0001319947,DESIGNER BRANDS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+47,SHOE,0000895447,SHOE STATION GROUP INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+48,SGC,0000095574,SUPERIOR GROUP OF COS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+49,VFC,0000103379,VF CORP,Apparel & Footwear,New York Stock Exchange (NYSE)
+50,OXM,0000075288,OXFORD INDUSTRIES INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+51,PVH,0000078239,PVH CORP,Apparel & Footwear,New York Stock Exchange (NYSE)
+52,LEVI,0000094845,LEVI STRAUSS & CO,Apparel & Footwear,New York Stock Exchange (NYSE)
+53,VNCE,0001579157,VINCE HOLDING CORP,Apparel & Footwear,NASDAQ-NMS Stock Market
+54,JRSH,0001696558,JERASH HOLDINGS (US),Apparel & Footwear,NASDAQ-NMS Stock Market
+55,KTB,0001760965,KONTOOR BRANDS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+56,PLBY,0001803914,PLAYBOY INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+57,FIGS,0001846576,FIGS INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+58,RL,0001037038,RALPH LAUREN CORP,Apparel & Footwear,New York Stock Exchange (NYSE)
+59,COLM,0001050797,COLUMBIA SPORTSWEAR CO,Apparel & Footwear,NASDAQ-NMS Stock Market
+60,CRI,0001060822,CARTER'S INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+61,UAA,0001336917,UNDER ARMOUR INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+62,LULU,0001397187,LULULEMON ATHLETICA INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+63,GIII,0000821002,G-III APPAREL GROUP LTD,Apparel & Footwear,NASDAQ-NMS Stock Market
+64,TPR,0001116132,TAPESTRY INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+65,VRA,0001495320,VERA BRADLEY INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+66,MOV,0000072573,MOVADO GROUP INC,Apparel & Footwear,New York Stock Exchange (NYSE)
+67,FOSL,0000883569,FOSSIL GROUP INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+68,LAKE,0000798081,LAKELAND INDUSTRIES INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+69,WWW,0000110471,WOLVERINE WORLD WIDE,Apparel & Footwear,New York Stock Exchange (NYSE)
+70,DECK,0000910521,DECKERS OUTDOOR CORP,Apparel & Footwear,New York Stock Exchange (NYSE)
+71,NKE,0000320187,NIKE INC  -CL B,Apparel & Footwear,New York Stock Exchange (NYSE)
+72,RCKY,0000895456,ROCKY BRANDS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+73,SHOO,0000913241,MADDEN STEVEN LTD,Apparel & Footwear,NASDAQ-NMS Stock Market
+74,BIRD,0001653909,ALLBIRDS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
+75,CROX,0001334036,CROCS INC,Apparel & Footwear,NASDAQ-NMS Stock Market
