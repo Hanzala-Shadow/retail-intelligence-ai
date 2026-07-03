@@ -38,22 +38,16 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from dotenv import load_dotenv
-load_dotenv()
-
 import requests
 
 # ---------------------------------------------------------------------------
-# Config — adjust these for your environment
+# Config — loaded centrally from config.py (single source of truth for env
+# vars across the whole pipeline; do not re-invent env var names here)
 # ---------------------------------------------------------------------------
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import SEC_USER_AGENT
 
-# REQUIRED: SEC asks for a descriptive User-Agent with a real contact email.
-# Per the project plan this should be Ayse's email. Set it via env var so it
-# isn't hardcoded into a committed file:
-#   export SEC_USER_AGENT_EMAIL="ayse@example.com"      (Linux/Mac)
-#   $env:SEC_USER_AGENT_EMAIL="ayse@example.com"         (PowerShell)
-SEC_USER_AGENT_EMAIL = os.environ.get("SEC_USER_AGENT_EMAIL", "REPLACE_ME@example.com")
-USER_AGENT = f"Retail Intelligence Project {SEC_USER_AGENT_EMAIL}"
+USER_AGENT = SEC_USER_AGENT
 
 SEC_REQUESTS_PER_SECOND = 8
 SEC_MIN_INTERVAL = 1.0 / SEC_REQUESTS_PER_SECOND  # seconds between requests
@@ -254,10 +248,11 @@ def write_filings_csv(filings_by_accession: dict):
 
 
 def run(limit: int = None, only_ticker: str = None):
-    if SEC_USER_AGENT_EMAIL.startswith("REPLACE_ME"):
+    if not USER_AGENT or "REPLACE_ME" in USER_AGENT:
         log.error(
-            "SEC_USER_AGENT_EMAIL is not set. Set the env var before running:\n"
-            '  export SEC_USER_AGENT_EMAIL="your_real_email@example.com"'
+            "SEC_USER_AGENT is not set (or still a placeholder) in .env. "
+            "Set a real descriptive value, e.g.:\n"
+            '  SEC_USER_AGENT="Retail Intelligence Project your_real_email@example.com"'
         )
         sys.exit(1)
 

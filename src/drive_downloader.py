@@ -57,7 +57,14 @@ def get_service():
             print(f"ERROR: OAuth client secret not found at '{CLIENT_SECRET_PATH}'")
             sys.exit(1)
         flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_PATH, SCOPES)
-        creds = flow.run_local_server(port=0)
+        flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+        auth_url, _ = flow.authorization_url(prompt="consent")
+        print(f"\nOpen this URL in your browser:\n{auth_url}\n")
+        code = input("Paste the authorization code here: ").strip()
+        flow.fetch_token(code=code)
+        creds = flow.credentials
+        with open(TOKEN_PATH, "w") as f:
+            f.write(creds.to_json())
         with open(TOKEN_PATH, "w") as f:
             f.write(creds.to_json())
 

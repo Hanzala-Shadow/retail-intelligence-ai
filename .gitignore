@@ -22,3 +22,11 @@ logs/*.log
 # Large/raw data
 data/01_raw/
 data/02_interim/
+data/raw_text/
+data/tables/
+data/test/
+src/tables/
+nohup.out
+parser_test.log
+logs/*.pid
+logs/*.log.bak
