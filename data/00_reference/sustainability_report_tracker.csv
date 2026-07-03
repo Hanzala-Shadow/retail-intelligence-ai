@@ -1,0 +1,76 @@
+company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
+1,DDS,DILLARDS INC -CL A,,,,not found,"There is no published ""Sustainability Report"", but can find some information from https://investor.dillards.com/static-files/879191ae-f3bb-4cba-98e5-8ed34c41a928"
+2,M,MACY'S INC,2025-2024-2023-2022,PDF,M,downloaded,
+3,KSS,KOHL'S CORP,2024-2023-2022,PDF,KSS,downloaded,
+4,CPNG,COUPANG INC,2024-2023-2022,PDF,CPNG,downloaded,
+5,DIBS,1STDIBS.COM INC,,,,not found,"There is no published ""Sustainability Report""."
+6,OLLI,OLLIE'S BARGAIN OUTLET HLDGS,,,,not found,"There is no published ""Sustainability Report""."
+7,AMZN,AMAZON.COM INC,2025-2024-2023-2022-2021,PDF,AMZN,downloaded,
+8,EBAY,EBAY INC,2025-2024-2023-2022-2021,PDF,EBAY,downloaded,
+9,MELI,MERCADOLIBRE INC,2025-2024-2023-2022-2021,PDF,MELI,downloaded,
+10,GRPN,GROUPON INC,2021,PDF,GRPN,downloaded,Not found from company website
+11,JWN,NORDSTROM INC,2024-2023-2022-2021,PDF,JWN,downloaded,
+12,HOUR,HOUR LOOP INC,,,,not found,"There is no published ""Sustainability Report""."
+13,SVV,SAVERS VALUE VILLAGE INC,2025-2024-2023-2022,PDF,SVV,downloaded,
+14,PTRN,PATTERN GROUP INC,2024-2023-2022-2021,PDF,PTRN,downloaded,2024FY in Italian.
+15,ETSY,ETSY INC,2025-2024-2023-2022-2021,PDF,ETSY,downloaded,"Year 2025 ontains only climate index, for the other years ESG reporting is in Annual Report, Annual Reports are uploaded to drive"
+16,GES,GUESS INC,2025-2024-2023-2022-2021-2020,PDF,GES,downloaded,
+17,AEO,AMERN EAGLE OUTFITTERS INC,2024-2023-2022-2021,PDF,AEO,downloaded,
+18,TLYS,TILLY'S INC,,,,not found,"There is no published ""Sustainability Report""."
+19,CATO,CATO CORP -CL A,,,,not found,"There is no published ""Sustainability Report""."
+20,ROST,ROSS STORES INC,2024-2023-2022-2021,PDF,ROST,downloaded,
+21,TJX,TJX COS INC (THE),2025-2024-2023-2022-2021,PDF,TJX,downloaded,
+22,DXLG,DESTINATION XL GROUP INC,2024,PDF,DXLG,downloaded,
+23,GAP,GAP INC,2025-2024-2023-2022-2021,PDF,GAP,downloaded,
+24,BURL,BURLINGTON STORES INC,2024-2023-2022-2021,PDF,BURL,downloaded,Year 2021 only contains highlights
+25,LE,LANDS' END INC,2024,PDF,LE,downloaded,
+26,BKE,BUCKLE INC,,,,not found,"There is no published ""Sustainability Report""."
+27,DLTH,DULUTH HOLDINGS INC,,,,not found,"There is no published ""Sustainability Report""."
+28,JILL,J JILL INC,2024,PDF,JILL,downloaded,
+29,SFIX,STITCH FIX INC,,,,not found,"There is no published ""Sustainability Report""."
+30,RVLV,REVOLVE GROUP INC,,,,not found,"There is no published ""Sustainability Report"", but can find some information through https://investors.revolve.com/Social-Impact/Overview/default.aspx"
+31,URBN,URBAN OUTFITTERS INC,2024-2023-2022-2021,PDF,URBN,downloaded,
+32,DBGI,DIGITAL BRANDS GRP INC,,,,not found,
+33,CURV,TORRID HOLDINGS INC,2023-2022-2021,PDF,CURV,downloaded,
+34,VSXY,VICTORIAS SECRET AND CO,2026-2025-2024-2023-2022-2021,PDF,VSXY,downloaded,
+35,AKA,A.K.A. BRAND HOLD CORP,,,,not found,"There is no published ""Sustainability Report""."
+36,LVLU,LULU'S FASHION LOUN HOLD INC,,,,not found,"There is no published ""Sustainability Report""."
+37,ANF,ABERCROMBIE & FITCH -CL A,,,,not found,"There is no published ""Sustainability Report"", but can find some informatio from https://corporate.abercrombie.com/sustainability/"
+38,PLCE,CHILDRENS PLACE INC,2023-2022-2021,PDF,PLCE,downloaded,
+39,CTRN,CITI TRENDS INC,,,,not found,"There is no published ""Sustainability Report""."
+40,ZUMZ,ZUMIEZ INC,,,,not found,"There is no published ""Sustainability Report""."
+41,XELB,XCEL BRANDS INC,,,,not found,"There is no published ""Sustainability Report""."
+42,CAL,CALERES INC,2024-2023-2022-2021,PDF,CAL,downloaded,
+43,GCO,GENESCO INC,2025,PDF,GCO,downloaded,
+44,FL,FOOT LOCKER INC,2023-2022-2021,PDF,FL,downloaded,
+45,BOOT,BOOT BARN HOLDINGS INC,,,,not found,"There is no published ""Sustainability Report""."
+46,DBI,DESIGNER BRANDS INC,,,,not found,"There is no published ""Sustainability Report""."
+47,SHOE,SHOE STATION GROUP INC,,,,not found,"There is no published ""Sustainability Report""."
+48,SGC,SUPERIOR GROUP OF COS INC,2025-2024-2023-2022-2021,PDF,SGC,downloaded,
+49,VFC,VF CORP,2025,PDF,VFC,downloaded,
+50,OXM,OXFORD INDUSTRIES INC,2021,PDF,OXM,downloaded,
+51,PVH,PVH CORP,2024-2023-2022-2021,PDF,PVH,downloaded,
+52,LEVI,LEVI STRAUSS & CO,2024-2023-2022-2021,PDF,LEVI,downloaded,
+53,VNCE,VINCE HOLDING CORP,,,,not found,"There is no published ""Sustainability Report""."
+54,JRSH,JERASH HOLDINGS (US),,,,not found,"There is no published ""Sustainability Report""."
+55,KTB,KONTOOR BRANDS INC,2024-2023-2021,PDF,KTB,downloaded,
+56,PLBY,PLAYBOY INC,,,,not found,"There is no published ""Sustainability Report""."
+57,FIGS,FIGS INC,2025-2024-2023-2022-2021,PDF,FIGS,downloaded,
+58,RL,RALPH LAUREN CORP,2025-2024-2023-2022-2021,PDF,RL,downloaded,
+59,COLM,COLUMBIA SPORTSWEAR CO,2024-2023-2022-2021,PDF,COLM,downloaded,
+60,CRI,CARTER'S INC,2024-2023-2022-2021,PDF,CRI,downloaded,
+61,UAA,UNDER ARMOUR INC,2023-2021,PDF,UAA,downloaded,
+62,LULU,LULULEMON ATHLETICA INC,2024-2022-2021,PDF,LULU,downloaded,
+63,GIII,G-III APPAREL GROUP LTD,2025-2024-2023,PDF,GIII,downloaded,
+64,TPR,TAPESTRY INC,2025-2024-2023-2022-2021,PDF,TPR,downloaded,
+65,VRA,VERA BRADLEY INC,2025-2024-2023-2022-2021,PDF,VRA,downloaded,
+66,MOV,MOVADO GROUP INC,2025-2024-2023-2022-2021,PDF,MOV,downloaded,
+67,FOSL,FOSSIL GROUP INC,2024-2023-2022-2021,PDF,FOSL,downloaded,
+68,LAKE,LAKELAND INDUSTRIES INC,,,,not found,"There is no published ""Sustainability Report""."
+69,WWW,WOLVERINE WORLD WIDE,2024-2023-2022-2021,PDF,WWW,downloaded,
+70,DECK,DECKERS OUTDOOR CORP,2025-2024-2023-2022-2021,PDF,DECK,downloaded,
+71,NKE,NIKE INC -CL B,2024-2023-2022-2021,PDF,NKE,downloaded,
+72,RCKY,ROCKY BRANDS INC,2023,PDF,RCKY,downloaded,
+73,SHOO,MADDEN STEVEN LTD,2024-2023-2022-2021,PDF,SHOO,downloaded,
+74,BIRD,ALLBIRDS INC,2024,PDF,BIRD,downloaded,
+75,CROX,CROCS INC,2025-2024-2023-2022-2021,PDF,CROX,downloaded,
