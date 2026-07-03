@@ -21,6 +21,95 @@ NON_CONTENT_TAGS = ["script", "style", "noscript"]
 
 MIN_TEXT_CHARS = 2000
 
+Row = list[str]
+Table = list[Row]
+
+
+def _norm(cell) -> str:
+    """Coerce a cell to a whitespace-stripped string; None -> ''."""
+    if cell is None:
+        return ""
+    return str(cell).strip()
+
+
+def strip_whitespace(rows: Table) -> Table:
+    return [[_norm(c) for c in row] for row in rows]
+
+
+def _pad_to_width(rows: Table, width: int) -> Table:
+    return [row + [""] * (width - len(row)) for row in rows]
+
+
+def remove_duplicate_header_rows(rows: Table) -> Table:
+    if len(rows) < 2:
+        return rows
+
+    header_key = tuple(c.lower() for c in rows[0])
+    out = [rows[0]]
+    for row in rows[1:]:
+        row_key = tuple(c.lower() for c in row)
+        if row_key == header_key:
+            continue
+        out.append(row)
+    return out
+
+
+def drop_empty_rows(rows: Table) -> Table:
+    """Drop any row (including a possible header) where every cell is empty."""
+    return [row for row in rows if any(c != "" for c in row)]
+
+
+def drop_empty_columns(rows: Table) -> Table:
+    if not rows:
+        return rows
+
+    n_cols = len(rows[0])
+    data_rows = rows[1:]
+
+    if not data_rows:
+        
+        return rows
+
+    keep_cols = [
+        i for i in range(n_cols)
+        if any(row[i] != "" for row in data_rows)
+    ]
+
+    if not keep_cols:
+        return [[]] * len(rows)
+
+    return [[row[i] for i in keep_cols] for row in rows]
+
+
+def clean_table(rows: Table) -> Table | None:
+    """
+    Clean a raw table (list of rows, each a list of cell strings/None) and
+    return the cleaned table, or None if nothing usable is left.
+    """
+    if not rows:
+        return None
+
+    rows = strip_whitespace(rows)
+
+    n_cols = max((len(r) for r in rows), default=0)
+    if n_cols == 0:
+        return None
+    rows = _pad_to_width(rows, n_cols)
+
+    rows = remove_duplicate_header_rows(rows)
+    rows = drop_empty_rows(rows)
+
+    if len(rows) < 2:
+        
+        return None
+
+    rows = drop_empty_columns(rows)
+
+    if not rows or not rows[0] or len(rows) < 2:
+        return None
+
+    return rows
+
 
 class HTMLParser(BaseParser):
     name = "HTMLParser"
@@ -41,7 +130,7 @@ class HTMLParser(BaseParser):
 
             self._strip_non_content(soup)
 
-            tables = self._extract_tables(soup, file_path)
+            tables = self._extract_tables(soup, file_path, company)
 
             text = soup.get_text(separator="\n")
             text = self._normalize(text)
@@ -81,17 +170,7 @@ class HTMLParser(BaseParser):
         for c in soup.find_all(string=lambda s: isinstance(s, Comment)):
             c.extract()
 
-    def _extract_tables(self, soup: BeautifulSoup, file_path: Path) -> list[TableRef]:
-        """
-        Locate <table> elements, save each as a CSV, and replace it in the
-        soup with a [TABLE:id] placeholder.
-
-        CSV naming matches pdf_parser.py's pattern exactly:
-            {file_path.stem}__{table_id}.csv
-        This keeps tables from different source files from colliding in a
-        shared table_output_dir, and keeps both parsers' table artifacts
-        addressable the same way.
-        """
+    def _extract_tables(self, soup: BeautifulSoup, file_path: Path, company: str | None = None) -> list[TableRef]:
         tables = []
         table_counter = 0
 
@@ -111,24 +190,38 @@ class HTMLParser(BaseParser):
             table_counter += 1
             table_id = f"table_{table_counter}"
 
+            cleaned = clean_table(rows)
+
+            if cleaned is None:
+                self._log_empty_table(company, file_path, table_id)
+                table.decompose()
+                continue
+
             csv_path = self.table_output_dir / f"{file_path.stem}__{table_id}.csv"
 
             with open(csv_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
-                writer.writerows(rows)
+                writer.writerows(cleaned)
 
             tables.append(
                 TableRef(
                     table_id=table_id,
                     csv_path=str(csv_path),
-                    n_rows=len(rows),
-                    n_cols=max(len(r) for r in rows),
+                    n_rows=len(cleaned),
+                    n_cols=max(len(r) for r in cleaned),
                 )
             )
 
             table.replace_with(f"\n[TABLE:{table_id}]\n")
 
         return tables
+
+    def _log_empty_table(self, company: str | None, file_path: Path, table_id: str) -> None:
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "empty_tables.log"
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{file_path}\t{table_id}\tempty_table\n")
 
     def _clean(self, text: str) -> str:
         return re.sub(r"\s+", " ", text.replace("\xa0", " ")).strip()
@@ -209,9 +302,14 @@ def main():
     ap.add_argument("--root", default="data/01_raw/10-K filings")
     ap.add_argument("--out", default="data/raw_text/html_text")
     ap.add_argument("--tables", default="data/tables/html_table")
-    ap.add_argument("--all", action="store_true")
     ap.add_argument("--min-companies", type=int, default=5)
-    ap.add_argument("--num-companies", type=int, default=5)
+    ap.add_argument(
+        "--num-companies",
+        type=int,
+        default=None,
+        help="Limit the run to the first N companies (alphabetical). "
+             "Default: no limit — every discovered company is processed.",
+    )
     args = ap.parse_args()
 
     root = Path(args.root)
@@ -236,6 +334,7 @@ def main():
 
     if len(companies) < args.min_companies:
         print(f"Only found {len(companies)} companies under {root}, need >= {args.min_companies}.")
+
 
     if args.num_companies and len(companies) > args.num_companies:
         selected_names = sorted(companies.keys())[: args.num_companies]
@@ -268,7 +367,7 @@ def main():
                 })
 
                 if doc.status == "ok" and doc.char_count > 0:
-                    
+
                     out_path = out_dir / f"{company}__{doc_type}__{f.stem}.txt"
                     out_path.write_text(doc.raw_text, encoding="utf-8")
                     if doc.char_count < MIN_TEXT_CHARS:

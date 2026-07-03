@@ -9,6 +9,9 @@ import time
 from pathlib import Path
 
 import pdfplumber
+from pdfminer.pdfdocument import PDFPasswordIncorrect
+from pdfminer.pdfparser import PDFSyntaxError
+from pdfplumber.utils.exceptions import PdfminerException, MalformedPDFException
 
 from base_parser import BaseParser, ParsedDocument, TableRef
 
@@ -17,6 +20,109 @@ MIN_CHARS_PER_PAGE = 20
 
 
 MIN_HTML_CHARS = 2000
+
+NOISE_TABLE_MAX_ROWS = 2
+NOISE_TABLE_MAX_COLS = 1
+
+
+Row = list[str]
+Table = list[Row]
+
+
+def _norm(cell) -> str:
+    """Coerce a cell to a whitespace-stripped string; None -> ''."""
+    if cell is None:
+        return ""
+    return str(cell).strip()
+
+
+def strip_whitespace(rows: Table) -> Table:
+    return [[_norm(c) for c in row] for row in rows]
+
+
+def _pad_to_width(rows: Table, width: int) -> Table:
+    return [row + [""] * (width - len(row)) for row in rows]
+
+
+def remove_duplicate_header_rows(rows: Table) -> Table:
+    """
+    Tables that visually span a page break, or a layout artifact, frequently
+    repeat the header row mid-table. Treat row 0 as the header and drop any
+    later row that matches it, case-insensitively, after whitespace
+    normalization.
+    """
+    if len(rows) < 2:
+        return rows
+
+    header_key = tuple(c.lower() for c in rows[0])
+    out = [rows[0]]
+    for row in rows[1:]:
+        row_key = tuple(c.lower() for c in row)
+        if row_key == header_key:
+            continue
+        out.append(row)
+    return out
+
+
+def drop_empty_rows(rows: Table) -> Table:
+    """Drop any row (including a possible header) where every cell is empty."""
+    return [row for row in rows if any(c != "" for c in row)]
+
+
+def drop_empty_columns(rows: Table) -> Table:
+    """
+    Drop any column where every *data* value (i.e. every row except the
+    header, row 0) is empty. The header cell's own text doesn't save a
+    column — a column with a header label but no populated data below it is
+    exactly the "header-only" case we want gone.
+    """
+    if not rows:
+        return rows
+
+    n_cols = len(rows[0])
+    data_rows = rows[1:]
+
+    if not data_rows:
+        return rows
+
+    keep_cols = [
+        i for i in range(n_cols)
+        if any(row[i] != "" for row in data_rows)
+    ]
+
+    if not keep_cols:
+        return [[]] * len(rows)
+
+    return [[row[i] for i in keep_cols] for row in rows]
+
+
+def clean_table(rows: Table) -> Table | None:
+    """
+    Clean a raw table (list of rows, each a list of cell strings/None) and
+    return the cleaned table, or None if nothing usable is left.
+    """
+    if not rows:
+        return None
+
+    rows = strip_whitespace(rows)
+
+    n_cols = max((len(r) for r in rows), default=0)
+    if n_cols == 0:
+        return None
+    rows = _pad_to_width(rows, n_cols)
+
+    rows = remove_duplicate_header_rows(rows)
+    rows = drop_empty_rows(rows)
+
+    if len(rows) < 2:
+        return None
+
+    rows = drop_empty_columns(rows)
+
+    if not rows or not rows[0] or len(rows) < 2:
+        return None
+
+    return rows
 
 
 class PDFParser(BaseParser):
@@ -32,25 +138,61 @@ class PDFParser(BaseParser):
     ) -> ParsedDocument:
 
         file_path = Path(file_path)
+        try:
+            pdf = pdfplumber.open(file_path)
+        except (PDFPasswordIncorrect, PDFSyntaxError, PdfminerException, MalformedPDFException) as e:
+            
+            root_cause = e.__context__ if e.__context__ is not None else e
+
+            if isinstance(root_cause, PDFPasswordIncorrect):
+                status, reason = "encrypted", "PDF is password-protected; cannot open without a password."
+            elif isinstance(root_cause, PDFSyntaxError):
+                status, reason = "corrupt", f"Malformed/corrupt PDF structure: {root_cause}"
+            else:
+                status, reason = "corrupt", f"Could not open PDF ({type(root_cause).__name__}): {root_cause}"
+
+            return ParsedDocument(
+                source_file=str(file_path),
+                company=company,
+                doc_type=doc_type,
+                parser_used=self.name,
+                status=status,
+                raw_text="",
+                tables=[],
+                error_message=reason,
+            ).finalize()
+        except Exception as e:
+            return self._error_doc(file_path, e)
 
         try:
-            with pdfplumber.open(file_path) as pdf:
+            with pdf:
 
                 page_texts = []
                 tables = []
                 table_counter = 0
                 non_empty_pages = 0
+                page_errors = []
                 total_pages = len(pdf.pages)
 
-                for page in pdf.pages:
-
-                    text = page.extract_text() or ""
+                for page_num, page in enumerate(pdf.pages, start=1):
+                    try:
+                        text = page.extract_text() or ""
+                    except Exception as e:
+                        page_errors.append((page_num, f"{type(e).__name__}: {e}"))
+                        page_texts.append("")
+                        continue
 
                     if len(text.strip()) >= MIN_CHARS_PER_PAGE:
                         non_empty_pages += 1
 
                     if extract_tables:
-                        for table in page.extract_tables():
+                        try:
+                            raw_tables = page.extract_tables()
+                        except Exception as e:
+                            raw_tables = []
+                            page_errors.append((page_num, f"table extraction failed: {type(e).__name__}: {e}"))
+
+                        for table in raw_tables:
 
                             if not table or not any(
                                 any((c or "").strip() for c in row)
@@ -61,20 +203,31 @@ class PDFParser(BaseParser):
                             table_counter += 1
                             table_id = f"table_{table_counter}"
 
+                            cleaned = clean_table(table)
+
+                            if cleaned is None:
+                                self._log_empty_table(company, file_path, table_id)
+                                continue
+
+                            n_rows = len(cleaned)
+                            n_cols = max(len(r) for r in cleaned)
+
+                            if n_rows <= NOISE_TABLE_MAX_ROWS and n_cols <= NOISE_TABLE_MAX_COLS:
+                                self._log_noise_table(company, file_path, table_id, n_rows, n_cols)
+                                continue
+
                             csv_path = self.table_output_dir / f"{file_path.stem}__{table_id}.csv"
 
                             with open(csv_path, "w", newline="", encoding="utf-8") as f:
                                 writer = csv.writer(f)
-                                writer.writerows(
-                                    [[(c or "").strip() for c in row] for row in table]
-                                )
+                                writer.writerows(cleaned)
 
                             tables.append(
                                 TableRef(
                                     table_id=table_id,
                                     csv_path=str(csv_path),
-                                    n_rows=len(table),
-                                    n_cols=max(len(r) for r in table),
+                                    n_rows=n_rows,
+                                    n_cols=n_cols,
                                 )
                             )
 
@@ -84,13 +237,21 @@ class PDFParser(BaseParser):
 
                 full_text = self._normalize("\n\n".join(page_texts))
 
+                if page_errors:
+                    self._log_page_errors(company, file_path, page_errors)
+
                 status = "ok"
+                error_message = None
 
                 if total_pages == 0:
                     status = "error"
+                    error_message = "PDF opened but reports zero pages."
 
                 elif total_pages > 0 and (non_empty_pages / total_pages) < MIN_TEXT_PAGE_RATIO:
                     status = "ocr_required"
+
+                if page_errors and status == "ok":
+                    error_message = f"{len(page_errors)}/{total_pages} page(s) had extraction errors (partial result); see logs/parse_errors.log"
 
                 return ParsedDocument(
                     source_file=str(file_path),
@@ -100,10 +261,33 @@ class PDFParser(BaseParser):
                     status=status,
                     raw_text=full_text,
                     tables=tables,
+                    error_message=error_message,
                 ).finalize()
 
         except Exception as e:
             return self._error_doc(file_path, e)
+
+    def _log_empty_table(self, company: str | None, file_path: Path, table_id: str) -> None:
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "empty_tables.log"
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{file_path}\t{table_id}\tempty_table\n")
+
+    def _log_noise_table(self, company: str | None, file_path: Path, table_id: str, n_rows: int, n_cols: int) -> None:
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "empty_tables.log"
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{file_path}\t{table_id}\tnoise_table({n_rows}x{n_cols})\n")
+
+    def _log_page_errors(self, company: str | None, file_path: Path, page_errors: list[tuple[int, str]]) -> None:
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "parse_errors.log"
+        with open(log_path, "a", encoding="utf-8") as f:
+            for page_num, msg in page_errors:
+                f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{file_path}\tpage_{page_num}\t{msg}\n")
 
     def _normalize(self, text: str) -> str:
         text = text.replace("\xa0", " ").replace("\r", "")
@@ -166,7 +350,7 @@ def htm_extract_text(path: Path) -> str:
     try:
         from bs4 import BeautifulSoup
     except ImportError:
-        
+
         return ""
 
     try:
@@ -185,13 +369,13 @@ def htm_extract_text(path: Path) -> str:
 
 
 def htm_parse_is_clean(path: Path, min_chars: int = MIN_HTML_CHARS) -> tuple[bool, str]:
-    
+
     text = htm_extract_text(path)
     return len(text) >= min_chars, text
 
 
 def discover_10k_filings(root: Path) -> dict[str, dict[str, Path | None]]:
-    
+
     filings: dict[str, dict[str, Path | None]] = {}
 
     if not root.exists():
@@ -210,7 +394,7 @@ def discover_10k_filings(root: Path) -> dict[str, dict[str, Path | None]]:
 
 
 def resolve_10k_source(info: dict[str, Path | None]) -> tuple[str, Path | None, str]:
-    
+
     htm_path = info.get("htm")
     pdf_path = info.get("pdf")
 
@@ -233,12 +417,22 @@ def main():
                      help="Root folder of 10-K filings (company subfolders with .htm and/or .pdf).")
     ap.add_argument("--out", default="data/raw_text/pdf_text")
     ap.add_argument("--tables", default="data/tables/pdf_table")
-    ap.add_argument("--all", action="store_true",
-                     help="Process every ESG PDF per company, not just the first.")
+    ap.add_argument("--first-only", action="store_true",
+                     help="Process only the first ESG PDF found per company folder "
+                          "(alphabetical), instead of every PDF/year under it. "
+                          "Default: process every PDF per company — use this only "
+                          "for a quick smoke test.")
     ap.add_argument("--skip-10k", action="store_true",
                      help="Skip 10-K processing and only run ESG report parsing.")
     ap.add_argument("--min-companies", type=int, default=5)
-    ap.add_argument("--num-companies", type=int, default=5)
+    ap.add_argument(
+        "--num-companies",
+        type=int,
+        default=None,
+        help="Limit the run to the first N companies (alphabetical). "
+             "Default: no limit — every discovered company is processed. "
+             "Useful for a quick smoke test before a full-scale run.",
+    )
     args = ap.parse_args()
 
     root = Path(args.root)
@@ -256,8 +450,6 @@ def main():
     error_log = log_dir / "parse_errors.log"
 
     parser = PDFParser(table_output_dir=table_dir)
-
-    
 
     companies = discover_company_pdfs(root)
     companies, duplicates = dedupe_files(companies)
@@ -280,8 +472,12 @@ def main():
     n_errors = 0
     n_total = 0
 
+    n_pdfs = sum(len(files) for files in companies.values())
+    print(f"({n_pdfs} PDF file(s) total across those companies)\n" if not args.first_only
+          else "(--first-only set: processing just one PDF per company)\n")
+
     for company, files in companies.items():
-        targets = files if args.all else files[:1]
+        targets = files[:1] if args.first_only else files
         for f in targets:
             n_total += 1
             t0 = time.time()
@@ -321,8 +517,6 @@ def main():
                 })
                 with open(error_log, "a", encoding="utf-8") as log:
                     log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{f}\tEXCEPTION\t{type(e).__name__}: {e}\n")
-
-    
 
     if not args.skip_10k:
         tenk_root = Path(args.tenk_root)
@@ -373,7 +567,6 @@ def main():
                     })
                     continue
 
-                
                 try:
                     doc = parser.parse(path, company=company, doc_type="10-K-fallback")
                     elapsed = time.time() - t0
@@ -411,8 +604,6 @@ def main():
                     with open(error_log, "a", encoding="utf-8") as log:
                         log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}\t{company}\t{path}\tEXCEPTION\t{type(e).__name__}: {e}\n")
 
-    
-
     print(f"\n{'company':<22}{'type':<16}{'file':<30}{'status':<14}{'chars':<10}{'tables':<8}{'time(s)':<8}")
     print("-" * 110)
     n_ok = 0
@@ -424,6 +615,10 @@ def main():
         elif r["status"] == "ocr_required":
             n_ocr += 1
             print("    -> scanned/no-text PDF correctly flagged, did NOT crash")
+        elif r["status"] == "encrypted":
+            print(f"    -> password-protected, skipped: {r['error']}")
+        elif r["status"] == "corrupt":
+            print(f"    -> malformed/corrupt PDF, skipped: {r['error']}")
         elif r["error"]:
             print(f"    -> {r['error']}")
 
