@@ -1,17 +1,10 @@
 import pandas as pd
-import requests
+import requests # requests: tool for downloading things from the internet
 
 # Load both sheets
 retail = pd.read_excel('data/00_reference/apparel_footwear_v3.xlsx', sheet_name='retail')
 apparel = pd.read_excel('data/00_reference/apparel_footwear_v3.xlsx', sheet_name='apparel & footwear')
 
-# Keep only the 15 priority broadline retailers from retail sheet
-priority_retail = [
-    'M', 'DDS', 'KSS', 'JWN', 'AMZN', 'EBAY',
-    'OLLI', 'SVV', 'CPNG', 'MELI', 'ETSY',
-    'GRPN', 'DIBS', 'HOUR', 'PTRN'
-]
-retail = retail[retail['(tic) Ticker Symbol'].isin(priority_retail)]
 
 # Add sector labels
 retail['sector'] = 'Broadline Retail'
@@ -49,6 +42,9 @@ ticker_to_cik['GES'] = '0000912463'
 
 # Look up CIK for each company
 combined['cik'] = combined['ticker'].str.upper().map(ticker_to_cik).fillna('')
+
+# Remove companies with missing CIK - can't download their filings without it
+combined = combined[combined['cik'] != '']
 
 # Keep only needed columns
 output = combined[['company_id', 'ticker', 'cik', 'name', 'sector', 'exchange']]
