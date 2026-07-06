@@ -30,3 +30,11 @@ nohup.out
 parser_test.log
 logs/*.pid
 logs/*.log.bak
+
+# Generated Week 2 pipeline outputs
+backups/
+data/01_raw/
+data/02_interim/html_text/
+data/03_sections/10k/
+data/tables/html_table/
+data/00_reference/*.before_ec2_status_reset
