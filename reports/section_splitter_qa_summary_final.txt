@@ -1,0 +1,10 @@
+10-K SECTION SPLITTER FINAL QA REPORT
+Generated at: Tue Jul  7 14:15:15 UTC 2026
+
+HTML parsed files: 568
+10-K section files: 13992
+Section index rows including header: 13993
+Chunkable section files: 13992
+Full-document fallback sections: 0
+Title-based fallback filings: 11
+Anchor-based fallback filings: 7

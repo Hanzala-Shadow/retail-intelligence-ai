@@ -29,10 +29,216 @@ PART_RE = re.compile(
     re.IGNORECASE
 )
 
+
+# Last-resort fallback for filings where Item labels are stripped but section titles remain.
+TITLE_HEADING_MAP = {
+    "general": "Item_1",
+    "business": "Item_1",
+    "business overview": "Item_1",
+    "overview": "Item_1",
+
+    "risk factors": "Item_1A",
+    "business and industry risks": "Item_1A",
+
+    "unresolved staff comments": "Item_1B",
+    "cybersecurity": "Item_1C",
+
+    "properties": "Item_2",
+    "legal proceedings": "Item_3",
+    "mine safety disclosures": "Item_4",
+
+    "market for registrant's common equity, related stockholder matters and issuer purchases of equity securities": "Item_5",
+    "market for registrant’s common equity, related stockholder matters and issuer purchases of equity securities": "Item_5",
+    "market for registrant's common equity": "Item_5",
+    "market for registrant’s common equity": "Item_5",
+
+    "selected financial data": "Item_6",
+
+    "management's discussion and analysis of financial condition and results of operations": "Item_7",
+    "management’s discussion and analysis of financial condition and results of operations": "Item_7",
+    "management discussion and analysis of financial condition and results of operations": "Item_7",
+    "management's discussion and analysis": "Item_7",
+    "management’s discussion and analysis": "Item_7",
+
+    "quantitative and qualitative disclosures about market risk": "Item_7A",
+    "financial statements and supplementary data": "Item_8",
+
+    "changes in and disagreements with accountants on accounting and financial disclosure": "Item_9",
+    "controls and procedures": "Item_9A",
+    "other information": "Item_9B",
+    "disclosure regarding foreign jurisdictions that prevent inspections": "Item_9C",
+
+    "directors, executive officers and corporate governance": "Item_10",
+    "directors and executive officers": "Item_10",
+    "executive officers": "Item_10",
+
+    "executive compensation": "Item_11",
+
+    "security ownership of certain beneficial owners and management and related stockholder matters": "Item_12",
+    "security ownership of certain beneficial owners and management": "Item_12",
+
+    "certain relationships and related transactions, and director independence": "Item_13",
+    "certain relationships and related transactions": "Item_13",
+
+    "principal accountant fees and services": "Item_14",
+
+    "exhibits, financial statement schedules": "Item_15",
+    "exhibits": "Item_15",
+
+    "signatures": "Signatures",
+    "signature": "Signatures",
+}
+
+def normalize_title_heading(line: str) -> str:
+    s = line.strip().lower()
+    s = s.replace("—", "-").replace("–", "-")
+    s = s.replace("’", "'")
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"^[\.\-\:\s]+|[\.\-\:\s]+$", "", s)
+    return s
+
+def split_sections_by_title_fallback(text, filename="Unknown"):
+    sections = {}
+    current_section = "HEADER"
+    current_lines = []
+
+    for line in text.split("\n"):
+        cleaned = line.strip()
+        normalized = normalize_title_heading(cleaned)
+
+        new_section_name = None
+        if cleaned and len(cleaned) < 180:
+            if normalized in TITLE_HEADING_MAP:
+                new_section_name = TITLE_HEADING_MAP[normalized]
+
+        if new_section_name:
+            if current_lines:
+                sections[current_section] = "\n".join(current_lines).strip()
+            current_section = new_section_name
+            current_lines = [line]
+        else:
+            current_lines.append(line)
+
+    if current_lines:
+        sections[current_section] = "\n".join(current_lines).strip()
+
+    return sections
+
 # Expected mandatory items we want to verify for tracking completeness
 MANDATORY_ITEMS = {f"Item_{i}" for i in range(1, 16)}.union({
     "Item_1A", "Item_1B", "Item_1C", "Item_7A", "Item_9A", "Item_9B", "Signatures"
 })
+
+
+# Last-resort anchor fallback for companies where SEC Item headings are stripped
+# and only narrative / company-style headings remain.
+ANCHOR_FALLBACK_RULES = [
+    # COLM / Columbia Sportswear style
+    (r"^PRODUCT DESIGN AND INNOVATION$", "Item_1"),
+    (r"^RISK FACTORS$", "Item_1A"),
+    (r"^PROPERTIES$", "Item_2"),
+    (r"^LEGAL PROCEEDINGS$", "Item_3"),
+    (r"^MINE SAFETY DISCLOSURES$", "Item_4"),
+    (r"^MARKET FOR REGISTRANT", "Item_5"),
+    (r"^MANAGEMENT.?S DISCUSSION AND ANALYSIS", "Item_7"),
+    (r"^QUANTITATIVE AND QUALITATIVE DISCLOSURES", "Item_7A"),
+    (r"^FINANCIAL STATEMENTS", "Item_8"),
+    (r"^CHANGES IN AND DISAGREEMENTS", "Item_9"),
+    (r"^CONTROLS AND PROCEDURES$", "Item_9A"),
+    (r"^OTHER INFORMATION$", "Item_9B"),
+    (r"^EXHIBITS", "Item_15"),
+
+    # SFIX / Stitch Fix style
+    (r"^OVERVIEW$", "Item_1"),
+    (r"^BUSINESS OVERVIEW$", "Item_1"),
+    (r"^OUR BUSINESS$", "Item_1"),
+    (r"^OUR COMPANY$", "Item_1"),
+    (r"^RISK FACTOR SUMMARY$", "Item_1A"),
+    (r"^RISK FACTORS$", "Item_1A"),
+    (r"^RISKS RELATING TO OUR BUSINESS$", "Item_1A"),
+    (r"^FINANCIAL OVERVIEW$", "Item_7"),
+    (r"^INTEREST RATE RISK$", "Item_7A"),
+    (r"^INFLATION RISK$", "Item_7A"),
+    (r"^EVALUATION OF DISCLOSURE CONTROLS AND PROCEDURES$", "Item_9A"),
+    (r"^MANAGEMENT.?S REPORT ON INTERNAL CONTROL OVER FINANCIAL REPORTING$", "Item_9A"),
+    (r"^CHANGES IN INTERNAL CONTROL OVER FINANCIAL REPORTING$", "Item_9A"),
+    (r"^EVALUATION OF DISCLOSURE CONTROLS AND PROCEDURES$", "Item_9A"),
+    (r"^MANAGEMENT.?S REPORT ON INTERNAL CONTROL OVER FINANCIAL REPORTING$", "Item_9A"),
+    (r"^CHANGES IN INTERNAL CONTROL OVER FINANCIAL REPORTING$", "Item_9A"),
+
+    # VZ / Verizon style
+    (r"^Verizon Communications Inc\. \(the Company\) is a holding company", "Item_1"),
+    (r"^Verizon Communications Inc\. \(the Company\) is a holding company", "Item_1"),
+    (r"^We have two reportable segments that we operate and manage as strategic business units", "Item_1"),
+    (r"^Business Overview$", "Item_7"),
+    (r"^Highlights of Our .* Financial Results$", "Item_7"),
+    (r"^Critical Accounting Estimates$", "Item_7"),
+    (r"^Opinion on Internal Control Over Financial Reporting$", "Item_8"),
+    (r"^Opinion on the Financial Statements$", "Item_8"),
+    (r"^Description of Business$", "Item_8"),
+
+    # VZ risk-factor sections often appear as risk headlines instead of a Risk Factors heading.
+    (r"^Adverse conditions in the .* economies could impact our results", "Item_1A"),
+    (r"^Cyberattacks impacting our networks or systems could have an adverse effect", "Item_1A"),
+    (r"^Cyber attacks impacting our networks or systems could have an adverse effect", "Item_1A"),
+    (r"^We depend on key suppliers and vendors", "Item_1A"),
+    (r"^Damage to our reputation or brands could adversely affect our business", "Item_1A"),
+    (r"^Public health crises could materially adversely affect our business", "Item_1A"),
+    (r"^Changes in the regulatory framework under which we operate", "Item_1A"),
+    (r"^Our business may be impacted by changes in tax laws", "Item_1A"),
+    (r"^Adverse changes in the financial markets", "Item_1A"),
+    (r"^We are subject to risks associated with mergers", "Item_1A"),
+
+    # Cybersecurity section inside Item 1C
+    (r"^Integrated Cybersecurity Risk Management$", "Item_1C"),
+    (r"^Board Oversight of Cybersecurity Risk$", "Item_1C"),
+    (r"^Risks from Cybersecurity Threats$", "Item_1C"),
+
+    # Generic
+    (r"^SIGNATURES$", "Signatures"),
+    (r"^Signature$", "Signatures"),
+]
+
+def split_sections_by_anchor_fallback(text, filename="Unknown"):
+    """Last-resort fallback for filings where Item labels are absent from extracted text."""
+    compiled = [(re.compile(pattern, re.IGNORECASE), section) for pattern, section in ANCHOR_FALLBACK_RULES]
+
+    sections = {}
+    current_section = "HEADER"
+    current_lines = []
+    seen_sections = set()
+
+    for line in text.split("\n"):
+        cleaned = line.strip()
+        new_section_name = None
+
+        if cleaned and len(cleaned) < 260:
+            for rx, section_name in compiled:
+                if rx.search(cleaned):
+                    new_section_name = section_name
+                    break
+
+        if new_section_name:
+            # Avoid repeatedly splitting the same SEC item on subheadings.
+            # Exception: Signatures should always be allowed at the end.
+            if new_section_name in seen_sections and new_section_name != "Signatures":
+                current_lines.append(line)
+                continue
+
+            if current_lines:
+                sections[current_section] = "\n".join(current_lines).strip()
+
+            current_section = new_section_name
+            seen_sections.add(new_section_name)
+            current_lines = [line]
+        else:
+            current_lines.append(line)
+
+    if current_lines:
+        sections[current_section] = "\n".join(current_lines).strip()
+
+    return sections
+
 
 def split_sections(text, filename="Unknown"):
     """Split clean 10-K text into sections by Item headings and Signatures.
@@ -99,10 +305,29 @@ def split_sections(text, filename="Unknown"):
     if current_lines:
         sections[current_section] = '\n'.join(current_lines).strip()
 
-    # Fallback Mechanism: If parsing failed entirely, dump full text into a fallback bucket
+    # Fallback Mechanism: If standard Item/PART splitting failed,
+    # try title-based fallback, then anchor-based fallback, before full-document fallback.
     if len(sections) <= 2:
-        logging.warning(f"File {filename} failed systematic parsing extraction. Invoking full-text fallback mechanism.")
-        sections['FULL_DOCUMENT_FALLBACK'] = text
+        title_sections = split_sections_by_title_fallback(text, filename=filename)
+        useful_sections = {k for k in title_sections if k != "HEADER"}
+
+        if len(useful_sections) > 2:
+            logging.warning(
+                f"File {filename} needed title-based fallback. Generated sections: {sorted(useful_sections)}"
+            )
+            sections = title_sections
+        else:
+            anchor_sections = split_sections_by_anchor_fallback(text, filename=filename)
+            anchor_useful_sections = {k for k in anchor_sections if k != "HEADER"}
+
+            if len(anchor_useful_sections) > 2:
+                logging.warning(
+                    f"File {filename} needed anchor-based fallback. Generated sections: {sorted(anchor_useful_sections)}"
+                )
+                sections = anchor_sections
+            else:
+                logging.warning(f"File {filename} failed systematic parsing extraction. Invoking full-text fallback mechanism.")
+                sections['FULL_DOCUMENT_FALLBACK'] = text
 
     return sections
 
@@ -117,7 +342,7 @@ def process_company(txt_file, output_dir):
     sections = split_sections(text, filename=txt_file.name)
     
     # Parse out company details safely matching expected naming schema
-    company = txt_file.stem.split('_')[0] if '_' in txt_file.stem else txt_file.stem
+    company = txt_file.stem.split('__')[0] if '__' in txt_file.stem else txt_file.stem.split('_')[0]
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # QA Check: Check what we missed against our expected target items
@@ -147,11 +372,14 @@ def process_company(txt_file, output_dir):
 
 def main():
     # Input and output directory reflecting repository folder conventions
-    input_dir = Path('data/02_interim')
-    output_dir = Path('data/03_sections')
+    input_dir = Path('data/02_interim/html_text')
+    output_dir = Path('data/03_sections/10k')
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    txt_files = list(input_dir.rglob('*.txt'))
+    txt_files = [
+        p for p in input_dir.rglob('*.txt')
+        if '__10-K__' in p.name
+    ]
     print(f"Found {len(txt_files)} parsed interim text files to split.")
 
     all_results = []
