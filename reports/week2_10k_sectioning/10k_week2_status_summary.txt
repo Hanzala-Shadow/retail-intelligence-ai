@@ -1,0 +1,17 @@
+10-K Week 2 Parse + Section Status
+
+Companies with 10-K data: 192
+Raw .htm files: 568
+Parsed text files: 568
+Section files: 10049
+
+Company section quality:
+- OK companies: 154
+- Fallback companies: 38
+- High-risk fallback companies: 28
+
+Notes:
+- HTML parsing completed successfully for all 568 downloaded SEC 10-K files.
+- Section splitter produced fallback sections for 95 filings.
+- Fallback filings preserve full text and are usable for chunking.
+- Fallback companies should be marked as lower section-quality in the coverage report.

@@ -103,7 +103,7 @@ def process_company(txt_file, output_dir):
     sections = split_sections(text, filename=txt_file.name)
     
     # Parse out company details safely matching expected naming schema
-    company = txt_file.stem.split('_')[0] if '_' in txt_file.stem else txt_file.stem
+    company = txt_file.stem.split('__')[0] if '__' in txt_file.stem else txt_file.stem.split('_')[0]
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # QA Check: Check what we missed against our expected target items
@@ -133,8 +133,8 @@ def process_company(txt_file, output_dir):
 
 def main():
     # Input and output directory reflecting repository folder conventions
-    input_dir = Path('data/02_interim') 
-    output_dir = Path('data/03_sections')
+    input_dir = Path('data/02_interim/html_text') 
+    output_dir = Path('data/03_sections/10k')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     txt_files = list(input_dir.rglob('*.txt'))

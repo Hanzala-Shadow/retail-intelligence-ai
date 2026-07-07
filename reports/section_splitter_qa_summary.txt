@@ -1,0 +1,11 @@
+10-K SECTION SPLITTER QA REPORT
+Generated at: Tue Jul  7 10:37:57 UTC 2026
+
+HTML parsed files: 568
+Section files: 10049
+Section index rows including header: 10050
+Fallback files: 95
+Missing-section warning lines: 246
+
+Fallback percentage:
+95/568 = 16.73%
