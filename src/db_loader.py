@@ -1,169 +1,350 @@
 """
-db_loader.py — Database pipeline loader for the Retail Intelligence Pipeline.
+db_loader.py
+Loads companies -> annual_filings -> documents -> sections into PostgreSQL.
 
+Outputs:
+  data/00_reference/companies_key_map.csv
+  data/00_reference/filings_key_map.csv
+  data/00_reference/documents_key_map.csv
+  data/00_reference/sections_key_map.csv
 """
 
+import csv
 import os
-import sys
-import logging
-import pandas as pd
-from config import DATA_DIR
-import db_utils
+import time
+from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Setup Logging
-# ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("logs/db_loader.log", mode="a")
-    ]
-)
-logger = logging.getLogger("db_loader")
+import tiktoken
 
-COMPANIES_CSV = os.path.join(DATA_DIR, "00_reference", "companies.csv")
-FILINGS_CSV = os.path.join(DATA_DIR, "00_reference", "filings.csv")
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, tuple_
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.orm import sessionmaker
 
+from models import Company, AnnualFiling, Document, Section
 
-def seed_companies_table() -> None:
-    """
-    Reads companies.csv and seeds the `companies` table using db_utils.
-    Gracefully handles missing entries (NaNs) and enforces CIK padding.
-    """
-    logger.info(f"Starting database seeding from {COMPANIES_CSV}...")
-    
-    if not os.path.exists(COMPANIES_CSV):
-        logger.error(f"Seeding failed: {COMPANIES_CSV} does not exist.")
-        return
+load_dotenv()
 
-    try:
-        df = pd.read_csv(COMPANIES_CSV)
-        
-        # Replace Pandas NaN with safe Python None (SQL NULL) for optional fields
-        df = df.where(pd.notnull(df), None)
-        df.columns = [col.lower().strip() for col in df.columns]
-        
-        if "ticker" not in df.columns or "cik" not in df.columns:
-            logger.error("Critical error: 'ticker' or 'cik' columns are missing from companies.csv.")
-            return
+DB_URL = os.getenv("DB_URL") or os.getenv("DATABASE_URL")
+if not DB_URL:
+    raise EnvironmentError("DB_URL or DATABASE_URL is not set.")
 
-        company_records = []
-        for _, row in df.iterrows():
-            if not row["ticker"] or not row["cik"]:
-                logger.warning(f"Skipping row missing critical identification data: {row.to_dict()}")
-                continue
-                
-            # Safely cast and pad CIK to standard 10 digits
-            cik_raw = row["cik"]
-            if isinstance(cik_raw, (int, float)):
-                cik_str = str(int(cik_raw)).zfill(10)
-            else:
-                cik_str = str(cik_raw).strip().zfill(10)
-            
-            company_records.append({
-                "ticker": str(row["ticker"]).upper().strip(),
-                "cik": cik_str,
-                "name": row["name"] if row["name"] else "Unknown Retailer",
-                "sector": row["sector"],       # Ingests perfectly as None if missing
-                "exchange": row["exchange"]    # Ingests perfectly as None if missing
-            })
-        
-        logger.info(f"Parsed {len(company_records)} valid company profiles.")
-        inserted_rows = db_utils.bulk_insert_companies(company_records)
-        logger.info(f"Companies seeding complete. Newly inserted: {inserted_rows} records.")
+REFERENCE_DIR = Path("data/00_reference")
+SECTIONS_DIR = Path("data/03_sections/10k")
+MIN_SECTION_TOKENS = 50
+ENCODER = tiktoken.get_encoding("cl100k_base")
 
-    except Exception as e:
-        logger.exception(f"An error occurred during company seeding: {str(e)}")
+engine = create_engine(DB_URL, future=True, pool_pre_ping=True)
+SessionLocal = sessionmaker(bind=engine, future=True)
 
 
-def load_filings_metadata() -> None:
-    """
-    Reads filings.csv and filters for filings where download_status is 'downloaded'.
-    Resolves the internal DB company_id and populates the annual_filings table.
-    """
-    logger.info(f"Loading downloaded annual filings metadata from {FILINGS_CSV}...")
-    
-    if not os.path.exists(FILINGS_CSV):
-        logger.warning(f"Metadata load skipped: {FILINGS_CSV} not found yet.")
-        return
-
-    try:
-        df_filings = pd.read_csv(FILINGS_CSV)
-        if df_filings.empty:
-            logger.warning("filings.csv is empty. No records to parse.")
-            return
-
-        df_filings = df_filings.where(pd.notnull(df_filings), None)
-        df_filings.columns = [col.lower().strip() for col in df_filings.columns]
-
-        # FILTER CONDITION: Only load filings that have successfully passed the downloader phase
-        if "download_status" in df_filings.columns:
-            df_downloaded = df_filings[df_filings["download_status"] == "downloaded"]
-        else:
-            logger.warning("download_status column missing from filings.csv. Defaulting to all rows.")
-            df_downloaded = df_filings
-
-        if df_downloaded.empty:
-            logger.info("No filings with 'downloaded' status found yet in filings.csv.")
-            return
-
-        filing_records = []
-        missing_tickers = set()
-
-        for _, row in df_downloaded.iterrows():
-            if not row.get("ticker") or not row.get("accession_number"):
-                logger.warning(f"Skipping malformed filing record: {row.to_dict()}")
-                continue
-
-            ticker = str(row["ticker"]).upper().strip()
-            company_info = db_utils.get_company_by_ticker(ticker)
-            
-            if not company_info:
-                missing_tickers.add(ticker)
-                continue
-
-            filing_records.append({
-                "company_id": company_info["company_id"],
-                "year": int(row["year"]) if row["year"] is not None else None,
-                "accession_number": str(row["accession_number"]).strip(),
-                "filing_date": row.get("filing_date"),
-                "download_status": "downloaded"
-            })
-
-        if missing_tickers:
-            logger.warning(f"Skipped filings for tickers missing from DB: {missing_tickers}")
-
-        logger.info(f"Resolved DB primary keys for {len(filing_records)} downloaded filings.")
-        inserted_filings = db_utils.bulk_insert_filings(filing_records)
-        logger.info(f"Filings metadata ingestion complete. Newly inserted: {inserted_filings} records.")
-
-    except Exception as e:
-        logger.exception(f"An error occurred during filing metadata ingestion: {str(e)}")
+def write_csv(path, rows, fieldnames):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
-def run_loader_pipeline() -> None:
-    """Runs the database staging components sequentially."""
-    logger.info("Initializing database connection pool...")
-    db_utils.connect()
-    
-    # Task 1: Seed base dimension tables
-    seed_companies_table()
-    
-    # Task 2: Seed verified download tracks
-    load_filings_metadata()
-    
-    # Task 3: Execution tracking diagnostics
-    health = db_utils.db_health_check()
-    logger.info(
-        f"Database state after current pipeline block:\n"
-        f"  - Total Registered Companies: {health.get('companies', 0)}\n"
-        f"  - Total Loaded Filings:       {health.get('annual_filings', 0)}\n"
-        f"  - Completed Downloads in DB:  {health.get('annual_filings_done', 0)}"
+def insert_ignore(session, model, mappings, conflict_cols):
+    if not mappings:
+        return 0
+
+    stmt = (
+        pg_insert(model.__table__)
+        .values(mappings)
+        .on_conflict_do_nothing(index_elements=conflict_cols)
     )
+    result = session.execute(stmt)
+    session.commit()
+    return result.rowcount
+
+
+def load_companies(csv_path=REFERENCE_DIR / "companies.csv"):
+    t0 = time.time()
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    mappings = []
+    for r in rows:
+        ticker = (r.get("ticker") or "").strip()
+        cik = (r.get("cik") or "").strip()
+        name = (r.get("name") or "").strip()
+
+        if not ticker or not cik or not name:
+            continue
+
+        mappings.append({
+            "ticker": ticker,
+            "cik": cik,
+            "name": name,
+            "sector": (r.get("sector") or "").strip() or None,
+            "exchange": (r.get("exchange") or "").strip() or None,
+        })
+
+    session = SessionLocal()
+    try:
+        inserted = insert_ignore(session, Company, mappings, ["ticker"])
+        companies = session.query(Company.company_id, Company.ticker).all()
+        ticker_to_id = {ticker: company_id for company_id, ticker in companies}
+    finally:
+        session.close()
+
+    write_csv(
+        REFERENCE_DIR / "companies_key_map.csv",
+        [{"ticker": ticker, "company_id": cid} for ticker, cid in sorted(ticker_to_id.items())],
+        ["ticker", "company_id"],
+    )
+
+    print(f"[companies] {len(ticker_to_id)} available, {inserted} newly inserted in {time.time()-t0:.1f}s")
+    return ticker_to_id
+
+
+def load_annual_filings(company_map, csv_path=REFERENCE_DIR / "filings.csv"):
+    t0 = time.time()
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    mappings = []
+    skipped = 0
+
+    for r in rows:
+        ticker = (r.get("ticker") or "").strip()
+        cid = company_map.get(ticker)
+
+        if cid is None:
+            skipped += 1
+            continue
+
+        year_raw = (r.get("year") or "").strip()
+        accession = (r.get("accession_number") or "").strip()
+
+        if not year_raw or not accession:
+            skipped += 1
+            continue
+
+        mappings.append({
+            "company_id": cid,
+            "year": int(year_raw),
+            "accession_number": accession,
+            "filing_date": (r.get("filing_date") or "").strip() or None,
+            "download_status": (r.get("download_status") or "pending").strip() or "pending",
+        })
+
+    session = SessionLocal()
+    try:
+        inserted = insert_ignore(session, AnnualFiling, mappings, ["accession_number"])
+        filings = session.query(AnnualFiling.filing_id, AnnualFiling.accession_number).all()
+        accession_to_id = {accession: filing_id for filing_id, accession in filings}
+    finally:
+        session.close()
+
+    write_csv(
+        REFERENCE_DIR / "filings_key_map.csv",
+        [{"accession_number": a, "filing_id": fid} for a, fid in sorted(accession_to_id.items())],
+        ["accession_number", "filing_id"],
+    )
+
+    print(f"[annual_filings] {len(accession_to_id)} available, {inserted} newly inserted, {skipped} skipped in {time.time()-t0:.1f}s")
+    return accession_to_id
+
+
+def discover_doc_triples(sections_dir=SECTIONS_DIR):
+    triples = set()
+
+    for f in sections_dir.rglob("*.txt"):
+        if "FULL_DOCUMENT_FALLBACK" in f.name:
+            continue
+
+        parts = f.stem.split("__")
+        if len(parts) < 4:
+            continue
+
+        company, doc_type, accession = parts[0], parts[1], parts[2]
+        triples.add((company, doc_type, accession))
+
+    return sorted(triples)
+
+
+def load_documents(company_map, sections_dir=SECTIONS_DIR):
+    t0 = time.time()
+    triples = discover_doc_triples(sections_dir)
+
+    mappings = []
+    skipped = 0
+    triple_to_filepath = {}
+
+    for company, doc_type, accession in triples:
+        cid = company_map.get(company)
+
+        if cid is None:
+            skipped += 1
+            continue
+
+        doc_type_norm = doc_type.lower().replace("-", "")
+        raw_dir = "10k" if doc_type_norm == "10k" else doc_type
+        ext = "htm" if doc_type_norm == "10k" else "pdf"
+        filepath = f"data/01_raw/{raw_dir}/{company}/{accession}.{ext}"
+
+        triple_to_filepath[(company, doc_type, accession)] = filepath
+
+        mappings.append({
+            "company_id": cid,
+            "doc_type": doc_type,
+            "filepath": filepath,
+            "parse_status": "parsed",
+        })
+
+    session = SessionLocal()
+    try:
+        inserted = insert_ignore(session, Document, mappings, ["filepath"])
+
+        all_filepaths = list(triple_to_filepath.values())
+        docs = (
+            session.query(Document.doc_id, Document.company_id, Document.doc_type, Document.filepath)
+            .filter(Document.filepath.in_(all_filepaths))
+            .all()
+        )
+
+        filepath_to_doc = {filepath: (doc_id, company_id, doc_type) for doc_id, company_id, doc_type, filepath in docs}
+    finally:
+        session.close()
+
+    triple_to_doc_id = {}
+    doc_rows = []
+
+    for triple, filepath in triple_to_filepath.items():
+        company, doc_type, accession = triple
+        doc = filepath_to_doc.get(filepath)
+
+        if doc is None:
+            skipped += 1
+            continue
+
+        doc_id, cid, _ = doc
+        triple_to_doc_id[triple] = doc_id
+
+        doc_rows.append({
+            "company": company,
+            "doc_type": doc_type,
+            "accession": accession,
+            "doc_id": doc_id,
+            "company_id": cid,
+            "filepath": filepath,
+        })
+
+    write_csv(
+        REFERENCE_DIR / "documents_key_map.csv",
+        doc_rows,
+        ["company", "doc_type", "accession", "doc_id", "company_id", "filepath"],
+    )
+
+    print(f"[documents] {len(triple_to_doc_id)} available, {inserted} newly inserted, {skipped} skipped in {time.time()-t0:.1f}s")
+    return triple_to_doc_id
+
+
+def load_sections(triple_to_doc_id, sections_dir=SECTIONS_DIR, batch_size=500):
+    t0 = time.time()
+
+    files = sorted([
+        f for f in sections_dir.rglob("*.txt")
+        if "FULL_DOCUMENT_FALLBACK" not in f.name
+    ])
+
+    session = SessionLocal()
+    all_key_rows = []
+    total_available = 0
+    total_inserted = 0
+    skipped = 0
+
+    try:
+        for i in range(0, len(files), batch_size):
+            batch_files = files[i:i + batch_size]
+            mappings = []
+            wanted_pairs = []
+            pair_to_stem = {}
+
+            for f in batch_files:
+                parts = f.stem.split("__")
+                if len(parts) < 4:
+                    skipped += 1
+                    continue
+
+                company = parts[0]
+                doc_type = parts[1]
+                accession = parts[2]
+                section = "__".join(parts[3:])
+
+                doc_id = triple_to_doc_id.get((company, doc_type, accession))
+
+                if doc_id is None:
+                    skipped += 1
+                    continue
+
+                text = f.read_text(encoding="utf-8", errors="replace")
+
+                # Keep DB sections aligned with chunker.py.
+                # Tiny sections under 50 tokens are skipped because they create invalid retrieval chunks.
+                if len(ENCODER.encode(text)) < MIN_SECTION_TOKENS:
+                    skipped += 1
+                    continue
+
+                mappings.append({
+                    "doc_id": doc_id,
+                    "section_code": section,
+                    "section_title": section.replace("_", " ").title(),
+                    "section_text": text,
+                    "char_count": len(text),
+                })
+
+                pair = (doc_id, section)
+                wanted_pairs.append(pair)
+                pair_to_stem[pair] = f.stem
+
+            if not mappings:
+                continue
+
+            inserted = insert_ignore(session, Section, mappings, ["doc_id", "section_code"])
+            total_inserted += inserted
+
+            rows = (
+                session.query(Section.section_id, Section.doc_id, Section.section_code)
+                .filter(tuple_(Section.doc_id, Section.section_code).in_(wanted_pairs))
+                .all()
+            )
+
+            for section_id, doc_id, section_code in rows:
+                pair = (doc_id, section_code)
+                stem = pair_to_stem.get(pair)
+
+                if stem:
+                    all_key_rows.append({
+                        "stem": stem,
+                        "section_id": section_id,
+                        "doc_id": doc_id,
+                    })
+                    total_available += 1
+
+            print(f"  sections batch {i // batch_size + 1}: {total_available} mapped so far")
+
+    finally:
+        session.close()
+
+    write_csv(
+        REFERENCE_DIR / "sections_key_map.csv",
+        all_key_rows,
+        ["stem", "section_id", "doc_id"],
+    )
+
+    print(f"[sections] {total_available} available, {total_inserted} newly inserted, {skipped} skipped in {time.time()-t0:.1f}s")
+    return all_key_rows
 
 
 if __name__ == "__main__":
-    os.makedirs("logs", exist_ok=True)
-    run_loader_pipeline()
+    company_map = load_companies()
+    load_annual_filings(company_map)
+    triple_to_doc_id = load_documents(company_map)
+    load_sections(triple_to_doc_id)
+    print("Done. sections_key_map.csv is ready for chunks_bulk_loader.py")

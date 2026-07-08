@@ -38,3 +38,15 @@ data/02_interim/html_text/
 data/03_sections/10k/
 data/tables/html_table/
 data/00_reference/*.before_ec2_status_reset
+
+# Generated chunking outputs
+data/04_chunks/
+data/00_reference/chunks_index.csv
+data/00_reference/*key_map.csv
+
+# Local DB backups
+backups/
+*.dump
+
+# Generated project snapshots
+reports/project_snapshot_*.txt

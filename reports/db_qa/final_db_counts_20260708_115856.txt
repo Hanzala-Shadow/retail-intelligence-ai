@@ -1,0 +1,10 @@
+       table_name       | count 
+------------------------+-------
+ companies              |   193
+ annual_filings         |   568
+ sustainability_reports |     0
+ documents              |   568
+ sections               |  9101
+ chunks                 | 86034
+(6 rows)
+
