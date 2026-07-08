@@ -21,45 +21,53 @@ def chunk_text(text, encoder, chunk_size=CHUNK_SIZE, overlap=OVERLAP):
         
         if end == len(tokens):
             break
-        start = end - overlap  # overlap with next chunk
+        start = end - overlap
     
     return chunks
 
 def main():
+    # Proper directory routes matching project structure
     input_dir = Path('data/03_sections')
-    output_dir = Path('data/04_chunks')
+    output_dir = Path('data/04_chunks/10k')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     encoder = tiktoken.get_encoding(ENCODING)
     
-    # Read chunkable sections list from Hanzala's report
-    chunkable_file = Path('reports/chunkable_10k_sections.txt')
+    # Use Hanzala's final chunkable list
+    chunkable_file = Path('reports/chunkable_10k_sections_final.txt')
+    if not chunkable_file.exists():
+        # Fallback to original chunkable list
+        chunkable_file = Path('reports/chunkable_10k_sections.txt')
+    
     if chunkable_file.exists():
-      raw_lines = open(chunkable_file, encoding='utf-8').read().strip().split('\n')
-      # Extract just filenames for matching
-      chunkable = set(Path(l.strip()).name for l in raw_lines if l.strip())
-      print(f"Using chunkable list: {len(chunkable)} sections")
+        raw_lines = open(chunkable_file, encoding='utf-8').read().strip().split('\n')
+        chunkable = set(Path(l.strip()).name for l in raw_lines if l.strip())
+        print(f"Using chunkable list: {len(chunkable)} sections from {chunkable_file.name}")
     else:
-       chunkable = None
-       print("No chunkable list found — processing all sections")
+        chunkable = None
+        print("No chunkable list found — processing all sections")
 
     section_files = list(input_dir.rglob('*.txt'))
-    print(f"Found {len(section_files)} section files")
+    print(f"Found {len(section_files)} section files locally")
 
     all_results = []
     total_chunks = 0
+    skipped = 0
 
     for section_file in section_files:
         # Skip fallback sections
         if 'FULL_DOCUMENT_FALLBACK' in section_file.name:
+            skipped += 1
             continue
         
         # Skip if not in chunkable list
         if chunkable and section_file.name not in chunkable:
+            skipped += 1
             continue
 
         text = section_file.read_text(encoding='utf-8')
         if not text.strip():
+            skipped += 1
             continue
 
         # Parse filename to get metadata
@@ -97,14 +105,16 @@ def main():
     index_path = Path('data/00_reference/chunks_index.csv')
     with open(index_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=[
-            'chunk_id', 'company', 'doc_type', 'accession', 
+            'chunk_id', 'company', 'doc_type', 'accession',
             'section', 'chunk_index', 'token_count', 'char_count', 'file'
         ])
         writer.writeheader()
         writer.writerows(all_results)
 
     print(f"\nDone! {total_chunks} total chunks created.")
+    print(f"Skipped: {skipped} sections")
     print(f"Index saved to {index_path}")
+    print(f"Chunks saved to {output_dir.resolve()}")
 
 if __name__ == '__main__':
     main()

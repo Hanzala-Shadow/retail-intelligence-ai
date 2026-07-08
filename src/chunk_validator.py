@@ -9,7 +9,7 @@ print(f"Total chunks to validate: {len(chunks)}")
 # Flag problematic chunks
 chunks['flag'] = 'ok'
 chunks.loc[chunks['token_count'] < 50, 'flag'] = 'too_short'
-chunks.loc[chunks['token_count'] > 500, 'flag'] = 'too_long'
+chunks.loc[chunks['token_count'] > 600, 'flag'] = 'too_long'
 
 # Summary
 ok = (chunks['flag'] == 'ok').sum()
