@@ -1,0 +1,194 @@
+ticker,company_name,clean_status,pdf_rows,note
+DDS,DILLARDS INC  -CL A,not_found,0,no PDFs in Drive manifest
+M,MACY'S INC,downloaded,4,created one row per Drive PDF
+KSS,KOHL'S CORP,downloaded,3,created one row per Drive PDF
+CPNG,COUPANG INC,downloaded,3,created one row per Drive PDF
+DIBS,1STDIBS.COM INC,not_found,0,no PDFs in Drive manifest
+OLLI,OLLIE'S BARGAIN OUTLET HLDGS,not_found,0,no PDFs in Drive manifest
+ORBS,EIGHTCO HOLDINGS INC,not_found,0,no PDFs in Drive manifest
+AMZN,AMAZON.COM INC,downloaded,5,created one row per Drive PDF
+EBAY,EBAY INC,downloaded,5,created one row per Drive PDF
+MELI,MERCADOLIBRE INC,downloaded,5,created one row per Drive PDF
+GRPN,GROUPON INC,downloaded,1,created one row per Drive PDF
+JWN,NORDSTROM INC,downloaded,4,created one row per Drive PDF
+HOUR,HOUR LOOP INC,not_found,0,no PDFs in Drive manifest
+SVV,SAVERS VALUE VILLAGE INC,downloaded,4,created one row per Drive PDF
+PTRN,PATTERN GROUP INC,downloaded,4,created one row per Drive PDF
+ETSY,ETSY INC,downloaded,5,created one row per Drive PDF
+GPRO,GOPRO INC,downloaded,3,created one row per Drive PDF
+KOSS,KOSS CORP,not_found,0,no PDFs in Drive manifest
+UEIC,UNIVERSAL ELECTRONICS INC,downloaded,1,created one row per Drive PDF
+SONO,SONOS INC,downloaded,4,created one row per Drive PDF
+RIME,ALGORHYTHM HOLDINGS INC,not_found,0,no PDFs in Drive manifest
+LOVE,LOVESAC CO (THE),downloaded,4,created one row per Drive PDF
+ETD,ETHAN ALLEN INTERIORS INC,not_found,0,no PDFs in Drive manifest
+HOFT,HOOKER FURNISHINGS CORP,downloaded,2,created one row per Drive PDF
+XMAX,XMAX INC,not_found,0,no PDFs in Drive manifest
+MHK,MOHAWK INDUSTRIES INC,downloaded,4,created one row per Drive PDF
+LZB,LA-Z-BOY INC,downloaded,5,created one row per Drive PDF
+FLXS,FLEXSTEEL INDUSTRIES INC,downloaded,2,created one row per Drive PDF
+BSET,BASSETT FURNITURE INDS,not_found,0,no PDFs in Drive manifest
+LEG,LEGGETT & PLATT INC,downloaded,5,created one row per Drive PDF
+PRPL,PURPLE INNOVATION INC,not_found,0,no PDFs in Drive manifest
+SGI,SOMNIGROUP INTERNATIONAL INC,downloaded,5,created one row per Drive PDF
+LIVE,LIVE VENTURES INC,not_found,0,no PDFs in Drive manifest
+WHR,WHIRLPOOL CORP,downloaded,5,created one row per Drive PDF
+HBB,HAMILTON BEACH BND HDNG,not_found,0,no PDFs in Drive manifest
+CRCT,CRICUT INC,not_found,0,no PDFs in Drive manifest
+ATER,ATERIAN INC,not_found,0,no PDFs in Drive manifest
+COOK,TRAEGER INC,not_found,0,no PDFs in Drive manifest
+NWL,NEWELL BRANDS INC,downloaded,5,created one row per Drive PDF
+YHGJ,YUNHONG GREEN CTI LTD,not_found,0,no PDFs in Drive manifest
+LCUT,LIFETIME BRANDS INC,not_found,0,no PDFs in Drive manifest
+GES,GUESS INC,downloaded,4,created one row per Drive PDF
+AEO,AMERN EAGLE OUTFITTERS INC,downloaded,4,created one row per Drive PDF
+TLYS,TILLY'S INC,not_found,0,no PDFs in Drive manifest
+CATO,CATO CORP  -CL A,not_found,0,no PDFs in Drive manifest
+ROST,ROSS STORES INC,downloaded,4,created one row per Drive PDF
+TJX,TJX COS INC (THE),downloaded,5,created one row per Drive PDF
+DXLG,DESTINATION XL GROUP INC,downloaded,1,created one row per Drive PDF
+GAP,GAP INC,downloaded,5,created one row per Drive PDF
+BURL,BURLINGTON STORES INC,downloaded,4,created one row per Drive PDF
+LE,LANDS' END INC,downloaded,1,created one row per Drive PDF
+BKE,BUCKLE INC,not_found,0,no PDFs in Drive manifest
+DLTH,DULUTH HOLDINGS INC,not_found,0,no PDFs in Drive manifest
+JILL,J JILL INC,downloaded,1,created one row per Drive PDF
+SFIX,STITCH FIX INC,not_found,0,no PDFs in Drive manifest
+RVLV,REVOLVE GROUP INC,not_found,0,no PDFs in Drive manifest
+URBN,URBAN OUTFITTERS INC,downloaded,2,created one row per Drive PDF
+DBGI,DIGITAL BRANDS GRP INC,not_found,0,no PDFs in Drive manifest
+CURV,TORRID HOLDINGS INC,downloaded,3,created one row per Drive PDF
+VSXY,VICTORIAS SECRET AND CO,downloaded,6,created one row per Drive PDF
+AKA,A.K.A. BRAND HOLD CORP,not_found,0,no PDFs in Drive manifest
+LVLU,LULU'S FASHION LOUN HOLD INC,not_found,0,no PDFs in Drive manifest
+ANF,ABERCROMBIE & FITCH  -CL A,not_found,0,no PDFs in Drive manifest
+PLCE,CHILDRENS PLACE INC,downloaded,3,created one row per Drive PDF
+CTRN,CITI TRENDS INC,not_found,0,no PDFs in Drive manifest
+ZUMZ,ZUMIEZ INC,not_found,0,no PDFs in Drive manifest
+XELB,XCEL BRANDS INC,not_found,0,no PDFs in Drive manifest
+CAL,CALERES INC,downloaded,4,created one row per Drive PDF
+GCO,GENESCO INC,downloaded,2,created one row per Drive PDF
+FL,FOOT LOCKER INC,downloaded,3,created one row per Drive PDF
+BOOT,BOOT BARN HOLDINGS INC,not_found,0,no PDFs in Drive manifest
+DBI,DESIGNER BRANDS INC,not_found,0,no PDFs in Drive manifest
+SHOE,SHOE STATION GROUP INC,not_found,0,no PDFs in Drive manifest
+TDUP,THREDUP INC,downloaded,4,created one row per Drive PDF
+TLF,TANDY LEATHER FACTORY INC,not_found,0,no PDFs in Drive manifest
+REAL,REALREAL INC (THE),not_found,0,no PDFs in Drive manifest
+BBY,BEST BUY CO INC,downloaded,5,created one row per Drive PDF
+GME,GAMESTOP CORP,not_found,0,no PDFs in Drive manifest
+HD,HOME DEPOT INC,downloaded,4,created one row per Drive PDF
+LOW,LOWE'S COS INC,downloaded,4,created one row per Drive PDF
+FND,FLOOR & DECOR HLDGS,downloaded,2,created one row per Drive PDF
+GRWG,GROWGENERATION CORP,not_found,0,no PDFs in Drive manifest
+POWW,OUTDOOR HOLDING CO,not_found,0,no PDFs in Drive manifest
+HZO,MARINEMAX INC,not_found,0,no PDFs in Drive manifest
+FLWS,1-800-FLOWERS.COM,not_found,0,no PDFs in Drive manifest
+GROV,GROVE COLLABORATIVE HLDG INC,downloaded,5,created one row per Drive PDF
+FIVE,FIVE BELOW INC,downloaded,5,created one row per Drive PDF
+PETS,PETMED EXPRESS INC,not_found,0,no PDFs in Drive manifest
+BBWI,BATH & BODY WORKS INC,downloaded,4,created one row per Drive PDF
+SBH,SALLY BEAUTY HOLDINGS INC,downloaded,1,created one row per Drive PDF
+ULTA,ULTA BEAUTY INC,downloaded,5,created one row per Drive PDF
+EYE,NATIONAL VISION HOLDINGS INC,downloaded,4,created one row per Drive PDF
+WRBY,WARBY PARKER INC,downloaded,5,created one row per Drive PDF
+BRLT,BRILLIANT EARTH GP INC,not_found,0,no PDFs in Drive manifest
+SPWH,SPORTSMANS WAREHOUSE HLDGS,not_found,0,no PDFs in Drive manifest
+ASO,ACADEMY SPO AND OU INC,downloaded,1,created one row per Drive PDF
+DKS,DICKS SPORTING GOODS INC,downloaded,1,created one row per Drive PDF
+BARK,BARK INC,not_found,0,no PDFs in Drive manifest
+BBW,BUILD-A-BEAR WORKSHOP INC,downloaded,2,created one row per Drive PDF
+BNED,BARNES & NOBLE EDUCATION INC,not_found,0,no PDFs in Drive manifest
+CHWY,CHEWY INC,not_found,0,no PDFs in Drive manifest
+WOOF,PETCO HEALTH AND WELLNESS CO,downloaded,4,created one row per Drive PDF
+PEW,GRABAGUN DIGITAL HOLDING INC,not_found,0,no PDFs in Drive manifest
+TSCO,TRACTOR SUPPLY CO,downloaded,2,created one row per Drive PDF
+LESL,LESLIE'S INC,downloaded,4,created one row per Drive PDF
+UPBD,UPBOUND GROUP INC,downloaded,1,created one row per Drive PDF
+RENT,RENT THE RUNWAY INC,not_found,0,no PDFs in Drive manifest
+WINA,WINMARK CORP,not_found,0,no PDFs in Drive manifest
+MNRO,MONRO INC,downloaded,5,created one row per Drive PDF
+APC,ARKO PETROLEUM CORP,downloaded,4,created one row per Drive PDF
+AN,AUTONATION INC,downloaded,5,created one row per Drive PDF
+PAG,PENSKE AUTOMOTIVE GROUP INC,not_found,0,no PDFs in Drive manifest
+LAD,LITHIA MOTORS INC  -CL A,downloaded,5,created one row per Drive PDF
+SAH,SONIC AUTOMOTIVE INC  -CL A,not_found,0,no PDFs in Drive manifest
+GPI,GROUP 1 AUTOMOTIVE INC,downloaded,4,created one row per Drive PDF
+ABG,ASBURY AUTOMOTIVE GROUP INC,downloaded,4,created one row per Drive PDF
+CRMT,AMERICA'S CAR-MART INC,downloaded,4,created one row per Drive PDF
+CVNA,CARVANA CO,not_found,0,no PDFs in Drive manifest
+KMX,CARMAX INC,downloaded,6,created one row per Drive PDF
+CWH,CAMPING WORLD HOLDINGS INC,not_found,0,no PDFs in Drive manifest
+ONEW,ONEWATER MARINE INC,not_found,0,no PDFs in Drive manifest
+RDNW,RIDENOW GROUP INC,not_found,0,no PDFs in Drive manifest
+AZO,AUTOZONE INC,downloaded,6,created one row per Drive PDF
+ORLY,O'REILLY AUTOMOTIVE INC,downloaded,1,created one row per Drive PDF
+AAP,ADVANCE AUTO PARTS INC,downloaded,2,created one row per Drive PDF
+PRTS,CARPARTS COM INC,downloaded,1,created one row per Drive PDF
+MUSA,MURPHY USA INC,downloaded,4,created one row per Drive PDF
+ARKO,ARKO CORP,downloaded,4,created one row per Drive PDF
+VVV,VALVOLINE INC,downloaded,4,created one row per Drive PDF
+EVGO,EVGO INC,not_found,0,no PDFs in Drive manifest
+SNBR,SLEEP NUMBER CORP,downloaded,5,created one row per Drive PDF
+HVT,HAVERTY FURNITURE,downloaded,1,created one row per Drive PDF
+WSM,WILLIAMS-SONOMA INC,downloaded,3,created one row per Drive PDF
+ARHS,ARHAUS INC,not_found,0,no PDFs in Drive manifest
+BOBS,BOBS DISCOUNT FURNITURE INC,not_found,0,no PDFs in Drive manifest
+RH,RH,not_found,0,no PDFs in Drive manifest
+BBBY,BED BATH & BEYOND INC,not_found,0,no PDFs in Drive manifest
+W,WAYFAIR INC,downloaded,5,created one row per Drive PDF
+SGC,SUPERIOR GROUP OF COS INC,downloaded,5,created one row per Drive PDF
+VFC,VF CORP,downloaded,3,created one row per Drive PDF
+OXM,OXFORD INDUSTRIES INC,downloaded,1,created one row per Drive PDF
+PVH,PVH CORP,downloaded,4,created one row per Drive PDF
+LEVI,LEVI STRAUSS & CO,downloaded,4,created one row per Drive PDF
+VNCE,VINCE HOLDING CORP,not_found,0,no PDFs in Drive manifest
+JRSH,JERASH HOLDINGS (US),not_found,0,no PDFs in Drive manifest
+KTB,KONTOOR BRANDS INC,downloaded,3,created one row per Drive PDF
+PLBY,PLAYBOY INC,not_found,0,no PDFs in Drive manifest
+FIGS,FIGS INC,downloaded,5,created one row per Drive PDF
+RL,RALPH LAUREN CORP,downloaded,5,created one row per Drive PDF
+COLM,COLUMBIA SPORTSWEAR CO,downloaded,4,created one row per Drive PDF
+CRI,CARTER'S INC,downloaded,4,created one row per Drive PDF
+UAA,UNDER ARMOUR INC,downloaded,2,created one row per Drive PDF
+LULU,LULULEMON ATHLETICA INC,downloaded,3,created one row per Drive PDF
+GIII,G-III APPAREL GROUP LTD,downloaded,3,created one row per Drive PDF
+TPR,TAPESTRY INC,downloaded,5,created one row per Drive PDF
+VRA,VERA BRADLEY INC,downloaded,5,created one row per Drive PDF
+MOV,MOVADO GROUP INC,downloaded,5,created one row per Drive PDF
+FOSL,FOSSIL GROUP INC,downloaded,4,created one row per Drive PDF
+LAKE,LAKELAND INDUSTRIES INC,not_found,0,no PDFs in Drive manifest
+WWW,WOLVERINE WORLD WIDE,downloaded,4,created one row per Drive PDF
+DECK,DECKERS OUTDOOR CORP,downloaded,5,created one row per Drive PDF
+NKE,NIKE INC  -CL B,downloaded,4,created one row per Drive PDF
+RCKY,ROCKY BRANDS INC,downloaded,1,created one row per Drive PDF
+SHOO,MADDEN STEVEN LTD,downloaded,4,created one row per Drive PDF
+BIRD,ALLBIRDS INC,downloaded,4,created one row per Drive PDF
+CROX,CROCS INC,downloaded,5,created one row per Drive PDF
+MGRX,MANGOCEUTICALS INC,not_found,0,no PDFs in Drive manifest
+CART,MAPLEBEAR INC,not_found,0,no PDFs in Drive manifest
+VLGEA,VILLAGE SUPER MARKET  -CL A,not_found,0,no PDFs in Drive manifest
+WMK,WEIS MARKETS INC,downloaded,4,created one row per Drive PDF
+KR,KROGER CO,downloaded,5,created one row per Drive PDF
+IMKTA,INGLES MARKETS INC  -CL A,not_found,0,no PDFs in Drive manifest
+SFM,SPROUTS FARMERS MARKET,downloaded,5,created one row per Drive PDF
+ACI,ALBERTSONS COS INC,downloaded,4,created one row per Drive PDF
+MSS,MAISON SOLUTIONS INC,not_found,0,no PDFs in Drive manifest
+GO,GROCERY OUTLET HLDNG CORP,downloaded,3,created one row per Drive PDF
+NGVC,NATURAL GROCERS VITAMIN CTGE,downloaded,5,created one row per Drive PDF
+CASY,CASEYS GENERAL STORES INC,downloaded,5,created one row per Drive PDF
+YSWY,YESWAY INC,not_found,0,no PDFs in Drive manifest
+REBN,REBORN COFFEE INC,not_found,0,no PDFs in Drive manifest
+COST,COSTCO WHOLESALE CORP,downloaded,3,created one row per Drive PDF
+BJ,BJS WHSL CLUB HLDGS INC,downloaded,1,created one row per Drive PDF
+DG,DOLLAR GENERAL CORP,downloaded,4,created one row per Drive PDF
+TGT,TARGET CORP,downloaded,5,created one row per Drive PDF
+WMT,WALMART INC,downloaded,3,created one row per Drive PDF
+DLTR,DOLLAR TREE INC,downloaded,5,created one row per Drive PDF
+PSMT,PRICESMART INC,downloaded,5,created one row per Drive PDF
+AAPL,APPLE INC,downloaded,5,created one row per Drive PDF
+CVS,CVS HEALTH CORP,downloaded,4,created one row per Drive PDF
+DELL,DELL TECHNOLOGIES INC,downloaded,4,created one row per Drive PDF
+T,AT&T INC,downloaded,5,created one row per Drive PDF
+VZ,VERIZON COMMUNICATIONS INC,downloaded,4,created one row per Drive PDF
+XOM,EXXON MOBIL CORP,downloaded,5,created one row per Drive PDF
