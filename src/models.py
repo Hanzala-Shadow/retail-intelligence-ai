@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     Text,
     Date,
+    Boolean,
     TIMESTAMP,
     ForeignKey,
     UniqueConstraint,
@@ -75,6 +76,10 @@ class Document(Base):
     doc_type = Column(String(30), nullable=False)
     filepath = Column(Text, nullable=False)
     parse_status = Column(String(30), default="not_started")
+    quality_flags = Column(Text)
+    possible_wrong_doc_type = Column(Boolean, default=False)
+    doc_quality_status = Column(String(40))
+    rag_action = Column(String(50))
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now())
 
@@ -91,6 +96,10 @@ class Section(Base):
     section_title = Column(String(255))
     section_text = Column(Text)
     char_count = Column(Integer, default=0)
+    source_start_char = Column(Integer)
+    source_end_char = Column(Integer)
+    page_start = Column(Integer)
+    page_end = Column(Integer)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now())
 
@@ -107,6 +116,14 @@ class Chunk(Base):
     company_id = Column(Integer, ForeignKey("companies.company_id", ondelete="CASCADE"), nullable=False)
     doc_type = Column(String(30))
     section_code = Column(String(50))
+    doc_quality_status = Column(String(40))
+    rag_action = Column(String(50))
+    quality_flags = Column(Text)
+    source_start_char = Column(Integer)
+    source_end_char = Column(Integer)
+    page_start = Column(Integer)
+    page_end = Column(Integer)
+    citation_ready = Column(Boolean, default=False)
     chunk_index = Column(Integer, nullable=False)
     chunk_text = Column(Text, nullable=False)
     token_count = Column(Integer)

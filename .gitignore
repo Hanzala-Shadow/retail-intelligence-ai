@@ -8,6 +8,7 @@ token.json
 
 # Credentials
 credentials.json
+client_secret.json
 *.pem
 *.key
 
@@ -50,3 +51,10 @@ backups/
 
 # Generated project snapshots
 reports/project_snapshot_*.txt
+
+# Local handoff notes and generated run artifacts
+scratchpad_DO_NOT_READ*.txt
+reports/*.log
+reports/*.tar.gz
+data/03_sections/esg/
+*.docx
