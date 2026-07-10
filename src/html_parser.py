@@ -114,7 +114,10 @@ class HTMLParser(BaseParser):
             csv_path = self.table_output_dir / f"{file_path.stem}__{table_id}.csv"
 
             with open(csv_path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
+                writer = csv.writer(
+                    f,
+                    lineterminator="\n",
+                )
                 writer.writerows(rows)
 
             tables.append(
@@ -126,7 +129,23 @@ class HTMLParser(BaseParser):
                 )
             )
 
-            table.replace_with(f"\n[TABLE:{table_id}]\n")
+            # Preserve the table's original text line structure.
+            # SEC filings frequently use tables for page layout. Collapsing
+            # each row into one line can bury Item headings inside long
+            # narrative lines, so retain cell-level newlines for splitting.
+            readable_text = table.get_text(
+                separator="\n",
+                strip=True,
+            )
+            readable_text = self._normalize(readable_text)
+
+            replacement_parts = [f"[TABLE:{table_id}]"]
+
+            if readable_text:
+                replacement_parts.append(readable_text)
+
+            replacement = "\n".join(replacement_parts)
+            table.replace_with(f"\n{replacement}\n")
 
         return tables
 

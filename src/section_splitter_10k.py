@@ -240,94 +240,774 @@ def split_sections_by_anchor_fallback(text, filename="Unknown"):
     return sections
 
 
-def split_sections(text, filename="Unknown"):
-    """Split clean 10-K text into sections by Item headings and Signatures.
-    
-    Hardened against TOC listings using character position.
-    Supports PART I/II/III/IV style companies.
-    Supports Item numbers without titles (e.g. EBAY).
-    """
-    sections = {}
-    current_section = 'HEADER'
-    current_lines = []
-    char_count = 0  # Track position in document
 
-    for line in text.split('\n'):
-        char_count += len(line) + 1
-        cleaned_line = line.strip()
-        
-        # Check for standard item match, signature block, and PART heading
-        m = ITEM_HEADING_RE.match(cleaned_line)
-        is_sig = SIGNATURES_RE.match(cleaned_line)
-        is_part = PART_RE.match(cleaned_line)
-        
-        is_divider = False
-        new_section_name = None
-        
-        # Check signatures
-        if is_sig and len(cleaned_line) < 200:
-            is_divider = True
-            new_section_name = "Signatures"
+ITEM_SEQUENCE = [
+    "Item_1", "Item_1A", "Item_1B", "Item_1C",
+    "Item_2", "Item_3", "Item_4",
+    "Item_5", "Item_6", "Item_7", "Item_7A",
+    "Item_8", "Item_9", "Item_9A", "Item_9B", "Item_9C",
+    "Item_10", "Item_11", "Item_12", "Item_13",
+    "Item_14", "Item_15", "Item_16",
+]
 
-        # Fix Type 1: Check PART headings (AMZN, KR, VFC style)
-        elif is_part and len(cleaned_line) < 50:
-            is_divider = True
-            part_num = is_part.group(1).upper()
-            new_section_name = f"Part_{part_num}"
+EXPECTED_ITEM_TITLES = {
+    "Item_1": [
+        "business",
+        "description of business",
+        "business overview",
+        "general",
+    ],
+    "Item_1A": ["risk factors"],
+    "Item_1B": ["unresolved staff comments"],
+    "Item_1C": ["cybersecurity"],
+    "Item_2": ["properties"],
+    "Item_3": ["legal proceedings"],
+    "Item_4": ["mine safety disclosures"],
+    "Item_5": [
+        "market for registrant",
+        "market for the registrant",
+    ],
+    "Item_6": [
+        "reserved",
+        "selected financial data",
+    ],
+    "Item_7": [
+        "management's discussion and analysis",
+        "managements discussion and analysis",
+        "management discussion and analysis",
+    ],
+    "Item_7A": [
+        "quantitative and qualitative disclosures",
+    ],
+    "Item_8": [
+        "financial statements and supplementary data",
+        "consolidated financial statements and supplementary data",
+        "financial statements",
+        "consolidated financial statements",
+    ],
+    "Item_9": [
+        "changes in and disagreements with accountants",
+    ],
+    "Item_9A": ["controls and procedures"],
+    "Item_9B": ["other information"],
+    "Item_9C": [
+        "disclosure regarding foreign jurisdictions",
+    ],
+    "Item_10": [
+        "directors executive officers and corporate governance",
+        "directors and executive officers",
+        "directors",
+    ],
+    "Item_11": ["executive compensation"],
+    "Item_12": ["security ownership"],
+    "Item_13": [
+        "certain relationships and related transactions",
+    ],
+    "Item_14": ["principal accountant fees and services"],
+    "Item_15": [
+        "exhibits and financial statement schedules",
+        "exhibits financial statement schedules",
+        "exhibits",
+    ],
+    "Item_16": ["form 10 k summary", "form 10-k summary"],
+}
 
-        # Check standard Item headings
-        elif m and len(cleaned_line) < 200:
-            num = m.group(1).upper()
-            title = m.group(2).strip()
-            cleaned_title = re.sub(r'[\.\:\-\—\s]', '', title)
-            
-            # Fix Type 2: Use character position instead of title length for TOC detection
-            # If we're past 10,000 chars, empty title is a real heading (EBAY style)
-            # If we're before 10,000 chars and title is empty, it's a TOC entry
-            is_toc_line = (len(cleaned_title) < 3 and char_count < 10000)
-            
-            if not is_toc_line:
-                is_divider = True
-                new_section_name = f"Item_{num}"
+REFERENCE_PHRASES = (
+    "of this report",
+    "of this annual report",
+    "included in item",
+    "included elsewhere",
+    "refer to item",
+    "see item",
+    "as discussed in",
+    "appearing in item",
+    "information required by this item",
+)
 
-        if is_divider and new_section_name:
-            # Save previous section
-            if current_lines:
-                sections[current_section] = '\n'.join(current_lines).strip()
-            
-            # Start new section
-            current_section = new_section_name
-            current_lines = [line]
+
+def _normalize_candidate_title(value):
+    value = value.lower()
+    value = value.replace("’", "'").replace("—", "-").replace("–", "-")
+    value = re.sub(r"^[\s\.,:;\"'“”()\-]+", "", value)
+    value = re.sub(r"[^a-z0-9'\-]+", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def _candidate_score(section_code, raw_title, full_line):
+    normalized = _normalize_candidate_title(raw_title)
+    line_normalized = _normalize_candidate_title(full_line)
+
+    if len(full_line.strip()) >= 240:
+        return None
+
+    expected = EXPECTED_ITEM_TITLES.get(section_code, [])
+
+    exact_prefix = any(
+        normalized.startswith(title)
+        for title in expected
+    )
+
+    truncated_prefix = (
+        len(normalized) >= 2
+        and any(
+            title.startswith(normalized)
+            for title in expected
+        )
+    )
+
+    # Some parsers split "Business" after its first character.
+    item_1_business_fragment = (
+        section_code == "Item_1"
+        and normalized == "b"
+    )
+
+    if exact_prefix:
+        score = 100
+    elif truncated_prefix:
+        score = 90
+    elif item_1_business_fragment:
+        score = 85
+    elif not normalized:
+        # Valid filings sometimes use standalone Item headings.
+        score = 55
+    else:
+        return None
+
+    reference_text = f"{normalized} {line_normalized}"
+    if any(phrase in reference_text for phrase in REFERENCE_PHRASES):
+        score -= 70
+
+    return score if score >= 50 else None
+
+
+def _collect_item_candidates(text):
+    candidates = {code: [] for code in ITEM_SEQUENCE}
+
+    bare_item_re = re.compile(
+        r"^\s*(\d{1,2}[A-Za-z]?)\s*[\.\:\-\u2013\u2014]\s*(.*)$",
+        re.IGNORECASE,
+    )
+
+    lines = text.splitlines(keepends=True)
+    positions = []
+    position = 0
+
+    for line in lines:
+        positions.append(position)
+        position += len(line)
+
+    def following_title(index):
+        checked = 0
+
+        for next_index in range(index + 1, len(lines)):
+            value = lines[next_index].strip()
+
+            if not value:
+                continue
+
+            checked += 1
+
+            if checked > 3:
+                break
+
+            return value
+
+        return ""
+
+    for index, line in enumerate(lines):
+        cleaned = line.strip()
+        standard_match = ITEM_HEADING_RE.match(cleaned)
+        bare_match = None if standard_match else bare_item_re.match(cleaned)
+        match = standard_match or bare_match
+
+        if not match:
+            continue
+
+        code = f"Item_{match.group(1).upper()}"
+
+        if code not in candidates:
+            continue
+
+        raw_title = match.group(2).strip()
+        full_line = cleaned
+
+        score = _candidate_score(
+            code,
+            raw_title,
+            full_line,
+        )
+
+        # Layout tables frequently place "Item 7." and its title in
+        # adjacent cells/lines. Combine them for candidate scoring.
+        if score is None or not _normalize_candidate_title(raw_title):
+            continuation = following_title(index)
+
+            if continuation:
+                continuation_score = _candidate_score(
+                    code,
+                    continuation,
+                    f"{cleaned} {continuation}",
+                )
+
+                if continuation_score is not None:
+                    raw_title = continuation
+                    full_line = f"{cleaned} {continuation}"
+                    score = continuation_score
+
+        if score is None:
+            continue
+
+        # Bare numbered candidates are accepted only with a recognized or
+        # truncated SEC title. This prevents financial-note numbers from
+        # becoming section boundaries.
+        if bare_match and score < 85:
+            continue
+
+        candidates[code].append({
+            "code": code,
+            "position": positions[index],
+            "line_number": index + 1,
+            "score": score,
+            "line": full_line,
+        })
+
+    # Add title-only candidates for filings where layout-table
+    # extraction strips or truncates the "Item N" prefix.
+    existing_pairs = {
+        (candidate["code"], candidate["position"])
+        for values in candidates.values()
+        for candidate in values
+    }
+
+    for index, line in enumerate(lines):
+        cleaned = line.strip()
+
+        if not cleaned or len(cleaned) > 220:
+            continue
+
+        normalized = _normalize_candidate_title(cleaned)
+        code = None
+
+        if normalized in {
+            "business",
+            "business overview",
+            "description of business",
+        }:
+            code = "Item_1"
+
+        elif normalized in {
+            "risk factors",
+            "risk factors risk factors",
+        } or normalized.startswith("risk factors "):
+            code = "Item_1A"
+
+        elif (
+            normalized.startswith("management's discussion")
+            or normalized.startswith("managements discussion")
+            or normalized.startswith("management discussion")
+        ):
+            code = "Item_7"
+
+        elif (
+            normalized.startswith(
+                "financial statements and supplementary"
+            )
+            or normalized.startswith(
+                "consolidated financial statements and supplementary"
+            )
+        ):
+            code = "Item_8"
+
+        if (
+            code
+            and (code, positions[index]) not in existing_pairs
+        ):
+            candidates[code].append({
+                "code": code,
+                "position": positions[index],
+                "line_number": index + 1,
+                "score": 85,
+                "line": cleaned,
+                "title_only": True,
+            })
+            existing_pairs.add((code, positions[index]))
+
+    # Penalize dense clusters containing several different SEC Items.
+    # Such clusters are normally tables of contents rather than narrative
+    # section starts.
+    all_candidates = [
+        candidate
+        for values in candidates.values()
+        for candidate in values
+    ]
+
+    for candidate in all_candidates:
+        nearby_codes = {
+            other["code"]
+            for other in all_candidates
+            if abs(
+                other["line_number"] - candidate["line_number"]
+            ) <= 40
+        }
+
+        if len(nearby_codes) >= 4:
+            candidate["score"] = max(
+                50,
+                candidate["score"] - 60,
+            )
+            candidate["toc_cluster"] = True
         else:
-            current_lines.append(line)
+            candidate["toc_cluster"] = False
 
-    # Catch the remaining tail section
-    if current_lines:
-        sections[current_section] = '\n'.join(current_lines).strip()
+    return candidates
 
-    # Fallback Mechanism: If standard Item/PART splitting failed,
-    # try title-based fallback, then anchor-based fallback, before full-document fallback.
-    if len(sections) <= 2:
-        title_sections = split_sections_by_title_fallback(text, filename=filename)
-        useful_sections = {k for k in title_sections if k != "HEADER"}
 
-        if len(useful_sections) > 2:
+def _select_ordered_candidates(candidates):
+    """Select the best globally ordered SEC Item sequence.
+
+    Dynamic selection prevents a late note heading such as
+    "1. Business Operations" from blocking real Items 1A through 8.
+    """
+    order_index = {
+        code: index
+        for index, code in enumerate(ITEM_SEQUENCE)
+    }
+
+    nodes = sorted(
+        [
+            candidate
+            for code in ITEM_SEQUENCE
+            for candidate in candidates.get(code, [])
+        ],
+        key=lambda candidate: (
+            order_index[candidate["code"]],
+            candidate["position"],
+        ),
+    )
+
+    if not nodes:
+        return []
+
+    minimum_major_lengths = {
+        "Item_1": 1000,
+        "Item_1A": 1000,
+        "Item_7": 1000,
+        "Item_8": 1000,
+    }
+
+    best_score = []
+    previous_node = []
+
+    for current_index, current in enumerate(nodes):
+        # Recovering another canonical Item is more important than a
+        # small difference in heading confidence.
+        major_bonus = (
+            5000
+            if current["code"] in {
+                "Item_1", "Item_1A", "Item_7", "Item_8"
+            }
+            else 0
+        )
+        current_score = 1000 + current["score"] + major_bonus
+        best_score.append(current_score)
+        previous_node.append(None)
+
+        for prior_index in range(current_index):
+            prior = nodes[prior_index]
+
+            if (
+                order_index[prior["code"]]
+                >= order_index[current["code"]]
+            ):
+                continue
+
+            if prior["position"] >= current["position"]:
+                continue
+
+            minimum_length = minimum_major_lengths.get(
+                prior["code"],
+                0,
+            )
+            actual_length = (
+                current["position"] - prior["position"]
+            )
+
+            if minimum_length and actual_length < minimum_length:
+                continue
+
+            proposed_score = (
+                best_score[prior_index]
+                + 1000
+                + current["score"]
+                + major_bonus
+            )
+
+            if proposed_score > best_score[current_index]:
+                best_score[current_index] = proposed_score
+                previous_node[current_index] = prior_index
+
+    final_index = max(
+        range(len(nodes)),
+        key=lambda index: best_score[index],
+    )
+
+    selected = []
+
+    while final_index is not None:
+        selected.append(nodes[final_index])
+        final_index = previous_node[final_index]
+
+    selected.reverse()
+    return selected
+
+
+def _find_signature_candidate(text, after_position):
+    position = 0
+    matches = []
+
+    for line_number, line in enumerate(text.splitlines(keepends=True), 1):
+        cleaned = line.strip()
+
+        if (
+            position > after_position
+            and len(cleaned) < 80
+            and SIGNATURES_RE.match(cleaned)
+        ):
+            matches.append({
+                "code": "Signatures",
+                "position": position,
+                "line_number": line_number,
+                "score": 100,
+                "line": cleaned,
+            })
+
+        position += len(line)
+
+    # The final exact Signatures heading is normally the actual signature block.
+    return matches[-1] if matches else None
+
+
+def _split_at_selected_boundaries(text, selected):
+    sections = {}
+
+    if not selected:
+        return sections
+
+    selected = sorted(selected, key=lambda candidate: candidate["position"])
+
+    first_position = selected[0]["position"]
+    header = text[:first_position].strip()
+
+    if header:
+        sections["HEADER"] = header
+
+    for index, candidate in enumerate(selected):
+        start = candidate["position"]
+        end = (
+            selected[index + 1]["position"]
+            if index + 1 < len(selected)
+            else len(text)
+        )
+
+        section_text = text[start:end].strip()
+
+        if section_text:
+            sections[candidate["code"]] = section_text
+
+    return sections
+
+
+def _collect_major_recovery_anchors(text):
+    """Find major-section anchors even when Item prefixes are damaged."""
+    anchors = []
+    lines = text.splitlines(keepends=True)
+    position = 0
+
+    corrupted_item_re = re.compile(
+        r"^\s*(?:TEM|M)\s*"
+        r"(1A|1|7|8)"
+        r"[\.\:\-\s]+(.*)$",
+        re.IGNORECASE,
+    )
+
+    for line_number, line in enumerate(lines, 1):
+        cleaned = line.strip()
+        normalized = _normalize_candidate_title(cleaned)
+        code = None
+        score = 80
+
+        if not cleaned or len(cleaned) > 280:
+            position += len(line)
+            continue
+
+        if normalized in {
+            "business",
+            "business overview",
+            "description of business",
+        }:
+            code = "Item_1"
+
+        elif (
+            normalized == "risk factors"
+            or normalized.startswith("risk factors ")
+            or normalized.startswith(
+                "risk related to our business"
+            )
+            or normalized.startswith(
+                "risks related to our business"
+            )
+            or normalized.startswith(
+                "business and operating risks"
+            )
+        ):
+            code = "Item_1A"
+
+        elif (
+            normalized.startswith(
+                "management's discussion"
+            )
+            or normalized.startswith(
+                "managements discussion"
+            )
+            or normalized.startswith(
+                "management discussion"
+            )
+            or normalized.startswith(
+                "nagement's discussion"
+            )
+            or normalized.startswith(
+                "nagements discussion"
+            )
+        ):
+            code = "Item_7"
+
+        elif (
+            normalized.startswith(
+                "financial statements and supplementary"
+            )
+            or normalized.startswith(
+                "consolidated financial statements"
+            )
+            or normalized.startswith(
+                "index to consolidated financial statements"
+            )
+            or normalized.startswith(
+                "index to financial statements"
+            )
+        ):
+            code = "Item_8"
+
+        if code is None:
+            corrupted = corrupted_item_re.match(cleaned)
+
+            if corrupted:
+                item_number = corrupted.group(1).upper()
+                damaged_title = corrupted.group(2).strip()
+                candidate_code = f"Item_{item_number}"
+
+                candidate_score = _candidate_score(
+                    candidate_code,
+                    damaged_title,
+                    cleaned,
+                )
+
+                if candidate_score is not None:
+                    code = candidate_code
+                    score = candidate_score
+
+        if code:
+            anchors.append({
+                "code": code,
+                "position": position,
+                "line_number": line_number,
+                "line": cleaned,
+                "score": score,
+            })
+
+        position += len(line)
+
+    return anchors
+
+
+def _recover_missing_major_sections(text, sections, filename):
+    """Recover missing major sections from independent title anchors.
+
+    This is intentionally limited to missing or implausibly short major
+    sections and therefore cannot overwrite a healthy primary extraction.
+    """
+    major_codes = (
+        "Item_1",
+        "Item_1A",
+        "Item_7",
+        "Item_8",
+    )
+
+    needs_recovery = {
+        code
+        for code in major_codes
+        if len(sections.get(code, "")) < 1000
+    }
+
+    if not needs_recovery:
+        return sections
+
+    anchors = _collect_major_recovery_anchors(text)
+
+    if not anchors:
+        return sections
+
+    anchors = sorted(
+        anchors,
+        key=lambda anchor: anchor["position"],
+    )
+
+    for code in major_codes:
+        if code not in needs_recovery:
+            continue
+
+        candidates = []
+
+        for anchor in anchors:
+            if anchor["code"] != code:
+                continue
+
+            start = anchor["position"]
+
+            later_different = [
+                other
+                for other in anchors
+                if (
+                    other["position"] > start
+                    and other["code"] != code
+                )
+            ]
+
+            if later_different:
+                end = later_different[0]["position"]
+            else:
+                end = len(text)
+
+            recovered_text = text[start:end].strip()
+            recovered_length = len(recovered_text)
+
+            if recovered_length >= 1000:
+                candidates.append({
+                    "text": recovered_text,
+                    "length": recovered_length,
+                    "start": start,
+                    "line": anchor["line"],
+                    "score": anchor["score"],
+                })
+
+        if not candidates:
+            continue
+
+        # Prefer the largest plausible narrative span. A TOC heading
+        # normally produces only a few hundred characters and is excluded.
+        chosen = max(
+            candidates,
+            key=lambda candidate: (
+                candidate["length"],
+                candidate["score"],
+            ),
+        )
+
+        sections[code] = chosen["text"]
+
+        logging.warning(
+            f"Recovered {code} for {filename} from "
+            f"title anchor {chosen['line']!r}; "
+            f"chars={chosen['length']}"
+        )
+
+    return sections
+
+
+def split_sections(text, filename="Unknown"):
+    """Split a 10-K using preselected, ordered SEC Item headings.
+
+    Heading candidates are selected before section slicing. This prevents
+    table-of-contents entries and later cross-references from overwriting or
+    fragmenting valid narrative sections.
+    """
+    candidates = _collect_item_candidates(text)
+    selected = _select_ordered_candidates(candidates)
+
+    if selected:
+        signature = _find_signature_candidate(
+            text,
+            selected[-1]["position"],
+        )
+
+        if signature:
+            selected.append(signature)
+
+    sections = _split_at_selected_boundaries(text, selected)
+    sections = _recover_missing_major_sections(
+        text,
+        sections,
+        filename,
+    )
+
+    useful_sections = {
+        code for code in sections
+        if code not in {"HEADER", "Signatures"}
+    }
+
+    if len(useful_sections) <= 2:
+        title_sections = split_sections_by_title_fallback(
+            text,
+            filename=filename,
+        )
+        title_useful = {
+            code for code in title_sections
+            if code != "HEADER"
+        }
+
+        if len(title_useful) > 2:
             logging.warning(
-                f"File {filename} needed title-based fallback. Generated sections: {sorted(useful_sections)}"
+                f"File {filename} needed title-based fallback. "
+                f"Generated sections: {sorted(title_useful)}"
             )
             sections = title_sections
         else:
-            anchor_sections = split_sections_by_anchor_fallback(text, filename=filename)
-            anchor_useful_sections = {k for k in anchor_sections if k != "HEADER"}
+            anchor_sections = split_sections_by_anchor_fallback(
+                text,
+                filename=filename,
+            )
+            anchor_useful = {
+                code for code in anchor_sections
+                if code != "HEADER"
+            }
 
-            if len(anchor_useful_sections) > 2:
+            if len(anchor_useful) > 2:
                 logging.warning(
-                    f"File {filename} needed anchor-based fallback. Generated sections: {sorted(anchor_useful_sections)}"
+                    f"File {filename} needed anchor-based fallback. "
+                    f"Generated sections: {sorted(anchor_useful)}"
                 )
                 sections = anchor_sections
             else:
-                logging.warning(f"File {filename} failed systematic parsing extraction. Invoking full-text fallback mechanism.")
-                sections['FULL_DOCUMENT_FALLBACK'] = text
+                logging.warning(
+                    f"File {filename} failed systematic parsing extraction. "
+                    "Invoking full-text fallback mechanism."
+                )
+                sections = {
+                    "FULL_DOCUMENT_FALLBACK": text,
+                }
+
+    selected_codes = [candidate["code"] for candidate in selected]
+
+    duplicate_candidates = {
+        code: len(values)
+        for code, values in candidates.items()
+        if len(values) > 1
+    }
+
+    if duplicate_candidates:
+        logging.warning(
+            f"File {filename} heading candidates={duplicate_candidates}; "
+            f"selected={selected_codes}"
+        )
 
     return sections
 
@@ -393,7 +1073,16 @@ def main():
     index_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(index_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['company', 'section_code', 'char_count', 'file'])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'company',
+                'section_code',
+                'char_count',
+                'file',
+            ],
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(all_results)
 
