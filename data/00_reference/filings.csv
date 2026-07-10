@@ -567,3 +567,6 @@ company_id,ticker,cik,accession_number,form,filing_date,year,primary_doc_url,dow
 194,XOM,34088,0000034088-26-000045,10-K,2026-02-18,2026,https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/xom-20251231.htm,downloaded
 194,XOM,34088,0000034088-25-000010,10-K,2025-02-19,2025,https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/xom-20241231.htm,downloaded
 194,XOM,34088,0000034088-24-000018,10-K,2024-02-28,2024,https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/xom-20231231.htm,downloaded
+195,TBHC,0001056285,0000950170-25-062753,10-K,2025-05-02,2025,https://www.sec.gov/Archives/edgar/data/1056285/000095017025062753/kirk-20250201.htm,downloaded_not_uploaded
+195,TBHC,0001056285,0000950170-24-038513,10-K,2024-03-29,2024,https://www.sec.gov/Archives/edgar/data/1056285/000095017024038513/kirk-20240203.htm,downloaded_not_uploaded
+195,TBHC,0001056285,0000950170-23-011774,10-K,2023-04-04,2023,https://www.sec.gov/Archives/edgar/data/1056285/000095017023011774/kirk-20230128.htm,downloaded_not_uploaded
