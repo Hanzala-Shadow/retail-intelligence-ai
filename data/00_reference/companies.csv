@@ -129,7 +129,6 @@ company_id,ticker,cik,name,sector,exchange
 128,ARKO,0001823794,ARKO CORP,Broadline Retail,NASDAQ-NMS Stock Market
 129,VVV,0001674910,VALVOLINE INC,Broadline Retail,New York Stock Exchange (NYSE)
 130,EVGO,0001821159,EVGO INC,Broadline Retail,NASDAQ-NMS Stock Market
-131,SNBR,0000827187,SLEEP NUMBER CORP,Broadline Retail,NASDAQ-NMS Stock Market
 132,HVT,0000216085,HAVERTY FURNITURE,Broadline Retail,New York Stock Exchange (NYSE)
 133,WSM,0000719955,WILLIAMS-SONOMA INC,Broadline Retail,New York Stock Exchange (NYSE)
 134,ARHS,0001875444,ARHAUS INC,Broadline Retail,NASDAQ-NMS Stock Market
@@ -137,6 +136,7 @@ company_id,ticker,cik,name,sector,exchange
 136,RH,0001528849,RH,Broadline Retail,New York Stock Exchange (NYSE)
 137,BBBY,0001130713,BED BATH & BEYOND INC,Broadline Retail,New York Stock Exchange (NYSE)
 138,W,0001616707,WAYFAIR INC,Broadline Retail,New York Stock Exchange (NYSE)
+139,TBHC,0001056285,BRAND HOUSE COLLECTIVE INC,Broadline Retail,NASDAQ-NMS Stock Market
 140,SGC,0000095574,SUPERIOR GROUP OF COS INC,Broadline Retail,NASDAQ-NMS Stock Market
 141,VFC,0000103379,VF CORP,Broadline Retail,New York Stock Exchange (NYSE)
 142,OXM,0000075288,OXFORD INDUSTRIES INC,Broadline Retail,New York Stock Exchange (NYSE)
@@ -191,4 +191,4 @@ company_id,ticker,cik,name,sector,exchange
 191,DELL,0001571996,DELL TECHNOLOGIES INC,Broadline Retail,New York Stock Exchange (NYSE)
 192,T,0000732717,AT&T INC,Broadline Retail,New York Stock Exchange (NYSE)
 193,VZ,0000732712,VERIZON COMMUNICATIONS INC,Broadline Retail,New York Stock Exchange (NYSE)
-194,XOM,0000034088,EXXON MOBIL CORP,Broadline Retail,New York Stock Exchange (NYSE)
+194,XOM,0002115436,EXXON MOBIL CORP,Broadline Retail,New York Stock Exchange (NYSE)

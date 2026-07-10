@@ -39,6 +39,7 @@ for entry in sec_data.values():
 ticker_to_cik['JWN'] = '0000072333'
 ticker_to_cik['FL'] = '0000850209'
 ticker_to_cik['GES'] = '0000912463'
+ticker_to_cik['TBHC'] = '0001056285'
 
 # Look up CIK for each company
 combined['cik'] = combined['ticker'].str.upper().map(ticker_to_cik).fillna('')
