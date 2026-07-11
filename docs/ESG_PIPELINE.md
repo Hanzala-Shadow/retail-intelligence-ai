@@ -11,6 +11,9 @@ The ESG pipeline converts downloaded sustainability report PDFs into parsed text
 - `data/01_raw/sustainability/{ticker}/*.pdf`
 
 Downloaded PDFs are expected to come from `src/drive_downloader.py`.
+If a report needed OCR, replace the Drive PDF with the searchable version using
+the same filename. After download, the parser reads that searchable PDF directly
+from `data/01_raw/sustainability/{ticker}/`.
 
 ## Outputs
 
@@ -38,6 +41,110 @@ python src/drive_to_db.py --dry-run
 python src/drive_to_db.py --commit
 ```
 
+## Resume / Continue Protocol
+
+The ESG stages are safe to restart after an SSH/EC2/network interruption. Resume
+mode is the default, and it can also be stated explicitly with `--resume`. A
+stage skips an item only when its output files exist **and** its index rows
+match the current source fingerprint. Changed source files, including
+replacement searchable TDUP PDFs and corrected ETSY reports downloaded from
+Drive with the same filenames, automatically run again. Existing 10-K outputs
+are not read, rewritten, or deleted by these commands.
+
+Every stage writes its individual output through a `.tmp` file followed by an
+atomic replace, and checkpoints its index after each completed input by default.
+The source metadata recorded in the ESG indexes includes size, UTC modification
+time, and SHA-256 where applicable. This makes a stale index recoverable just by
+rerunning the same command.
+
+If a re-split report no longer produces a prior section code, the chunker
+removes only that orphaned `ticker + pdf_stem + section_code` group's chunks and
+index rows during resume. It never clears another section or an entire ticker.
+
+Use the following sequence on EC2:
+
+```bash
+python src/drive_downloader.py --resume
+python src/pdf_parser.py --resume --root data/01_raw/sustainability --out data/02_interim/esg_text --index data/00_reference/esg_parse_index.csv --workers 1
+python src/section_splitter_esg.py --resume --input data/02_interim/esg_text --out data/03_sections/esg --index data/00_reference/esg_sections_index.csv
+python src/esg_chunker.py --resume --input data/03_sections/esg --out data/04_chunks/esg --index data/00_reference/esg_chunks_index.csv
+python src/esg_pipeline_qa.py --out data/00_reference/esg_pipeline_qa.csv
+python src/drive_to_db.py --dry-run
+```
+
+`--checkpoint-every N` changes the checkpoint cadence; the safe default is
+`--checkpoint-every 1`. `--force` intentionally rebuilds the selected scope,
+even if source fingerprints match. Use it for a known-bad output or after
+changing parser/splitter/chunker behavior:
+
+```bash
+python src/pdf_parser.py --ticker TDUP --force
+python src/pdf_parser.py --ticker ETSY --force
+python src/section_splitter_esg.py --ticker TDUP --force
+python src/section_splitter_esg.py --ticker ETSY --force
+python src/esg_chunker.py --ticker TDUP --force
+python src/esg_chunker.py --ticker ETSY --force
+```
+
+The downloader keeps a checkpointed manifest at
+`data/00_reference/esg_drive_manifest.csv`. It skips existing PDFs only when
+they are non-empty and agree with the size and, when available, MD5 checksum
+reported by Drive. A zero-byte, size-mismatched, or checksum-mismatched local
+PDF is downloaded again. `--force` redownloads its scope.
+
+### Searchable PDF replacements
+
+`pdf_parser.py` does not perform OCR itself. If a scanned report needs OCR,
+create a searchable PDF and replace the PDF in Drive using the same filename.
+The downloader then places the searchable PDF at the normal raw path:
+`data/01_raw/sustainability/{ticker}/{raw_pdf_filename}`. The parser reads that
+file directly, so there is no TDUP-specific exception and no separate OCR folder
+in the normal pipeline.
+
+The parser still has an optional `--ocr-root` escape hatch for local recovery
+work. When explicitly supplied, it can parse a matching sidecar PDF from
+`{ocr_root}/{ticker}/{raw_pdf_filename}` or `{ocr_root}/{ticker}/{raw_pdf_stem}_ocr.pdf`.
+Do not use that mode for the shared Drive run unless the team intentionally
+keeps OCR sidecars outside the raw PDF folder.
+
+The raw downloaded PDF remains the canonical pipeline identity: `pdf_file`,
+`source_pdf`, text/page-map output names, and downstream section/chunk/DB stems
+all continue to use the raw filename. The parse index records the actual
+extractor input separately in `parse_source_*` fields, including its own size,
+mtime, and SHA-256 fingerprint.
+
+Rows written before `parse_source_*` existed are intentionally stale on their
+next parser run, so the parser can establish unambiguous raw-versus-OCR
+provenance. Later resumes skip only when both fingerprints still match.
+
+Build searchable OCR PDFs with `src/ocr_pdf.py`. The default searchable layer is
+`--pdf-text-mode ordered`, which writes the hidden PDF text in the same cleaned
+Tesseract reading order used for the sidecar `.txt`. This is preferred for
+copy/search/extraction quality, especially on two-column ESG report pages:
+
+```bash
+python src/ocr_pdf.py --input "data/01_raw/sustainability/TDUP/TDUP-THREDUP INC-2023.pdf" --output-text "data/02_interim/esg_text/TDUP/TDUP-THREDUP INC-2023.txt" --output-pdf "data/02_interim/ocr_staging/TDUP/TDUP-THREDUP INC-2023.pdf" --pdf-text-mode ordered
+```
+
+Upload the staged searchable PDF back to Drive as the replacement for the
+original report, keeping exactly the same filename.
+
+After replacing a Drive PDF, rerun the downloader and parser for that ticker:
+
+```bash
+python src/drive_downloader.py --ticker TDUP --resume
+python src/pdf_parser.py --ticker TDUP --resume
+```
+
+Use `--pdf-text-mode positioned` only when closer search-highlight placement is
+more important than extraction order. Resume mode is normally enough because
+changed source fingerprints are reprocessed automatically. Use `--force` only
+when you intentionally want to rebuild a ticker:
+
+```bash
+python src/pdf_parser.py --ticker TDUP --force
+```
+
 ## Status Values
 
 `esg_parse_index.csv` uses:
@@ -59,7 +166,11 @@ python src/drive_to_db.py --commit
 
 ## OCR Handling
 
-The parser does not run OCR. If a PDF produces fewer than 500 non-whitespace characters, it writes the extracted text and marks the PDF as `ocr_required`. This keeps scanned PDFs from failing the entire pipeline.
+The parser does not run OCR. If a pre-created searchable OCR PDF follows the
+alternate-path convention above, it parses that PDF while retaining the raw
+PDF's canonical identity. Otherwise, if extraction produces fewer than 500
+non-whitespace characters, it writes the extracted text and marks the raw PDF
+as `ocr_required`. This keeps scanned PDFs from failing the entire pipeline.
 
 ## Text Quality QA
 

@@ -8,6 +8,7 @@ import os
 import multiprocessing as mp
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pdfplumber
@@ -22,10 +23,19 @@ from base_parser import ParsedDocument
 
 MIN_PAGE_CHARS = 20
 OCR_MIN_NONSPACE_CHARS = 500
+DEFAULT_OCR_ROOT = None
 PARSE_INDEX_FIELDS = [
     "ticker",
     "pdf_file",
     "source_pdf",
+    "source_size_bytes",
+    "source_mtime_utc",
+    "source_sha256",
+    "parse_source_kind",
+    "parse_source_pdf",
+    "parse_source_size_bytes",
+    "parse_source_mtime_utc",
+    "parse_source_sha256",
     "parsed_text_file",
     "page_map_file",
     "status",
@@ -43,6 +53,16 @@ PARSE_INDEX_FIELDS = [
     "garbled_char_count",
 ]
 PAGE_MAP_FIELDS = ["page", "char_start", "char_end", "char_count"]
+SOURCE_FINGERPRINT_FIELDS = [
+    "source_size_bytes",
+    "source_mtime_utc",
+    "source_sha256",
+]
+PARSE_SOURCE_FINGERPRINT_FIELDS = [
+    "parse_source_size_bytes",
+    "parse_source_mtime_utc",
+    "parse_source_sha256",
+]
 
 SEC_10K_MARKERS = [
     r"\bFORM\s+10-K\b",
@@ -278,30 +298,250 @@ def _set_memory_limit(max_mb=2048):
         return
 
 
-def _write_text(out_path: Path, text: str) -> None:
+def source_fingerprint(file_path: str | Path) -> dict[str, str | int]:
+    """Return a stable, content-based fingerprint for a source PDF."""
+    path = Path(file_path)
+
+    # A PDF replacement can occur while a long-running process is alive. Retry
+    # once if the file changes while it is being hashed so the index never
+    # records metadata from one version with a hash from another.
+    for _ in range(2):
+        before = path.stat()
+        hasher = hashlib.sha256()
+        with path.open("rb") as source:
+            while chunk := source.read(1024 * 1024):
+                hasher.update(chunk)
+        after = path.stat()
+
+        if (
+            before.st_size == after.st_size
+            and before.st_mtime_ns == after.st_mtime_ns
+        ):
+            return {
+                "source_size_bytes": after.st_size,
+                "source_mtime_utc": datetime.fromtimestamp(
+                    after.st_mtime, UTC
+                ).isoformat(timespec="microseconds"),
+                "source_sha256": hasher.hexdigest(),
+            }
+
+    raise RuntimeError(f"Source PDF changed while fingerprinting: {path}")
+
+
+def _select_parse_source(
+    source_pdf: Path,
+    ticker: str,
+    ocr_root: str | Path | None,
+) -> tuple[Path, str]:
+    """Return the PDF to parse while keeping ``source_pdf`` canonical.
+
+    The normal pipeline parses the downloaded PDF from the raw Drive mirror.
+    When ``--ocr-root`` is explicitly supplied, a sidecar searchable PDF can be
+    used as the extraction source. The caller still uses the raw PDF for its
+    canonical filename, output stem, and downstream ``source_pdf`` identity.
+    """
+    if ocr_root is not None:
+        ocr_ticker_root = Path(ocr_root) / ticker.upper()
+        for candidate in (
+            ocr_ticker_root / source_pdf.name,
+            ocr_ticker_root / f"{source_pdf.stem}_ocr.pdf",
+        ):
+            if candidate.is_file():
+                return candidate, "ocr"
+    return source_pdf, "raw"
+
+
+def _parse_source_metadata(
+    parse_source_pdf: Path,
+    parse_source_kind: str,
+    fingerprint: dict[str, str | int] | None,
+) -> dict[str, str | int]:
+    """Convert an extraction-input fingerprint to its index field names."""
+    metadata: dict[str, str | int] = {
+        "parse_source_kind": parse_source_kind,
+        "parse_source_pdf": display_path(parse_source_pdf),
+    }
+    if fingerprint is not None:
+        metadata.update(
+            {
+                "parse_source_size_bytes": fingerprint["source_size_bytes"],
+                "parse_source_mtime_utc": fingerprint["source_mtime_utc"],
+                "parse_source_sha256": fingerprint["source_sha256"],
+            }
+        )
+    return metadata
+
+
+def _output_paths(out_root: str | Path, ticker: str, file_path: Path) -> tuple[Path, Path]:
+    base = Path(out_root) / ticker
+    return base / f"{file_path.stem}.txt", base / f"{file_path.stem}.pages.csv"
+
+
+def _atomic_write(out_path: Path, write_contents) -> None:
+    """Write one file through ``<filename>.tmp`` and atomically replace it."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(text, encoding="utf-8")
+    tmp_path = out_path.with_name(f"{out_path.name}.tmp")
+    try:
+        with tmp_path.open("w", newline="", encoding="utf-8") as f:
+            write_contents(f)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, out_path)
+    finally:
+        # A stale temporary file is safe to overwrite on the next attempt, but
+        # remove it after ordinary write failures to keep the output tree tidy.
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+
+def _write_text(out_path: Path, text: str) -> None:
+    _atomic_write(out_path, lambda f: f.write(text))
 
 
 def _write_page_map(out_path: Path, page_spans: list[dict]) -> None:
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", newline="", encoding="utf-8") as f:
+    def write_contents(f) -> None:
         writer = csv.DictWriter(f, fieldnames=PAGE_MAP_FIELDS)
         writer.writeheader()
         writer.writerows(page_spans)
 
+    _atomic_write(out_path, write_contents)
+
+
+def _normalise_index_row(row: dict) -> dict:
+    return {
+        field: "" if row.get(field) is None else row.get(field, "")
+        for field in PARSE_INDEX_FIELDS
+    }
+
+
+def _index_row_key(row: dict) -> tuple[str, str]:
+    """Use the source folder's natural unique identifier for parser rows."""
+    return (str(row.get("ticker", "")).upper(), str(row.get("pdf_file", "")))
+
+
+def _index_rows_by_key(rows: list[dict]) -> dict[tuple[str, str], dict]:
+    # Last row wins for legacy duplicates, which is normally the most recent
+    # checkpoint. New checkpoints are always unique by this key.
+    return {
+        _index_row_key(normalised): normalised
+        for row in rows
+        if (normalised := _normalise_index_row(row))
+    }
+
+
+def _fingerprints_match(
+    row: dict,
+    fingerprint: dict[str, str | int],
+    row_fields: list[str],
+) -> bool:
+    return all(
+        row.get(row_field, "") not in ("", None)
+        and str(row.get(row_field)) == str(fingerprint.get(source_field, ""))
+        for row_field, source_field in zip(row_fields, SOURCE_FINGERPRINT_FIELDS)
+    )
+
+
+def _source_fingerprints_match(row: dict, fingerprint: dict[str, str | int]) -> bool:
+    return _fingerprints_match(row, fingerprint, SOURCE_FINGERPRINT_FIELDS)
+
+
+def _parse_source_fingerprints_match(
+    row: dict, fingerprint: dict[str, str | int]
+) -> bool:
+    return _fingerprints_match(row, fingerprint, PARSE_SOURCE_FINGERPRINT_FIELDS)
+
+
+def _outputs_exist(parsed_text_file: Path, page_map_file: Path) -> bool:
+    return parsed_text_file.is_file() and page_map_file.is_file()
+
+
+def _is_complete_row(
+    row: dict | None,
+    source_pdf: Path,
+    source_metadata: dict[str, str | int],
+    parse_source_pdf: Path,
+    parse_source_kind: str,
+    parse_source_metadata: dict[str, str | int],
+    parsed_text_file: Path,
+    page_map_file: Path,
+) -> bool:
+    if row is None:
+        return False
+
+    return (
+        row.get("status", "").strip().lower() in {"parsed", "ocr_required"}
+        and row.get("source_pdf", "") == display_path(source_pdf)
+        and row.get("parse_source_kind", "") == parse_source_kind
+        and row.get("parse_source_pdf", "") == display_path(parse_source_pdf)
+        and row.get("parsed_text_file", "") == display_path(parsed_text_file)
+        and row.get("page_map_file", "") == display_path(page_map_file)
+        and _source_fingerprints_match(row, source_metadata)
+        and _parse_source_fingerprints_match(row, parse_source_metadata)
+        and _outputs_exist(parsed_text_file, page_map_file)
+    )
+
+
+def _failed_row(
+    file_path: Path,
+    ticker: str,
+    out_root: str | Path,
+    source_metadata: dict[str, str | int] | None,
+    error_message: str,
+    *,
+    parse_source_pdf: Path | None = None,
+    parse_source_kind: str = "raw",
+    parse_source_metadata: dict[str, str | int] | None = None,
+) -> dict:
+    parse_source_pdf = parse_source_pdf or file_path
+    out_file, page_map_file = _output_paths(out_root, ticker, file_path)
+    return {
+        "ticker": ticker,
+        "pdf_file": file_path.name,
+        "source_pdf": display_path(file_path),
+        **(source_metadata or {}),
+        **_parse_source_metadata(
+            parse_source_pdf,
+            parse_source_kind,
+            parse_source_metadata,
+        ),
+        "parsed_text_file": display_path(out_file),
+        "page_map_file": display_path(page_map_file),
+        "status": "failed",
+        "error_message": error_message,
+        "page_count": 0,
+        "char_count": 0,
+        "table_count": 0,
+        "content_hash": "",
+        "parsed_at": "",
+        "quality_flags": "",
+        "possible_wrong_doc_type": "false",
+        "readable_word_count": 0,
+        "readable_word_ratio": "0.0000",
+        "chars_per_page": "0.0",
+        "garbled_char_count": 0,
+    }
+
 
 def _parse_one(args):
     _set_memory_limit(2048)
-    file_path, ticker, out_root, log_pages = args
+    (
+        file_path,
+        parse_source_pdf,
+        parse_source_kind,
+        ticker,
+        out_root,
+        log_pages,
+        source_metadata,
+        parse_source_metadata,
+    ) = args
     file_path = Path(file_path)
+    parse_source_pdf = Path(parse_source_pdf)
     out_root = Path(out_root)
-    out_file = out_root / ticker / f"{file_path.stem}.txt"
-    page_map_file = out_root / ticker / f"{file_path.stem}.pages.csv"
+    out_file, page_map_file = _output_paths(out_root, ticker, file_path)
     parser = PDFParser()
 
     try:
-        doc = parser.parse(file_path, company=ticker, log_pages=log_pages)
+        doc = parser.parse(parse_source_pdf, company=ticker, log_pages=log_pages)
         nonspace_chars = len("".join(doc.raw_text.split()))
         status = "parsed" if nonspace_chars >= OCR_MIN_NONSPACE_CHARS else "ocr_required"
 
@@ -317,6 +557,12 @@ def _parse_one(args):
             "ticker": ticker,
             "pdf_file": file_path.name,
             "source_pdf": display_path(file_path),
+            **source_metadata,
+            **_parse_source_metadata(
+                parse_source_pdf,
+                parse_source_kind,
+                parse_source_metadata,
+            ),
             "parsed_text_file": display_path(out_file),
             "page_map_file": display_path(page_map_file),
             "status": status,
@@ -331,26 +577,16 @@ def _parse_one(args):
         }
 
     except Exception as e:
-        return {
-            "ticker": ticker,
-            "pdf_file": file_path.name,
-            "source_pdf": display_path(file_path),
-            "parsed_text_file": "",
-            "page_map_file": "",
-            "status": "failed",
-            "error_message": f"{type(e).__name__}: {e}",
-            "page_count": 0,
-            "char_count": 0,
-            "table_count": 0,
-            "content_hash": "",
-            "parsed_at": "",
-            "quality_flags": "",
-            "possible_wrong_doc_type": "false",
-            "readable_word_count": 0,
-            "readable_word_ratio": "0.0000",
-            "chars_per_page": "0.0",
-            "garbled_char_count": 0,
-        }
+        return _failed_row(
+            file_path,
+            ticker,
+            out_root,
+            source_metadata,
+            f"{type(e).__name__}: {e}",
+            parse_source_pdf=parse_source_pdf,
+            parse_source_kind=parse_source_kind,
+            parse_source_metadata=parse_source_metadata,
+        )
 
 
 def read_existing_index(index_path: Path) -> list[dict]:
@@ -359,37 +595,56 @@ def read_existing_index(index_path: Path) -> list[dict]:
 
     with index_path.open(newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        return [{field: row.get(field, "") for field in PARSE_INDEX_FIELDS} for row in reader]
+        return [_normalise_index_row(row) for row in reader]
+
+
+def _add_missing_source_fingerprint(row: dict) -> dict:
+    """Keep externally updated index rows compatible with raw-source checks.
+
+    Do not infer the new ``parse_source_*`` fields here: an older OCR workflow
+    may have written text using a different extractor. Leaving those fields
+    empty intentionally makes the next parser run re-establish provenance.
+    """
+    row = _normalise_index_row(row)
+    if all(row.get(field, "") not in ("", None) for field in SOURCE_FINGERPRINT_FIELDS):
+        return row
+
+    source_pdf = row.get("source_pdf", "")
+    if not source_pdf:
+        return row
+
+    try:
+        fingerprint = source_fingerprint(Path(source_pdf))
+    except (OSError, RuntimeError):
+        return row
+
+    for field, value in fingerprint.items():
+        if row.get(field, "") in ("", None):
+            row[field] = value
+    return row
 
 
 def write_index(index_path: Path, rows: list[dict]) -> None:
-    index_path.parent.mkdir(parents=True, exist_ok=True)
-    rows = sorted(rows, key=lambda r: (r.get("ticker", ""), r.get("pdf_file", "")))
+    rows = sorted(
+        _index_rows_by_key(rows).values(),
+        key=lambda r: (r.get("ticker", ""), r.get("pdf_file", ""), r.get("source_pdf", "")),
+    )
 
-    with index_path.open("w", newline="", encoding="utf-8") as f:
+    def write_contents(f) -> None:
         writer = csv.DictWriter(f, fieldnames=PARSE_INDEX_FIELDS)
         writer.writeheader()
         writer.writerows(rows)
 
+    _atomic_write(index_path, write_contents)
+
 
 def upsert_index_rows(index_path: Path, new_rows: list[dict], replace_all: bool) -> None:
-    if replace_all:
-        rows = new_rows
-    else:
-        existing = read_existing_index(index_path)
-        replace_keys = {
-            (row.get("ticker", ""), row.get("pdf_file", ""), row.get("source_pdf", ""))
-            for row in new_rows
-        }
-        rows = [
-            row
-            for row in existing
-            if (row.get("ticker", ""), row.get("pdf_file", ""), row.get("source_pdf", ""))
-            not in replace_keys
-        ]
-        rows.extend(new_rows)
+    rows_by_key = {} if replace_all else _index_rows_by_key(read_existing_index(index_path))
+    for row in new_rows:
+        row = _add_missing_source_fingerprint(row)
+        rows_by_key[_index_row_key(row)] = row
 
-    write_index(index_path, rows)
+    write_index(index_path, list(rows_by_key.values()))
 
 
 def run(
@@ -400,43 +655,191 @@ def run(
     workers: int = 1,
     num_companies: int | None = None,
     log_pages: bool = False,
+    resume: bool = True,
+    force: bool = False,
+    checkpoint_every: int = 1,
+    ocr_root: str | Path | None = DEFAULT_OCR_ROOT,
 ) -> list[dict]:
+    if checkpoint_every < 1:
+        raise ValueError("checkpoint_every must be at least 1")
+
+    ticker = ticker.upper() if ticker else None
     data = discover(root, ticker=ticker)
     if num_companies is not None and ticker is None:
         data = dict(list(sorted(data.items()))[:num_companies])
 
-    jobs = [
-        (pdf, ticker_name, Path(out), log_pages)
+    discovered = [
+        (pdf, ticker_name)
         for ticker_name, files in sorted(data.items())
         for pdf in files
     ]
-    print(f"Found {len(jobs)} ESG PDF(s) under {root}")
+    print(f"Found {len(discovered)} ESG PDF(s) under {root}")
 
+    index_path = Path(index)
+    rows_by_key = _index_rows_by_key(read_existing_index(index_path))
     results: list[dict] = []
-    if not jobs:
-        upsert_index_rows(Path(index), results, replace_all=ticker is None)
-        print(f"Index saved to: {Path(index)}")
-        return results
+    jobs: list[tuple] = []
+    summary = {
+        "found": len(discovered),
+        "ocr_sources_selected": 0,
+        "skipped_complete": 0,
+        "processed": 0,
+        "failed": 0,
+        "ocr_required": 0,
+        "reprocessed_stale": 0,
+    }
+    completed_since_checkpoint = 0
 
-    ctx = mp.get_context("spawn")
-    with ProcessPoolExecutor(
-        max_workers=max(1, workers),
-        mp_context=ctx,
-        max_tasks_per_child=1,
-    ) as pool:
-        futures = [pool.submit(_parse_one, job) for job in jobs]
-        for fut in as_completed(futures):
-            row = fut.result()
-            results.append(row)
-            print()
-            print(f"==== {row['ticker']} {row['pdf_file']}")
-            if row["status"] == "failed":
-                print("FAILED:", row["error_message"])
-            else:
-                print(f"{row['status'].upper()} {row['char_count']} chars")
+    def checkpoint() -> None:
+        write_index(index_path, list(rows_by_key.values()))
 
-    upsert_index_rows(Path(index), results, replace_all=ticker is None)
-    print(f"Index saved to: {Path(index)}")
+    def record_completed(row: dict) -> None:
+        nonlocal completed_since_checkpoint
+        row = _normalise_index_row(row)
+        rows_by_key[_index_row_key(row)] = row
+        results.append(row)
+        completed_since_checkpoint += 1
+        if completed_since_checkpoint >= checkpoint_every:
+            checkpoint()
+            completed_since_checkpoint = 0
+
+    def report_completed(row: dict) -> None:
+        print()
+        print(f"==== {row['ticker']} {row['pdf_file']}")
+        if row["status"] == "failed":
+            summary["failed"] += 1
+            print("FAILED:", row["error_message"])
+            return
+
+        summary["processed"] += 1
+        if row["status"] == "ocr_required":
+            summary["ocr_required"] += 1
+        print(f"{row['status'].upper()} {row['char_count']} chars")
+
+    for pdf, ticker_name in discovered:
+        out_file, page_map_file = _output_paths(out, ticker_name, pdf)
+        parse_source_pdf, parse_source_kind = _select_parse_source(
+            pdf,
+            ticker_name,
+            ocr_root,
+        )
+        if parse_source_kind == "ocr":
+            summary["ocr_sources_selected"] += 1
+
+        try:
+            source_metadata = source_fingerprint(pdf)
+        except Exception as error:
+            row = _failed_row(
+                pdf,
+                ticker_name,
+                out,
+                None,
+                f"{type(error).__name__}: {error}",
+                parse_source_pdf=parse_source_pdf,
+                parse_source_kind=parse_source_kind,
+            )
+            record_completed(row)
+            report_completed(row)
+            continue
+
+        try:
+            parse_source_metadata = (
+                source_metadata
+                if parse_source_pdf == pdf
+                else source_fingerprint(parse_source_pdf)
+            )
+        except Exception as error:
+            row = _failed_row(
+                pdf,
+                ticker_name,
+                out,
+                source_metadata,
+                f"{type(error).__name__}: {error}",
+                parse_source_pdf=parse_source_pdf,
+                parse_source_kind=parse_source_kind,
+            )
+            record_completed(row)
+            report_completed(row)
+            continue
+
+        existing_row = rows_by_key.get(
+            _index_row_key({"ticker": ticker_name, "pdf_file": pdf.name})
+        )
+        if resume and not force and _is_complete_row(
+            existing_row,
+            pdf,
+            source_metadata,
+            parse_source_pdf,
+            parse_source_kind,
+            parse_source_metadata,
+            out_file,
+            page_map_file,
+        ):
+            summary["skipped_complete"] += 1
+            continue
+
+        if (
+            resume
+            and not force
+            and existing_row is not None
+            and existing_row.get("status", "").strip().lower()
+            in {"parsed", "ocr_required"}
+        ):
+            summary["reprocessed_stale"] += 1
+
+        jobs.append(
+            (
+                pdf,
+                parse_source_pdf,
+                parse_source_kind,
+                ticker_name,
+                Path(out),
+                log_pages,
+                source_metadata,
+                parse_source_metadata,
+            )
+        )
+
+    if jobs:
+        ctx = mp.get_context("spawn")
+        with ProcessPoolExecutor(
+            max_workers=max(1, workers),
+            mp_context=ctx,
+            max_tasks_per_child=1,
+        ) as pool:
+            futures = {pool.submit(_parse_one, job): job for job in jobs}
+            for future in as_completed(futures):
+                job = futures[future]
+                try:
+                    row = future.result()
+                except Exception as error:
+                    row = _failed_row(
+                        Path(job[0]),
+                        job[3],
+                        job[4],
+                        job[6],
+                        f"{type(error).__name__}: {error}",
+                        parse_source_pdf=Path(job[1]),
+                        parse_source_kind=job[2],
+                        parse_source_metadata=job[7],
+                    )
+                record_completed(row)
+                report_completed(row)
+
+    # Also commits deduplication when all discovered files were already valid.
+    checkpoint()
+    print(f"Index saved to: {index_path}")
+    print("Summary:")
+    for field in (
+        "found",
+        "ocr_sources_selected",
+        "skipped_complete",
+        "processed",
+        "failed",
+        "ocr_required",
+        "reprocessed_stale",
+    ):
+        print(f"{field}: {summary[field]}")
     return results
 
 
@@ -445,6 +848,16 @@ def main():
     ap.add_argument("--root", default="data/01_raw/sustainability")
     ap.add_argument("--out", default="data/02_interim/esg_text")
     ap.add_argument("--index", default="data/00_reference/esg_parse_index.csv")
+    ap.add_argument(
+        "--ocr-root",
+        default=DEFAULT_OCR_ROOT,
+        help=(
+            "Optional searchable-OCR sidecar root. When supplied, a matching "
+            "{ticker}/{raw_filename}.pdf or {ticker}/{raw_stem}_ocr.pdf "
+            "is parsed when present. By default the parser reads only the "
+            "downloaded raw PDF."
+        ),
+    )
     ap.add_argument("--ticker", default=None, help="Process one ticker folder, e.g. GAP")
     ap.add_argument(
         "--num-companies",
@@ -462,7 +875,36 @@ def main():
         ),
     )
     ap.add_argument("--log-pages", action="store_true", help="Print per-page parser progress and RAM usage.")
+    resume_group = ap.add_mutually_exclusive_group()
+    resume_group.add_argument(
+        "--resume",
+        dest="resume",
+        action="store_true",
+        default=True,
+        help="Skip complete current outputs and continue missing, failed, or stale PDFs (default).",
+    )
+    resume_group.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Reparse selected PDFs even when their current outputs are complete.",
+    )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="Ignore resume state and rebuild every PDF selected by --ticker/root.",
+    )
+    ap.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Atomically checkpoint the parse index after every N completed PDFs (default: 1).",
+    )
     args = ap.parse_args()
+
+    if args.checkpoint_every < 1:
+        ap.error("--checkpoint-every must be at least 1")
 
     run(
         root=args.root,
@@ -472,6 +914,10 @@ def main():
         workers=args.workers,
         num_companies=args.num_companies,
         log_pages=args.log_pages,
+        resume=args.resume,
+        force=args.force,
+        checkpoint_every=args.checkpoint_every,
+        ocr_root=args.ocr_root,
     )
 
 

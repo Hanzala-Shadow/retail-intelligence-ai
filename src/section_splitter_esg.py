@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import os
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -43,6 +46,9 @@ SECTION_INDEX_FIELDS = [
     "word_count",
     "split_method",
     "confidence",
+    "source_size_bytes",
+    "source_mtime_utc",
+    "source_sha256",
 ]
 
 MIN_SECTION_CHARS = 300
@@ -108,6 +114,34 @@ class SectionSegment:
     text: str
     split_method: str
     confidence: str
+
+
+@dataclass(frozen=True)
+class SourceFingerprint:
+    """Stable metadata used to tell whether a parsed-text input has changed."""
+
+    size_bytes: int
+    mtime_utc: str
+    sha256: str
+
+
+@dataclass(frozen=True)
+class CompletionValidation:
+    """Why an existing section set can or cannot be safely resumed."""
+
+    complete: bool
+    reasons: tuple[str, ...]
+
+    @property
+    def stale(self) -> bool:
+        # A brand-new input has no rows by definition; do not report it as stale.
+        if not self.reasons:
+            return False
+        new_input_reasons = {"missing_index_rows", "section_rows_do_not_match_expected"}
+        return not (
+            "missing_index_rows" in self.reasons
+            and set(self.reasons).issubset(new_input_reasons)
+        )
 
 
 def display_path(path: str | Path) -> str:
@@ -538,36 +572,134 @@ def locate_text_span(source_text: str, section_text: str, start_hint: int = 0) -
     return start, start + len(start_snippet)
 
 
-def clear_existing_sections(out_dir: Path, pdf_stem: str) -> None:
+def _mtime_utc(mtime_ns: int) -> str:
+    """Render an mtime with UTC and nanosecond precision for index comparison."""
+    seconds, nanoseconds = divmod(mtime_ns, 1_000_000_000)
+    timestamp = datetime.fromtimestamp(seconds, tz=timezone.utc)
+    return f"{timestamp.strftime('%Y-%m-%dT%H:%M:%S')}.{nanoseconds:09d}Z"
+
+
+def fingerprint_source_file(path: Path) -> SourceFingerprint:
+    """Hash an input only when it remains stable while we read it."""
+    for _ in range(2):
+        before = path.stat()
+        digest = hashlib.sha256()
+        with path.open("rb") as source:
+            for block in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(block)
+        after = path.stat()
+        if before.st_size == after.st_size and before.st_mtime_ns == after.st_mtime_ns:
+            return SourceFingerprint(
+                size_bytes=after.st_size,
+                mtime_utc=_mtime_utc(after.st_mtime_ns),
+                sha256=digest.hexdigest(),
+            )
+    raise RuntimeError(f"Input changed while fingerprinting: {path}")
+
+
+def _fingerprint_matches(row: dict, fingerprint: SourceFingerprint) -> bool:
+    return (
+        str(row.get("source_size_bytes", "")) == str(fingerprint.size_bytes)
+        and str(row.get("source_mtime_utc", "")) == fingerprint.mtime_utc
+        and str(row.get("source_sha256", "")) == fingerprint.sha256
+    )
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write a section through ``.tmp`` so a disconnect cannot truncate it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.tmp")
+    try:
+        with tmp_path.open("w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def clear_existing_sections(
+    out_dir: Path,
+    pdf_stem: str,
+    keep_files: set[Path] | None = None,
+) -> None:
+    """Remove only obsolete files for one reprocessed parsed-text input."""
     if not out_dir.exists():
         return
-    for stale_file in out_dir.glob(f"{pdf_stem}__*.txt"):
+
+    keep_names = {path.name for path in (keep_files or set())}
+    prefix = f"{pdf_stem}__"
+    for stale_file in out_dir.iterdir():
+        if not stale_file.is_file() or not stale_file.name.startswith(prefix):
+            continue
+        if not (stale_file.name.endswith(".txt") or stale_file.name.endswith(".txt.tmp")):
+            continue
+        if stale_file.name.endswith(".txt") and stale_file.name in keep_names:
+            continue
         stale_file.unlink()
 
 
-def process_text_file(txt_file: Path, output_root: Path) -> list[dict]:
+def _output_sections(text: str) -> list[SectionSegment]:
+    sections = [section for section in split_esg_sections(text) if section.text.strip()]
+    if not sections:
+        raise ValueError("Parsed text produced no non-empty ESG sections")
+
+    seen_codes: set[str] = set()
+    for section in sections:
+        if section.section_code in seen_codes:
+            raise ValueError(f"Duplicate generated section code: {section.section_code}")
+        seen_codes.add(section.section_code)
+    return sections
+
+
+def _section_output_path(output_root: Path, ticker: str, pdf_stem: str, section_code: str) -> Path:
+    return output_root / ticker / f"{pdf_stem}__{section_code}.txt"
+
+
+def process_text_file(
+    txt_file: Path,
+    output_root: Path,
+    *,
+    text: str | None = None,
+    source_fingerprint: SourceFingerprint | None = None,
+    sections: list[SectionSegment] | None = None,
+) -> list[dict]:
+    """Build one PDF stem's sections, replacing no other PDF's files."""
     ticker = txt_file.parent.name.upper()
     pdf_stem = txt_file.stem
-    text = txt_file.read_text(encoding="utf-8", errors="replace")
+    text = text if text is not None else txt_file.read_text(encoding="utf-8", errors="replace")
+    source_fingerprint = source_fingerprint or fingerprint_source_file(txt_file)
+    sections = sections if sections is not None else _output_sections(text)
+    if not sections:
+        raise ValueError("Parsed text produced no non-empty ESG sections")
+
     page_spans = read_page_map(txt_file)
     ticker_out = output_root / ticker
     ticker_out.mkdir(parents=True, exist_ok=True)
-    clear_existing_sections(ticker_out, pdf_stem)
-
-    sections = split_esg_sections(text)
     rows: list[dict] = []
+    output_plan: list[tuple[Path, str]] = []
 
     search_pos = 0
+    seen_codes: set[str] = set()
     for section in sections:
         section_text = section.text.strip()
         if not section_text:
             continue
+        if section.section_code in seen_codes:
+            raise ValueError(f"Duplicate generated section code: {section.section_code}")
+        seen_codes.add(section.section_code)
+
         source_start, source_end = locate_text_span(text, section_text, search_pos)
         if source_start is not None and source_end is not None:
             search_pos = max(search_pos, source_start + 1)
         page_start, page_end = pages_for_span(page_spans, source_start, source_end)
-        section_file = ticker_out / f"{pdf_stem}__{section.section_code}.txt"
-        section_file.write_text(section_text, encoding="utf-8")
+        section_file = _section_output_path(output_root, ticker, pdf_stem, section.section_code)
+        output_plan.append((section_file, section_text))
         rows.append(
             {
                 "ticker": ticker,
@@ -583,9 +715,19 @@ def process_text_file(txt_file: Path, output_root: Path) -> list[dict]:
                 "word_count": word_count(section_text),
                 "split_method": section.split_method,
                 "confidence": section.confidence,
+                "source_size_bytes": source_fingerprint.size_bytes,
+                "source_mtime_utc": source_fingerprint.mtime_utc,
+                "source_sha256": source_fingerprint.sha256,
             }
         )
 
+    if not output_plan:
+        raise ValueError("Parsed text produced no writable ESG sections")
+
+    # Keep old files in place until every replacement has been atomically written.
+    for section_file, section_text in output_plan:
+        _atomic_write_text(section_file, section_text)
+    clear_existing_sections(ticker_out, pdf_stem, {path for path, _ in output_plan})
     return rows
 
 
@@ -597,38 +739,214 @@ def discover_text_files(input_root: Path, ticker: str | None = None) -> list[Pat
     return sorted(input_root.glob("*/*.txt"))
 
 
+def _normalize_index_row(row: dict) -> dict:
+    normalized = {
+        field: "" if row.get(field) is None else str(row.get(field, ""))
+        for field in SECTION_INDEX_FIELDS
+    }
+    normalized["ticker"] = normalized["ticker"].strip().upper()
+    normalized["pdf_stem"] = normalized["pdf_stem"].strip()
+    normalized["section_code"] = normalized["section_code"].strip().lower()
+    return normalized
+
+
+def _index_key(row: dict) -> tuple[str, str, str] | None:
+    ticker = str(row.get("ticker", "")).strip().upper()
+    pdf_stem = str(row.get("pdf_stem", "")).strip()
+    section_code = str(row.get("section_code", "")).strip().lower()
+    if not ticker or not pdf_stem or not section_code:
+        return None
+    return ticker, pdf_stem, section_code
+
+
+def _index_rows_by_key(rows: list[dict]) -> tuple[dict[tuple[str, str, str], dict], set[tuple[str, str, str]]]:
+    """Return one authoritative row per logical section-index key."""
+    index_rows: dict[tuple[str, str, str], dict] = {}
+    duplicate_keys: set[tuple[str, str, str]] = set()
+    for raw_row in rows:
+        row = _normalize_index_row(raw_row)
+        key = _index_key(row)
+        if key is None:
+            continue
+        if key in index_rows:
+            duplicate_keys.add(key)
+        # The newest row wins; successful reprocessing always writes it last.
+        index_rows[key] = row
+    return index_rows, duplicate_keys
+
+
+def _resolve_stored_section_path(value: str) -> Path | None:
+    if not value:
+        return None
+    path = Path(value)
+    return path if path.is_absolute() else Path.cwd() / path
+
+
+def _has_section_files_for_pdf(output_root: Path, ticker: str, pdf_stem: str) -> bool:
+    out_dir = output_root / ticker
+    if not out_dir.exists():
+        return False
+    prefix = f"{pdf_stem}__"
+    return any(
+        path.is_file() and path.name.startswith(prefix) and path.name.endswith(".txt")
+        for path in out_dir.iterdir()
+    )
+
+
+def validate_completed_text_file(
+    txt_file: Path,
+    output_root: Path,
+    source_fingerprint: SourceFingerprint,
+    sections: list[SectionSegment],
+    index_rows: dict[tuple[str, str, str], dict],
+    duplicate_keys: set[tuple[str, str, str]] | None = None,
+) -> CompletionValidation:
+    """Validate rows, files, and fingerprints before a resume run skips a PDF."""
+    ticker = txt_file.parent.name.upper()
+    pdf_stem = txt_file.stem
+    expected_by_code = {section.section_code: section.text.strip() for section in sections if section.text.strip()}
+    reasons: set[str] = set()
+
+    if not expected_by_code:
+        reasons.add("no_expected_sections")
+
+    matching_rows = {
+        key[2]: row
+        for key, row in index_rows.items()
+        if key[0] == ticker and key[1] == pdf_stem
+    }
+    if not matching_rows:
+        reasons.add("missing_index_rows")
+        if _has_section_files_for_pdf(output_root, ticker, pdf_stem):
+            reasons.add("unindexed_section_files")
+
+    if set(matching_rows) != set(expected_by_code):
+        reasons.add("section_rows_do_not_match_expected")
+    if duplicate_keys and any(
+        key[0] == ticker and key[1] == pdf_stem for key in duplicate_keys
+    ):
+        reasons.add("duplicate_index_rows")
+    if matching_rows and any(
+        not _fingerprint_matches(row, source_fingerprint) for row in matching_rows.values()
+    ):
+        reasons.add("source_fingerprint_mismatch")
+
+    for section_code, expected_text in expected_by_code.items():
+        row = matching_rows.get(section_code)
+        if row is None:
+            continue
+
+        expected_path = _section_output_path(output_root, ticker, pdf_stem, section_code)
+        if not expected_path.is_file() or expected_path.stat().st_size == 0:
+            reasons.add("section_file_missing_or_empty")
+            continue
+
+        stored_path = _resolve_stored_section_path(row.get("section_file", ""))
+        if stored_path is None or not stored_path.is_file():
+            reasons.add("indexed_section_file_missing")
+        elif stored_path.resolve() != expected_path.resolve():
+            reasons.add("indexed_section_file_path_mismatch")
+
+        actual_text = expected_path.read_text(encoding="utf-8", errors="replace")
+        if actual_text != expected_text:
+            reasons.add("section_file_content_mismatch")
+        if str(row.get("char_count", "")) != str(len(expected_text)):
+            reasons.add("char_count_mismatch")
+        if str(row.get("word_count", "")) != str(word_count(expected_text)):
+            reasons.add("word_count_mismatch")
+
+    return CompletionValidation(complete=not reasons, reasons=tuple(sorted(reasons)))
+
+
 def read_existing_index(index_path: Path) -> list[dict]:
     if not index_path.exists():
         return []
     with index_path.open(newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        return [{field: row.get(field, "") for field in SECTION_INDEX_FIELDS} for row in reader]
+        return [_normalize_index_row(row) for row in reader]
 
 
 def write_index(index_path: Path, rows: list[dict]) -> None:
+    """Atomically write a de-duplicated section index."""
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    rows = sorted(rows, key=lambda r: (r.get("ticker", ""), r.get("pdf_stem", ""), r.get("section_code", "")))
-    with index_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=SECTION_INDEX_FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
+    index_rows, _ = _index_rows_by_key(rows)
+    normalized_rows = sorted(
+        index_rows.values(),
+        key=lambda row: (row["ticker"], row["pdf_stem"], row["section_code"]),
+    )
+    tmp_path = index_path.with_name(f"{index_path.name}.tmp")
+    try:
+        with tmp_path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=SECTION_INDEX_FIELDS)
+            writer.writeheader()
+            writer.writerows(normalized_rows)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, index_path)
+    except BaseException:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
 
 
-def upsert_index(index_path: Path, new_rows: list[dict], processed_keys: set[tuple[str, str]], replace_all: bool) -> None:
+def upsert_index(
+    index_path: Path,
+    new_rows: list[dict],
+    processed_keys: set[tuple[str, str]],
+    replace_all: bool = False,
+) -> None:
+    """Replace a processed PDF stem's rows without duplicating any index keys."""
     if replace_all:
-        rows = new_rows
+        index_rows, _ = _index_rows_by_key(new_rows)
     else:
-        existing = read_existing_index(index_path)
-        rows = [
-            row
-            for row in existing
-            if (row.get("ticker", ""), row.get("pdf_stem", "")) not in processed_keys
-        ]
-        rows.extend(new_rows)
-    write_index(index_path, rows)
+        index_rows, _ = _index_rows_by_key(read_existing_index(index_path))
+        normalized_processed_keys = {
+            (str(processed_ticker).upper(), str(processed_stem))
+            for processed_ticker, processed_stem in processed_keys
+        }
+        for key in list(index_rows):
+            if (key[0], key[1]) in normalized_processed_keys:
+                del index_rows[key]
+
+    for raw_row in new_rows:
+        row = _normalize_index_row(raw_row)
+        key = _index_key(row)
+        if key is not None:
+            index_rows[key] = row
+    write_index(index_path, list(index_rows.values()))
 
 
-def run(input_root: str | Path, out: str | Path, index: str | Path, ticker: str | None = None) -> list[dict]:
+def _replace_pdf_rows(
+    index_rows: dict[tuple[str, str, str], dict],
+    ticker: str,
+    pdf_stem: str,
+    new_rows: list[dict],
+) -> None:
+    for key in list(index_rows):
+        if key[0] == ticker and key[1] == pdf_stem:
+            del index_rows[key]
+    for raw_row in new_rows:
+        row = _normalize_index_row(raw_row)
+        key = _index_key(row)
+        if key is not None:
+            index_rows[key] = row
+
+
+def run(
+    input_root: str | Path,
+    out: str | Path,
+    index: str | Path,
+    ticker: str | None = None,
+    resume: bool = True,
+    force: bool = False,
+    checkpoint_every: int = 1,
+) -> list[dict]:
+    """Section parsed ESG text with restart-safe per-file checkpoints."""
+    if checkpoint_every < 1:
+        raise ValueError("checkpoint_every must be at least 1")
+
     input_root = Path(input_root)
     output_root = Path(out)
     index_path = Path(index)
@@ -636,17 +954,80 @@ def run(input_root: str | Path, out: str | Path, index: str | Path, ticker: str 
     txt_files = discover_text_files(input_root, ticker=ticker)
     print(f"Found {len(txt_files)} parsed ESG text file(s) under {input_root}")
 
+    existing_rows = read_existing_index(index_path)
+    index_rows, duplicate_keys = _index_rows_by_key(existing_rows)
     rows: list[dict] = []
-    processed_keys: set[tuple[str, str]] = set()
-    for txt_file in txt_files:
-        file_rows = process_text_file(txt_file, output_root)
-        rows.extend(file_rows)
-        processed_keys.add((txt_file.parent.name.upper(), txt_file.stem))
-        print(f"  {txt_file.parent.name.upper()} {txt_file.stem}: {len(file_rows)} section(s)")
+    summary = {
+        "found_text_files": len(txt_files),
+        "skipped_complete": 0,
+        "sectioned": 0,
+        "reprocessed_stale": 0,
+        "failed": 0,
+    }
+    completed_since_checkpoint = 0
 
-    upsert_index(index_path, rows, processed_keys, replace_all=ticker is None)
+    for txt_file in txt_files:
+        ticker_name = txt_file.parent.name.upper()
+        try:
+            source_fingerprint = fingerprint_source_file(txt_file)
+            text = txt_file.read_text(encoding="utf-8", errors="replace")
+            sections = _output_sections(text)
+            validation = validate_completed_text_file(
+                txt_file,
+                output_root,
+                source_fingerprint,
+                sections,
+                index_rows,
+                duplicate_keys,
+            )
+
+            if resume and not force and validation.complete:
+                summary["skipped_complete"] += 1
+                print(f"  {ticker_name} {txt_file.stem}: skipped (complete)")
+                continue
+
+            file_rows = process_text_file(
+                txt_file,
+                output_root,
+                text=text,
+                source_fingerprint=source_fingerprint,
+                sections=sections,
+            )
+            _replace_pdf_rows(index_rows, ticker_name, txt_file.stem, file_rows)
+            duplicate_keys = {
+                key for key in duplicate_keys if not (key[0] == ticker_name and key[1] == txt_file.stem)
+            }
+            rows.extend(file_rows)
+            summary["sectioned"] += 1
+            if validation.stale:
+                summary["reprocessed_stale"] += 1
+            completed_since_checkpoint += 1
+            print(f"  {ticker_name} {txt_file.stem}: {len(file_rows)} section(s)")
+
+            if completed_since_checkpoint >= checkpoint_every:
+                write_index(index_path, list(index_rows.values()))
+                completed_since_checkpoint = 0
+        except Exception as exc:
+            summary["failed"] += 1
+            print(f"  {ticker_name} {txt_file.stem}: failed ({exc})")
+
+    # A final atomic write also removes legacy duplicate/malformed rows after an all-skip resume run.
+    write_index(index_path, list(index_rows.values()))
     print(f"Index saved to: {index_path}")
+    print("Summary:")
+    for field in ("found_text_files", "skipped_complete", "sectioned", "reprocessed_stale", "failed"):
+        print(f"{field}: {summary[field]}")
     return rows
+
+
+def _positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be an integer") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return parsed
 
 
 def main():
@@ -655,6 +1036,28 @@ def main():
     parser.add_argument("--out", default="data/03_sections/esg")
     parser.add_argument("--index", default="data/00_reference/esg_sections_index.csv")
     parser.add_argument("--ticker", default=None)
+    resume_group = parser.add_mutually_exclusive_group()
+    resume_group.add_argument(
+        "--resume",
+        dest="resume",
+        action="store_true",
+        help="Skip complete section sets (the default, recommended for EC2 runs).",
+    )
+    resume_group.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Rebuild selected inputs without using completion checks.",
+    )
+    parser.set_defaults(resume=True)
+    parser.add_argument("--force", action="store_true", help="Rebuild selected inputs even when complete.")
+    parser.add_argument(
+        "--checkpoint-every",
+        type=_positive_int,
+        default=1,
+        metavar="N",
+        help="Atomically write the index after every N sectioned files (default: 1).",
+    )
     args = parser.parse_args()
 
     run(
@@ -662,6 +1065,9 @@ def main():
         out=args.out,
         index=args.index,
         ticker=args.ticker.upper() if args.ticker else None,
+        resume=args.resume,
+        force=args.force,
+        checkpoint_every=args.checkpoint_every,
     )
 
 

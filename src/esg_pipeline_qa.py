@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -48,10 +49,12 @@ def read_csv(path: Path) -> list[dict]:
 
 def write_csv(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as f:
+    tmp_path = path.with_name(f"{path.name}.tmp")
+    with tmp_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=QA_FIELDS)
         writer.writeheader()
         writer.writerows(rows)
+    os.replace(tmp_path, path)
 
 
 def resolve_path(raw_path: str | None) -> Path | None:
