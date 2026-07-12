@@ -14,7 +14,11 @@ logging.basicConfig(
 
 # HARDENED REGEX: Captures multi-spaces, varied punctuation, and optional item labels
 ITEM_HEADING_RE = re.compile(
-    r'^\s*ITEM\s+(\d{1,2}[A-Za-z]?)(?:\b|[\.\:\-\—])\s*(.*)$',
+    r'^\s*ITEM\s+(?:NO\.?\s+)?'
+    # Recover a single stray OCR/layout letter immediately before the
+    # Item number, for example "ITEM G15.".
+    r'(?:[A-Za-z](?=\d))?'
+    r'(\d{1,2}[A-Za-z]?)(?:\b|[\.\:\-\–\—])\s*(.*)$',
     re.IGNORECASE
 )
 
@@ -287,6 +291,9 @@ EXPECTED_ITEM_TITLES = {
     ],
     "Item_9": [
         "changes in and disagreements with accountants",
+        "changes in and disagreement with accountants",
+        "changes and disagreements with accountants",
+        "changes and disagreement with accountants",
     ],
     "Item_9A": ["controls and procedures"],
     "Item_9B": ["other information"],
@@ -303,11 +310,17 @@ EXPECTED_ITEM_TITLES = {
     "Item_13": [
         "certain relationships and related transactions",
     ],
-    "Item_14": ["principal accountant fees and services"],
+    "Item_14": [
+        "principal accountant fees and services",
+        "principal account fees and services",
+    ],
     "Item_15": [
         "exhibits and financial statement schedules",
+        "exhibit and financial statement schedules",
         "exhibits financial statement schedules",
+        "exhibit financial statement schedules",
         "exhibits",
+        "exhibit",
     ],
     "Item_16": ["form 10 k summary", "form 10-k summary"],
 }
@@ -414,22 +427,245 @@ def _collect_item_candidates(text):
 
         return ""
 
+    def has_toc_page_number_after_heading(
+        index,
+        raw_title,
+        current_line,
+    ):
+        """Detect a page number immediately following a heading title.
+
+        This intentionally requires adjacency:
+            Item 8. / Financial Statements... / 36
+            Financial Statements... / 36
+
+        It does not classify a candidate as TOC merely because an
+        unrelated page number appears several lines later.
+        """
+        nonempty = []
+
+        for next_index in range(index + 1, min(index + 12, len(lines))):
+            value = lines[next_index].strip()
+
+            if value:
+                nonempty.append(value)
+
+            if len(nonempty) >= 7:
+                break
+
+        if not nonempty:
+            return False
+
+        def is_page_number(value):
+            return bool(
+                re.fullmatch(r"\d{1,4}", value)
+                or re.fullmatch(
+                    r"[Ff]\s*-\s*\d{1,4}",
+                    value,
+                )
+            )
+
+        normalized_title = _normalize_candidate_title(raw_title)
+        normalized_line = _normalize_candidate_title(current_line)
+
+        # When the full title is already present on the current line,
+        # only the very next nonempty value may be its TOC page number.
+        if (
+            normalized_title
+            and normalized_title in normalized_line
+            and normalized_line != normalized_title
+        ):
+            return is_page_number(nonempty[0])
+
+        # For a title-only candidate, the next nonempty value must be the
+        # page number.
+        if normalized_title and normalized_line == normalized_title:
+            return is_page_number(nonempty[0])
+
+        # For headings split across lines, locate the recovered title in
+        # the nearby values and require the immediately following value
+        # to be the page number.
+        for value_index, value in enumerate(nonempty[:-1]):
+            normalized_value = _normalize_candidate_title(value)
+
+            if (
+                normalized_title
+                and (
+                    normalized_value == normalized_title
+                    or normalized_value.startswith(normalized_title)
+                    or normalized_title.startswith(normalized_value)
+                )
+            ):
+                return is_page_number(
+                    nonempty[value_index + 1]
+                )
+
+        return False
+
+    def split_item_word_heading(index):
+        """Recover a heading split inside the word ITEM.
+
+        Examples:
+            I  / TEM 2. Properties
+            IT / EM 9. Changes in and Disagreements...
+            ITE / M 15. Exhibits...
+        """
+        first_part = lines[index].strip().upper()
+
+        if first_part not in {"I", "IT", "ITE"}:
+            return None
+
+        next_value = ""
+        matched_next_index = None
+
+        for next_index in range(index + 1, min(index + 5, len(lines))):
+            value = lines[next_index].strip()
+
+            if value:
+                next_value = value
+                matched_next_index = next_index
+                break
+
+        if not next_value or matched_next_index is None:
+            return None
+
+        combined = f"{first_part}{next_value}"
+        match = ITEM_HEADING_RE.match(combined)
+
+        if not match:
+            return None
+
+        item_number = match.group(1).upper()
+        title = match.group(2).strip()
+
+        # Some layout tables split the heading into three pieces:
+        #     ITE / M 5 / . MARKET FOR ...
+        # If the number line has no title, use the next substantive line.
+        if not title:
+            for title_index in range(
+                matched_next_index + 1,
+                min(matched_next_index + 5, len(lines)),
+            ):
+                title_value = lines[title_index].strip()
+
+                if not title_value:
+                    continue
+
+                if title_value in {".", ":", "-", "–", "—"}:
+                    continue
+
+                title = title_value
+                break
+
+        if not title:
+            return None
+
+        return {
+            "number": item_number,
+            "title": title,
+            "full_line": f"{combined} {title}",
+        }
+
+    def split_item_heading(index):
+        """Recover headings split across layout-table lines.
+
+        Examples:
+            Item / No. 9 / – / Changes in and Disagreements...
+            ITEM / 10 / Directors, Executive Officers...
+        """
+        if lines[index].strip().lower() != "item":
+            return None
+
+        nonempty = []
+
+        for next_index in range(index + 1, min(index + 9, len(lines))):
+            value = lines[next_index].strip()
+
+            if value:
+                nonempty.append(value)
+
+            if len(nonempty) >= 5:
+                break
+
+        if not nonempty:
+            return None
+
+        number_match = re.match(
+            r"^(?:NO\.?\s*)?"
+            r"(\d{1,2}[A-Za-z]?)"
+            r"(?:\b|[\.\:\-\–\—])?"
+            r"\s*(.*)$",
+            nonempty[0],
+            re.IGNORECASE,
+        )
+
+        if not number_match:
+            return None
+
+        item_number = number_match.group(1).upper()
+        remainder = number_match.group(2).strip()
+
+        title_parts = []
+
+        if remainder and remainder not in {"-", "–", "—", ".", ":"}:
+            title_parts.append(remainder)
+
+        for value in nonempty[1:]:
+            cleaned_value = value.strip()
+
+            if cleaned_value in {"-", "–", "—", ".", ":"}:
+                continue
+
+            title_parts.append(cleaned_value)
+
+            # The first substantive line after the number is the title.
+            break
+
+        title = " ".join(title_parts).strip()
+
+        if not title:
+            return None
+
+        return {
+            "number": item_number,
+            "title": title,
+            "full_line": f"Item {item_number} {title}",
+        }
+
     for index, line in enumerate(lines):
         cleaned = line.strip()
         standard_match = ITEM_HEADING_RE.match(cleaned)
         bare_match = None if standard_match else bare_item_re.match(cleaned)
+        broken_word_match = (
+            None
+            if standard_match or bare_match
+            else split_item_word_heading(index)
+        )
+        split_match = (
+            None
+            if standard_match or bare_match or broken_word_match
+            else split_item_heading(index)
+        )
         match = standard_match or bare_match
 
-        if not match:
+        if match:
+            item_number = match.group(1).upper()
+            raw_title = match.group(2).strip()
+            full_line = cleaned
+        elif broken_word_match:
+            item_number = broken_word_match["number"]
+            raw_title = broken_word_match["title"]
+            full_line = broken_word_match["full_line"]
+        elif split_match:
+            item_number = split_match["number"]
+            raw_title = split_match["title"]
+            full_line = split_match["full_line"]
+        else:
             continue
 
-        code = f"Item_{match.group(1).upper()}"
+        code = f"Item_{item_number}"
 
         if code not in candidates:
             continue
-
-        raw_title = match.group(2).strip()
-        full_line = cleaned
 
         score = _candidate_score(
             code,
@@ -469,6 +705,12 @@ def _collect_item_candidates(text):
             "line_number": index + 1,
             "score": score,
             "line": full_line,
+            "toc_page_number_after_heading":
+                has_toc_page_number_after_heading(
+                    index,
+                    raw_title,
+                    cleaned,
+                ),
         })
 
     # Add title-only candidates for filings where layout-table
@@ -529,6 +771,12 @@ def _collect_item_candidates(text):
                 "score": 85,
                 "line": cleaned,
                 "title_only": True,
+                "toc_page_number_after_heading":
+                    has_toc_page_number_after_heading(
+                        index,
+                        cleaned,
+                        cleaned,
+                    ),
             })
             existing_pairs.add((code, positions[index]))
 
@@ -628,6 +876,22 @@ def _select_ordered_candidates(candidates):
                 prior["code"],
                 0,
             )
+
+            # A real Item 8 may be a short reference-only section when
+            # financial statements are presented later in Part IV.
+            #
+            # Permit short Item 8 spans unless the candidate has the
+            # stronger TOC signature of a standalone page number directly
+            # following its heading/title.
+            if (
+                prior["code"] == "Item_8"
+                and not prior.get(
+                    "toc_page_number_after_heading",
+                    False,
+                )
+            ):
+                minimum_length = 0
+
             actual_length = (
                 current["position"] - prior["position"]
             )
@@ -845,7 +1109,20 @@ def _recover_missing_major_sections(text, sections, filename):
     needs_recovery = {
         code
         for code in major_codes
-        if len(sections.get(code, "")) < 1000
+        if (
+            # Item 8 may legitimately be a short reference-only section
+            # directing readers to financial statements in Part IV. Recover
+            # it only when it is genuinely absent or empty.
+            (
+                code == "Item_8"
+                and not sections.get(code, "").strip()
+            )
+            or
+            (
+                code != "Item_8"
+                and len(sections.get(code, "")) < 1000
+            )
+        )
     }
 
     if not needs_recovery:
@@ -861,6 +1138,27 @@ def _recover_missing_major_sections(text, sections, filename):
         key=lambda anchor: anchor["position"],
     )
 
+    # Recovery anchors must respect reliable later Item boundaries.
+    # Otherwise a recovered Item 8 can extend to the end of the filing
+    # even though Item 9 and later headings were detected correctly.
+    item_order = {
+        code: index
+        for index, code in enumerate(ITEM_SEQUENCE)
+    }
+    collected_candidates = _collect_item_candidates(text)
+    reliable_candidates = sorted(
+        [
+            candidate
+            for values in collected_candidates.values()
+            for candidate in values
+            if not candidate.get(
+                "toc_page_number_after_heading",
+                False,
+            )
+        ],
+        key=lambda candidate: candidate["position"],
+    )
+
     for code in major_codes:
         if code not in needs_recovery:
             continue
@@ -873,19 +1171,34 @@ def _recover_missing_major_sections(text, sections, filename):
 
             start = anchor["position"]
 
-            later_different = [
-                other
+            later_boundaries = [
+                other["position"]
                 for other in anchors
                 if (
                     other["position"] > start
                     and other["code"] != code
+                    and item_order.get(other["code"], -1)
+                        > item_order.get(code, -1)
                 )
             ]
 
-            if later_different:
-                end = later_different[0]["position"]
-            else:
-                end = len(text)
+            later_boundaries.extend(
+                candidate["position"]
+                for candidate in reliable_candidates
+                if (
+                    candidate["position"] > start
+                    and item_order.get(
+                        candidate["code"],
+                        -1,
+                    ) > item_order.get(code, -1)
+                )
+            )
+
+            end = (
+                min(later_boundaries)
+                if later_boundaries
+                else len(text)
+            )
 
             recovered_text = text[start:end].strip()
             recovered_length = len(recovered_text)
@@ -902,13 +1215,19 @@ def _recover_missing_major_sections(text, sections, filename):
         if not candidates:
             continue
 
-        # Prefer the largest plausible narrative span. A TOC heading
-        # normally produces only a few hundred characters and is excluded.
+        # Prefer the latest plausible anchor. The same section title may
+        # appear first in the table of contents and later at the actual
+        # section start. Choosing the largest span incorrectly favors the
+        # earlier TOC occurrence and can absorb intervening sections.
+        #
+        # Candidate spans below 1,000 characters were already rejected,
+        # so the latest remaining anchor is the safest actual boundary.
         chosen = max(
             candidates,
             key=lambda candidate: (
-                candidate["length"],
+                candidate["start"],
                 candidate["score"],
+                candidate["length"],
             ),
         )
 
