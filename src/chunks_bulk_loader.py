@@ -150,10 +150,10 @@ def stream_and_load_chunks(chunks_index_path, sections_map, company_map, dry_run
                 except Exception:
                     token_count = None
 
-                if token_count is not None and (token_count < 50 or token_count > 600):
+                if token_count is not None and (token_count < 50 or token_count > 500):
                     n_token_warnings += 1
                     logging.warning(
-                        f"chunk_id={row.get('chunk_id')} token_count={token_count} outside 50-600"
+                        f"chunk_id={row.get('chunk_id')} token_count={token_count} outside 50-500"
                     )
 
                 batch.append({

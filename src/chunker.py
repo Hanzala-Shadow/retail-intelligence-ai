@@ -56,6 +56,13 @@ def chunk_text(
     overlap=OVERLAP,
     minimum_tokens=MIN_CHUNK_SIZE,
 ):
+    """Create character-safe token-bounded chunks.
+
+    tiktoken token boundaries are not guaranteed to coincide with UTF-8
+    character boundaries. Chunk boundaries are therefore converted back
+    to character offsets before slicing the authoritative source text.
+    Every stored chunk remains an exact substring of its source section.
+    """
     if chunk_size <= 0:
         raise ValueError("chunk_size must be positive")
 
@@ -69,44 +76,106 @@ def chunk_text(
     if len(source_tokens) < minimum_tokens:
         return []
 
-    chunks = []
-    start = 0
+    decoded_text, token_offsets = encoder.decode_with_offsets(
+        source_tokens
+    )
+
+    if decoded_text != text:
+        raise ValueError(
+            "Full source token round-trip does not match source text"
+        )
+
     source_length = len(source_tokens)
 
-    while start < source_length:
+    def safe_boundary(index):
+        """Move a token index backward to a character boundary."""
+        index = max(0, min(index, source_length))
+
+        if index == source_length:
+            return index
+
+        while (
+            index > 0
+            and token_offsets[index] == token_offsets[index - 1]
+        ):
+            index -= 1
+
+        return index
+
+    def char_offset(index):
+        if index >= source_length:
+            return len(text)
+        return token_offsets[index]
+
+    chunks = []
+    start_token = 0
+
+    while start_token < source_length:
+        start_token = safe_boundary(start_token)
         requested_end = min(
-            start + chunk_size,
+            start_token + chunk_size,
             source_length,
         )
+        end_token = safe_boundary(requested_end)
 
-        chunk, token_count, actual_end = decode_source_slice(
-            source_tokens,
-            start,
-            requested_end,
-            encoder,
-            maximum_tokens=chunk_size,
-        )
+        if end_token <= start_token:
+            end_token = requested_end
+
+            while (
+                end_token < source_length
+                and token_offsets[end_token]
+                == token_offsets[end_token - 1]
+            ):
+                end_token += 1
+
+        start_char = char_offset(start_token)
+        end_char = char_offset(end_token)
+        chunk_value = text[start_char:end_char]
+        token_count = len(encode_text(encoder, chunk_value))
+
+        # Context-sensitive tokenization can occasionally make the
+        # character-safe slice re-encode above the configured maximum.
+        # Move the end backward by complete characters until it fits.
+        while token_count > chunk_size and end_token > start_token:
+            end_token = safe_boundary(end_token - 1)
+            end_char = char_offset(end_token)
+            chunk_value = text[start_char:end_char]
+            token_count = len(
+                encode_text(encoder, chunk_value)
+            )
+
+        if end_token <= start_token or not chunk_value:
+            raise ValueError(
+                f"Could not create chunk at token {start_token}"
+            )
 
         chunks.append({
-            "text": chunk,
+            "text": chunk_value,
             "token_count": token_count,
-            "source_start": start,
-            "source_end": actual_end,
+            "source_start": start_token,
+            "source_end": end_token,
         })
 
-        if actual_end >= source_length:
+        if end_token >= source_length:
             break
 
-        next_start = actual_end - overlap
+        next_start = safe_boundary(
+            max(0, end_token - overlap)
+        )
 
-        if next_start <= start:
-            next_start = start + 1
+        if next_start <= start_token:
+            next_start = safe_boundary(start_token + 1)
 
-        start = next_start
+        if next_start <= start_token:
+            raise ValueError(
+                f"Chunking made no progress at token {start_token}"
+            )
 
-    # This should rarely be needed because overlap normally guarantees
-    # at least 51 source tokens in the final chunk. If normalization makes
-    # the stored final chunk shorter, extend it backwards safely.
+        start_token = next_start
+
+    # A final chunk can rarely re-encode below the minimum after its
+    # character-safe boundary adjustment. Extend it backward using whole
+    # character boundaries while keeping it within the maximum.
     if chunks and chunks[-1]["token_count"] < minimum_tokens:
         final = chunks[-1]
         adjusted_start = final["source_start"]
@@ -115,31 +184,43 @@ def chunk_text(
             final["token_count"] < minimum_tokens
             and adjusted_start > 0
         ):
-            adjusted_start -= 1
-
-            text_value, token_count, actual_end = (
-                decode_source_slice(
-                    source_tokens,
-                    adjusted_start,
-                    source_length,
-                    encoder,
-                    maximum_tokens=chunk_size,
-                )
+            candidate_start = safe_boundary(adjusted_start - 1)
+            candidate_text = text[
+                char_offset(candidate_start):
+                char_offset(final["source_end"])
+            ]
+            candidate_count = len(
+                encode_text(encoder, candidate_text)
             )
 
+            if candidate_count > chunk_size:
+                break
+
+            adjusted_start = candidate_start
             final = {
-                "text": text_value,
-                "token_count": token_count,
-                "source_start": adjusted_start,
-                "source_end": actual_end,
+                "text": candidate_text,
+                "token_count": candidate_count,
+                "source_start": candidate_start,
+                "source_end": final["source_end"],
             }
 
         chunks[-1] = final
 
     for index, chunk in enumerate(chunks):
+        chunk_value = chunk["text"]
         token_count = len(
-            encode_text(encoder, chunk["text"])
+            encode_text(encoder, chunk_value)
         )
+
+        if chunk_value not in text:
+            raise ValueError(
+                f"Chunk {index} is not an exact source substring"
+            )
+
+        if "\ufffd" in chunk_value and "\ufffd" not in text:
+            raise ValueError(
+                f"Chunk {index} introduced a replacement character"
+            )
 
         if token_count != chunk["token_count"]:
             raise ValueError(
