@@ -65,6 +65,40 @@ def load_companies_key_map(path=REFERENCE_DIR / "companies_key_map.csv"):
     return company_map
 
 
+def require_chunk_table_ownership(session):
+    """Fail before dropping indexes unless current user owns chunks."""
+    row = session.execute(
+        text(
+            """
+            SELECT
+                current_user,
+                pg_get_userbyid(c.relowner) AS table_owner
+            FROM pg_class c
+            JOIN pg_namespace n
+              ON n.oid = c.relnamespace
+            WHERE n.nspname = current_schema()
+              AND c.relname = 'chunks'
+              AND c.relkind = 'r'
+            """
+        )
+    ).one_or_none()
+
+    if row is None:
+        raise RuntimeError(
+            "Could not determine owner of table chunks"
+        )
+
+    current_user, table_owner = row
+
+    if current_user != table_owner:
+        raise PermissionError(
+            "--drop-indexes requires the database connection "
+            f"user to own chunks; current_user={current_user}, "
+            f"table_owner={table_owner}. Run without "
+            "--drop-indexes or manage indexes as the owner."
+        )
+
+
 def drop_chunk_indexes(session):
     session.execute(text("DROP INDEX IF EXISTS idx_chunks_section"))
     session.execute(text("DROP INDEX IF EXISTS idx_chunks_company"))
@@ -219,23 +253,33 @@ def main():
     print(f"  sections map: {len(sections_map)}")
     print(f"  companies map: {len(company_map)}")
 
-    session = SessionLocal()
+    indexes_dropped = False
 
-    try:
-        if args.drop_indexes and not args.dry_run:
+    if args.drop_indexes and not args.dry_run:
+        session = SessionLocal()
+
+        try:
+            require_chunk_table_ownership(session)
             drop_chunk_indexes(session)
-    finally:
-        session.close()
-
-    stream_and_load_chunks(chunks_index_path, sections_map, company_map, dry_run=args.dry_run)
-
-    session = SessionLocal()
+            indexes_dropped = True
+        finally:
+            session.close()
 
     try:
-        if args.drop_indexes and not args.dry_run:
-            rebuild_chunk_indexes(session)
+        stream_and_load_chunks(
+            chunks_index_path,
+            sections_map,
+            company_map,
+            dry_run=args.dry_run,
+        )
     finally:
-        session.close()
+        if indexes_dropped:
+            session = SessionLocal()
+
+            try:
+                rebuild_chunk_indexes(session)
+            finally:
+                session.close()
 
 
 if __name__ == "__main__":
