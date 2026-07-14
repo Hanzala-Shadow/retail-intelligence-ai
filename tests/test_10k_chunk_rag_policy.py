@@ -12,6 +12,7 @@ from src.chunk_rag_policy import (
     chunk_rag_metadata,
     detected_sec_items,
     is_high_confidence_item1_toc,
+    is_reserved_item6_boilerplate,
 )
 
 
@@ -121,3 +122,56 @@ def test_headers_and_invalid_chunks_are_not_eligible():
     assert header["citation_ready"] is False
     assert invalid["rag_action"] == "review"
     assert invalid["citation_ready"] is False
+
+def test_reserved_item6_page_layout_is_boilerplate():
+    text = (
+        "Item 6. [Reserved] [TABLE:table_54] "
+        "TARGET CORPORATION 2023 Form 10-K 21 "
+        "[TABLE:table_55] MANAGEMENT'S DISCUSSION "
+        "AND ANALYSIS Table of Contents "
+        "EXECUTIVE OVERVIEW & FINANCIAL SUMMARY "
+        "Index to Financial Statements"
+    )
+
+    assert is_reserved_item6_boilerplate(
+        doc_type="10-K",
+        section_code="Item_6",
+        chunk_text=text,
+    )
+
+    metadata = chunk_rag_metadata(
+        doc_type="10-K",
+        section_code="Item_6",
+        chunk_index=0,
+        chunk_text=text,
+        token_count=62,
+    )
+
+    assert metadata == {
+        "doc_quality_status": "passed",
+        "rag_action": "exclude_boilerplate",
+        "quality_flags": (
+            '["retrieval_boilerplate",'
+            '"reserved_item6_boilerplate"]'
+        ),
+        "citation_ready": False,
+    }
+
+
+def test_substantive_nonreserved_item6_remains_eligible():
+    text = (
+        "Item 6. Selected Financial Data. "
+        + "Historical financial performance information. " * 40
+    )
+
+    metadata = chunk_rag_metadata(
+        doc_type="10-K",
+        section_code="Item_6",
+        chunk_index=0,
+        chunk_text=text,
+        token_count=200,
+    )
+
+    assert metadata["rag_action"] == "include"
+    assert metadata["citation_ready"] is True
+

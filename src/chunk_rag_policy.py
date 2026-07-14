@@ -39,6 +39,30 @@ def is_high_confidence_item1_toc(
     )
 
 
+def is_reserved_item6_boilerplate(
+    *,
+    doc_type: str,
+    section_code: str,
+    chunk_text: str,
+) -> bool:
+    """Identify reserved Item 6 content padded by page-layout boilerplate."""
+    normalized = (chunk_text or "").lstrip(
+        "\ufeff\u200b\u2060 \t\r\n"
+    )
+
+    return (
+        doc_type == "10-K"
+        and section_code == "Item_6"
+        and re.match(
+            r"(?is)^item\s+6"
+            r"(?:\s|[.:\-–—])+"
+            r".{0,160}?\breserved\b",
+            normalized,
+        )
+        is not None
+    )
+
+
 def chunk_rag_metadata(
     *,
     doc_type: str,
@@ -58,6 +82,21 @@ def chunk_rag_metadata(
             "doc_quality_status": "review_required",
             "rag_action": "review",
             "quality_flags": '["chunk_validation_failure"]',
+            "citation_ready": False,
+        }
+
+    if is_reserved_item6_boilerplate(
+        doc_type=doc_type,
+        section_code=section_code,
+        chunk_text=chunk_text,
+    ):
+        return {
+            "doc_quality_status": "passed",
+            "rag_action": "exclude_boilerplate",
+            "quality_flags": (
+                '["retrieval_boilerplate",'
+                '"reserved_item6_boilerplate"]'
+            ),
             "citation_ready": False,
         }
 
