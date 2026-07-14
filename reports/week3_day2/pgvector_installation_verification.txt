@@ -18,22 +18,22 @@ EXTENSION FILE
 -rw-r--r-- 1 root root 145 Feb  9  2024 /usr/share/postgresql/16/extension/vector.control
 
 DATABASE EXTENSION AND FUNCTIONAL TESTS
- extname | extversion 
+ extname | extversion
 ---------+------------
  vector  | 0.6.0
 (1 row)
 
- null_vector_check | expected_three_dimensions 
+ null_vector_check | expected_three_dimensions
 -------------------+---------------------------
                    |                         3
 (1 row)
 
- expected_l2_distance_one 
+ expected_l2_distance_one
 --------------------------
                         1
 (1 row)
 
- expected_cosine_distance_zero 
+ expected_cosine_distance_zero
 -------------------------------
                              0
 (1 row)
@@ -41,7 +41,7 @@ DATABASE EXTENSION AND FUNCTIONAL TESTS
 BEGIN
 CREATE TABLE
 INSERT 0 3
- test_id |  embedding  | cosine_distance 
+ test_id |  embedding  | cosine_distance
 ---------+-------------+-----------------
        1 | [1,0,0]     |        0.000000
        3 | [0.9,0.1,0] |        0.006116
@@ -51,7 +51,7 @@ INSERT 0 3
 ROLLBACK
 
 PRODUCTION VECTOR COLUMNS
- table_name | column_name | udt_name 
+ table_name | column_name | udt_name
 ------------+-------------+----------
 (0 rows)
 
