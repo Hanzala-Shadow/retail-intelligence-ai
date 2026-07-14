@@ -807,6 +807,161 @@ def _collect_item_candidates(text):
         else:
             candidate["toc_cluster"] = False
 
+    # Recover a high-confidence Item 7 boundary immediately following a
+    # substantive "Item 6. [Reserved]" heading. Layout-table extraction may
+    # split this sequence across several lines:
+    #
+    #     Item
+    #     6. [Reserved]
+    #
+    #     Item
+    #     7. Management
+    #     ’
+    #     s Discussion and Analysis ...
+    #
+    # Dense-cluster scoring can otherwise penalize the real Item 7 heading
+    # because nearby MD&A prose references Items 1A and 8. A later title-only
+    # MD&A phrase may then be selected, incorrectly assigning the opening of
+    # Item 7 to Item 6.
+    #
+    # Confirmed TOC candidates remain excluded from this promotion.
+    # First determine which boundaries the ordinary selector would use.
+    # Promotion is needed only when that baseline sequence selects a later
+    # Item 7 boundary than the high-confidence heading immediately following
+    # the selected reserved Item 6.
+    baseline_selected = _select_ordered_candidates(candidates)
+
+    baseline_item_6 = next(
+        (
+            candidate
+            for candidate in baseline_selected
+            if candidate["code"] == "Item_6"
+        ),
+        None,
+    )
+
+    baseline_item_7 = next(
+        (
+            candidate
+            for candidate in baseline_selected
+            if candidate["code"] == "Item_7"
+        ),
+        None,
+    )
+
+    if (
+        baseline_item_6 is not None
+        and baseline_item_7 is not None
+        and not baseline_item_6.get(
+            "toc_page_number_after_heading",
+            False,
+        )
+        and "reserved" in _normalize_candidate_title(
+            baseline_item_6.get("line", "")
+        )
+    ):
+        item_6_index = baseline_item_6["line_number"] - 1
+        search_end = min(item_6_index + 21, len(lines))
+
+        for heading_index in range(item_6_index + 1, search_end):
+            cleaned = lines[heading_index].strip()
+            heading_position = None
+            evidence_start = None
+
+            direct_item_7 = re.match(
+                r"^ITEM\s+7(?:\b|[\.\:\-\–\—])",
+                cleaned,
+                re.IGNORECASE,
+            )
+
+            if direct_item_7:
+                heading_position = positions[heading_index]
+                evidence_start = heading_index
+
+            elif cleaned.lower() == "item":
+                next_nonempty_index = None
+
+                for next_index in range(
+                    heading_index + 1,
+                    min(heading_index + 6, len(lines)),
+                ):
+                    if lines[next_index].strip():
+                        next_nonempty_index = next_index
+                        break
+
+                if (
+                    next_nonempty_index is not None
+                    and re.match(
+                        r"^7(?:\b|[\.\:\-\–\—])",
+                        lines[next_nonempty_index].strip(),
+                        re.IGNORECASE,
+                    )
+                ):
+                    heading_position = positions[heading_index]
+                    evidence_start = heading_index
+
+            if heading_position is None:
+                continue
+
+            evidence_values = []
+
+            for evidence_index in range(
+                evidence_start,
+                min(evidence_start + 14, len(lines)),
+            ):
+                evidence_value = lines[evidence_index].strip()
+
+                if evidence_value:
+                    evidence_values.append(evidence_value)
+
+                if len(evidence_values) >= 8:
+                    break
+
+            normalized_evidence = _normalize_candidate_title(
+                " ".join(evidence_values)
+            )
+
+            if not (
+                "management" in normalized_evidence
+                and "discussion and analysis" in normalized_evidence
+            ):
+                continue
+
+            # If the baseline selector already starts Item 7 at this heading,
+            # no promotion or annotation is needed.
+            if baseline_item_7["position"] <= heading_position:
+                break
+
+            existing_candidate = next(
+                (
+                    candidate
+                    for candidate in candidates.get("Item_7", [])
+                    if candidate["position"] == heading_position
+                ),
+                None,
+            )
+
+            if existing_candidate is not None:
+                existing_candidate["score"] = max(
+                    existing_candidate["score"],
+                    130,
+                )
+                existing_candidate["reserved_item_6_successor"] = True
+                existing_candidate["toc_cluster"] = False
+            else:
+                candidates["Item_7"].append({
+                    "code": "Item_7",
+                    "position": heading_position,
+                    "line_number": heading_index + 1,
+                    "score": 130,
+                    "line": " ".join(evidence_values),
+                    "reserved_item_6_successor": True,
+                    "toc_cluster": False,
+                    "toc_page_number_after_heading": False,
+                })
+
+            break
+
     return candidates
 
 
