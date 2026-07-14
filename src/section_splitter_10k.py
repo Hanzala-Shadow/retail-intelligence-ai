@@ -852,10 +852,6 @@ def _collect_item_candidates(text):
     if (
         baseline_item_6 is not None
         and baseline_item_7 is not None
-        and not baseline_item_6.get(
-            "toc_page_number_after_heading",
-            False,
-        )
         and "reserved" in _normalize_candidate_title(
             baseline_item_6.get("line", "")
         )
@@ -925,6 +921,29 @@ def _collect_item_candidates(text):
                 "management" in normalized_evidence
                 and "discussion and analysis" in normalized_evidence
             ):
+                continue
+
+            # A real reserved Item 6 may be followed by a printed page
+            # number, causing Item 6 itself to receive a TOC-like flag.
+            # Require the nearby Item 7 candidate to be independently
+            # classified as non-TOC before promoting this boundary.
+            nearby_non_toc_item_7 = [
+                candidate
+                for candidate in candidates.get("Item_7", [])
+                if (
+                    abs(
+                        candidate["line_number"]
+                        - (heading_index + 1)
+                    )
+                    <= 5
+                    and not candidate.get(
+                        "toc_page_number_after_heading",
+                        False,
+                    )
+                )
+            ]
+
+            if not nearby_non_toc_item_7:
                 continue
 
             # If the baseline selector already starts Item 7 at this heading,

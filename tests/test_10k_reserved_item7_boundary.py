@@ -147,3 +147,62 @@ def test_promoted_reserved_item7_candidate_is_selected(text):
     assert promoted[0]["score"] == 130
     assert selected_item_7["position"] == promoted[0]["position"]
     assert selected_item_7["reserved_item_6_successor"] is True
+
+
+def test_page_numbered_reserved_item_6_uses_real_item_7_boundary():
+    text = (
+        "Item 6. [RESERVED]\n"
+        "39\n"
+        "Table of Contents\n"
+        "Item 7.\n"
+        "—\n"
+        "MANAGEMENT’S DISCUSSION AND ANALYSIS OF "
+        "FINANCIAL CONDITION AND RESULTS OF OPERATIONS\n"
+        + ("Opening MD&A discussion. " * 100)
+        + "\n"
+        "Management’s Discussion and Analysis.\n"
+        + ("Later MD&A subsection. " * 100)
+    )
+
+    candidates = _collect_item_candidates(text)
+    baseline_item_6_candidates = candidates["Item_6"]
+
+    assert any(
+        candidate.get(
+            "toc_page_number_after_heading"
+        ) is True
+        for candidate in baseline_item_6_candidates
+    )
+
+    selected = _select_ordered_candidates(candidates)
+
+    selected_item_7 = next(
+        candidate
+        for candidate in selected
+        if candidate["code"] == "Item_7"
+    )
+
+    assert (
+        selected_item_7.get(
+            "reserved_item_6_successor"
+        )
+        is True
+    )
+    assert selected_item_7["score"] == 130
+
+    sections = _split_at_selected_boundaries(
+        text,
+        selected,
+    )
+
+    item_6 = " ".join(sections["Item_6"].split())
+    item_7 = " ".join(sections["Item_7"].split())
+
+    assert "RESERVED" in item_6
+    assert "Item 7" not in item_6
+    assert "MANAGEMENT" not in item_6
+    assert len(item_6) < 100
+
+    assert item_7.startswith("Item 7")
+    assert "MANAGEMENT" in item_7[:250]
+    assert "DISCUSSION AND ANALYSIS" in item_7[:250]
