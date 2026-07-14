@@ -18,6 +18,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import sessionmaker
 
+from chunk_rag_policy import chunk_rag_metadata
 from models import Chunk
 
 load_dotenv()
@@ -190,15 +191,25 @@ def stream_and_load_chunks(chunks_index_path, sections_map, company_map, dry_run
                         f"chunk_id={row.get('chunk_id')} token_count={token_count} outside 50-500"
                     )
 
+                chunk_index = int(row["chunk_index"])
+                rag_metadata = chunk_rag_metadata(
+                    doc_type=row["doc_type"],
+                    section_code=row["section"],
+                    chunk_index=chunk_index,
+                    chunk_text=chunk_text,
+                    token_count=token_count,
+                )
+
                 batch.append({
                     "section_id": section_info["section_id"],
                     "doc_id": section_info["doc_id"],
                     "company_id": company_id,
                     "doc_type": row["doc_type"],
                     "section_code": row["section"],
-                    "chunk_index": int(row["chunk_index"]),
+                    "chunk_index": chunk_index,
                     "chunk_text": chunk_text,
                     "token_count": token_count,
+                    **rag_metadata,
                 })
 
                 n_resolved += 1
