@@ -1,5 +1,8 @@
 import fitz  # PyMuPDF
 from pathlib import Path
+import hashlib
+
+seen_hashes = set()
 
 def extract_images_from_pdf(pdf_path, output_dir):
     """Extract all embedded images from a PDF, save with page reference."""
@@ -24,6 +27,12 @@ def extract_images_from_pdf(pdf_path, output_dir):
             image_data = base_image["image"]
             width = base_image.get("width", 0)
             height = base_image.get("height", 0)
+
+            # Skip exact duplicate images (same content, e.g. repeated logo/watermark)
+            img_hash = hashlib.md5(image_data).hexdigest()
+            if img_hash in seen_hashes:
+                continue
+            seen_hashes.add(img_hash)
 
             # Skip tiny decorative images (spacers, tracking pixels, icons)
             MIN_DIMENSION = 100
