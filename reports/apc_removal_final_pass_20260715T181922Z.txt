@@ -1,0 +1,43 @@
+============================================================
+APC REMOVAL FINAL VERIFICATION
+Generated: 2026-07-15T18:19:23+00:00
+============================================================
+
+=== REFERENCE AND FILESYSTEM COUNTS ===
+Companies:              193
+Filings:                570
+Filing key-map rows:    570
+Document key-map rows:  570
+Section index rows:     13794
+Section key-map rows:   10390
+Physical section files: 13794
+Chunk index rows:       113179
+Physical chunk files:   113179
+PASS: reference and filesystem counts reconcile.
+
+=== APC REFERENCE AUDIT ===
+PASS: no APC reference records remain.
+
+=== APC PHYSICAL ARTIFACT AUDIT ===
+PASS: no APC physical artifacts remain.
+
+=== DATABASE VERIFICATION ===
+ companies | companies_with_filings | annual_filings | documents | sections | chunks 
+-----------+------------------------+----------------+-----------+----------+--------
+       193 |                    192 |            570 |       570 |    10390 | 113179
+(1 row)
+
+ company_id | ticker |    cik     |   name    
+------------+--------+------------+-----------
+        128 | ARKO   | 0001823794 | ARKO CORP
+(1 row)
+
+=== ARKO PRESERVATION CHECK ===
+data/00_reference/companies.csv:128:128,ARKO,0001823794,ARKO CORP,Broadline Retail,NASDAQ-NMS Stock Market
+data/00_reference/filings.csv:460:128,ARKO,1823794,0001193125-26-071464,10-K,2026-02-25,2026,https://www.sec.gov/Archives/edgar/data/1823794/000119312526071464/arko-20251231.htm,downloaded
+data/00_reference/filings.csv:461:128,ARKO,1823794,0000950170-25-027737,10-K,2025-02-26,2025,https://www.sec.gov/Archives/edgar/data/1823794/000095017025027737/arko-20241231.htm,downloaded
+data/00_reference/filings.csv:462:128,ARKO,1823794,0000950170-24-021416,10-K,2024-02-27,2024,https://www.sec.gov/Archives/edgar/data/1823794/000095017024021416/arko-20231231.htm,downloaded
+
+=== GIT INTEGRITY ===
+
+PASS: APC REMOVAL FULLY VERIFIED

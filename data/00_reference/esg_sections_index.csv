@@ -351,61 +351,6 @@ AN,AN-AUTONATION INC-2024,waste,AND RECYCLING EFFORTS,data/03_sections/esg/AN/AN
 AN,AN-AUTONATION INC-2025,community,Our DRIVE Community Pillars shape how we,data/03_sections/esg/AN/AN-AUTONATION INC-2025__community.txt,1696,12216,3,19,4589,688,heading_regex,high
 AN,AN-AUTONATION INC-2025,human_capital,"– Isabel Mayoral, AutoNation Associate",data/03_sections/esg/AN/AN-AUTONATION INC-2025__human_capital.txt,4239,6771,6,10,5939,811,heading_regex,high
 AN,AN-AUTONATION INC-2025,other,Preamble,data/03_sections/esg/AN/AN-AUTONATION INC-2025__other.txt,1,1695,1,3,1694,267,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2021,about_this_report,Activity Metric Category Measure Unit SASB Code Reference,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__about_this_report.txt,61109,70153,34,37,5365,785,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,appendix,Appendix,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__appendix.txt,55328,56874,31,31,1559,231,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,community,Investing in the Community,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__community.txt,45861,47990,26,26,1117,171,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,diversity_equity_inclusion,"Diversity, Equity, and Inclusion",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__diversity_equity_inclusion.txt,8987,51372,8,28,4913,721,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,emissions,Air Emissions Percentage of refrigerants This data was,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__emissions.txt,56875,63413,31,35,2399,352,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,energy,ENERGY EFFICIENCY,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__energy.txt,16108,64963,13,35,2958,446,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,environmental,11 Preventing Environmental Hazards 27 Governance Practices and Procedures,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__environmental.txt,5,61602,1,34,13511,2041,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,ethics_compliance,DATA PRIVACY AND SECURITY,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__ethics_compliance.txt,39733,59762,24,33,8348,1241,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,governance,ARKO’s Board of Directors and leadership team,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__governance.txt,1611,54412,3,30,5850,874,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,human_capital,22 Employee Engagement,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__human_capital.txt,835,56452,2,31,17849,2670,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,supply_chain_ethics,"• Wholesale fuel supplier to independent dealers,",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__supply_chain_ethics.txt,3736,22650,4,16,4378,692,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2021,waste,Responsible Packaging,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2021__waste.txt,19214,21146,14,15,1933,290,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,about_this_report,"Activity Metric Category Unit of Measure SASB Code Section, Page",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__about_this_report.txt,73640,82970,43,46,5235,761,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,appendix,40 ANNEX II: SASB INDEX,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__appendix.txt,1332,72846,2,42,6710,1020,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,climate,Environment and Climate People and Communities,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__climate.txt,11412,12174,9,10,762,118,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2022,community,"Community Brands, while ensuring that they",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__community.txt,6968,60421,6,36,3021,461,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,diversity_equity_inclusion,Raíz farmers are part of inclusive,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__diversity_equity_inclusion.txt,32902,62109,20,37,3254,517,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,emissions,"GHG emissions at 206,032 MTC02-e. To measure",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__emissions.txt,23297,75770,16,44,6280,984,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,energy,Our Company Fleet Management Reducing our energy consumption remains,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__energy.txt,19624,78011,15,45,3880,575,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,environmental,Environment,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__environmental.txt,148,74140,2,43,12971,1942,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,ethics_compliance,Robust data privacy and cybersecurity,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__ethics_compliance.txt,65744,71792,39,41,2776,403,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,governance,"Governance Committee of our Board of Directors (our “Board”),",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__governance.txt,8566,64461,7,38,5971,904,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,human_capital,OUR VALUES,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__human_capital.txt,5197,66998,4,39,23425,3544,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,supply_chain_ethics,"SUSTAINABLE SOURCING Coffee sales, 2022",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__supply_chain_ethics.txt,31894,32899,20,20,1005,151,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,waste,"Today, a substantial amount of our packaging",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__waste.txt,27459,76959,18,44,5635,878,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2022,water,Water consumption,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2022__water.txt,25516,27457,17,18,1967,302,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,about_this_report,Activity Metric Category Unit of SASB Code Reference,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__about_this_report.txt,96248,105350,49,52,5162,753,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,community,GROWING OUR FAMILY OF COMMUNITY,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__community.txt,7375,78497,7,41,8502,1336,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,diversity_equity_inclusion,MANAGEMENT GENDER DIVERSITY,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__diversity_equity_inclusion.txt,59479,82433,31,43,5696,882,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,emissions,ENERGY EFFICIENCY & GHG EMISSIONS,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__emissions.txt,22551,98075,15,49,9613,1477,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,energy,Playing a part in the transition to renewable energy,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__energy.txt,17336,29935,12,17,4308,711,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,environmental,OUR CONTRIBUTION Environmental Sustainability,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__environmental.txt,10585,100668,9,51,10139,1479,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,ethics_compliance,Our approach prioritizes compliance and operational excellence to protect,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__ethics_compliance.txt,21536,90954,14,46,9540,1344,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,governance,Manager and the Risk Management Department,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__governance.txt,47040,101183,25,51,4029,572,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,human_capital,OUR VALUES,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__human_capital.txt,6130,100322,5,50,28776,4275,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,other,Preamble,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__other.txt,0,6117,1,5,6117,945,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2023,supply_chain_ethics,"At ARKO, we understand the importance of sourcing",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__supply_chain_ethics.txt,38095,40406,22,23,2312,346,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,waste,"Today, a substantial amount of our packaging consists Polypropylene",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__waste.txt,32827,99149,19,50,6049,962,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2023,water,"Water scarcity is an increasingly concerning issue,",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2023__water.txt,30444,98410,18,50,5156,779,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,about_this_report,Activity Metric Category Unit of SASB Code Reference,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__about_this_report.txt,103024,112476,50,54,5214,765,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,appendix,08 Annex,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__appendix.txt,1721,2462,3,4,741,111,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2024,climate,ENVIRONMENTAL AND CLIMATE RISK,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__climate.txt,22567,23123,15,15,556,79,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2024,community,"As a Family of Community Brands, we operate more",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__community.txt,3692,82775,4,40,10496,1560,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,data_summary,2022-2024 RETAIL SITES WATER METRICS,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__data_summary.txt,35174,35858,19,20,692,107,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2024,diversity_equity_inclusion,Board Structure and Diversity,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__diversity_equity_inclusion.txt,82776,98049,40,47,2183,354,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,emissions,ENERGY EFFICIENCY & GHG EMISSIONS,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__emissions.txt,25458,104864,16,51,6259,998,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,energy,Energy Efficiency,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__energy.txt,27184,107374,17,52,6093,941,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,environmental,OUR CONTRIBUTION Environmental Sustainability,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__environmental.txt,11822,107764,9,53,23060,3353,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,ethics_compliance,"To reinforce compliance, refresher training courses",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__ethics_compliance.txt,78493,91845,38,43,2662,368,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,governance,Internal Oversight: Immediate notifications,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__governance.txt,23705,108278,15,53,8517,1212,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,human_capital,OUR VALUES,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__human_capital.txt,6684,106755,5,52,32418,4746,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,other,Preamble,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__other.txt,0,1720,1,3,1720,247,heading_regex,medium
-APC,APC-ARKO PETROLEUM CORP-2024,supply_chain_ethics,SUSTAINABLE SOURCING,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__supply_chain_ethics.txt,41957,44149,23,24,2192,317,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,waste,• Strengthening engagement with our packaging,data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__waste.txt,2464,105925,4,52,8109,1249,heading_regex,high
-APC,APC-ARKO PETROLEUM CORP-2024,water,"Water scarcity is an increasingly concerning issue,",data/03_sections/esg/APC/APC-ARKO PETROLEUM CORP-2024__water.txt,33890,105199,19,52,1620,246,heading_regex,high
 ARKO,ARKO-ARKO CORP-2021,about_this_report,Activity Metric Category Measure Unit SASB Code Reference,data/03_sections/esg/ARKO/ARKO-ARKO CORP-2021__about_this_report.txt,61109,70153,34,37,5365,785,heading_regex,high
 ARKO,ARKO-ARKO CORP-2021,appendix,Appendix,data/03_sections/esg/ARKO/ARKO-ARKO CORP-2021__appendix.txt,55328,56874,31,31,1559,231,heading_regex,high
 ARKO,ARKO-ARKO CORP-2021,community,Investing in the Community,data/03_sections/esg/ARKO/ARKO-ARKO CORP-2021__community.txt,45861,47990,26,26,1117,171,heading_regex,high

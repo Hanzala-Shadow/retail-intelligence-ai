@@ -1,0 +1,34 @@
+benchmark:
+  version: 2
+  name: retail-10k-embedding-engineering-benchmark
+  dataset_seed: retail-embedding-benchmark-v1
+  expected_rows: 1000
+  input_csv: reports/week3_day2/embedding_benchmark_1000_chunks.csv
+  input_sha256: 5281e08da3085d1c826cf36625d4ad931a98d242455ac3ee818a3464a7c1d805
+  output_directory: reports/week3_day2/model_runs
+  device: cpu
+  similarity: cosine
+  continue_on_model_failure: true
+  save_embeddings: false
+  warmup_rows: 10
+  similarity_check_rows: 10
+  random_seed: 20260715
+models:
+- id: nomic_embed_text_v1_5
+  provider: huggingface
+  model_name: nomic-ai/nomic-embed-text-v1.5
+  requested_revision: main
+  trust_remote_code: true
+  dimension: 768
+  normalize_embeddings: true
+  similarity: cosine
+  max_input_tokens: 512
+  truncation: true
+  initial_batch_size: 4
+  minimum_batch_size: 1
+  precision: float32
+  device: cpu
+  query_prefix: 'search_query: '
+  document_prefix: 'search_document: '
+  license_expected: Apache-2.0
+  supplied_mteb_retrieval_score: 62.28

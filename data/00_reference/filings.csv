@@ -406,7 +406,6 @@ company_id,ticker,cik,accession_number,form,filing_date,year,primary_doc_url,dow
 109,MNRO,876427,0000876427-26-000007,10-K,2026-05-27,2026,https://www.sec.gov/Archives/edgar/data/876427/000087642726000007/mnro-20260328x10k.htm,downloaded
 109,MNRO,876427,0001562762-25-000146,10-K,2025-05-28,2025,https://www.sec.gov/Archives/edgar/data/876427/000156276225000146/mnro-20250329x10k.htm,downloaded
 109,MNRO,876427,0001562762-24-000155,10-K,2024-05-28,2024,https://www.sec.gov/Archives/edgar/data/876427/000156276224000155/mnro-20240330x10k.htm,downloaded
-110,APC,2080921,0001193125-26-131747,10-K,2026-03-30,2026,https://www.sec.gov/Archives/edgar/data/2080921/000119312526131747/apc_10k_12312025.htm,downloaded
 111,AN,350698,0001628280-26-007800,10-K,2026-02-12,2026,https://www.sec.gov/Archives/edgar/data/350698/000162828026007800/an-20251231.htm,downloaded
 111,AN,350698,0000350698-25-000029,10-K,2025-02-14,2025,https://www.sec.gov/Archives/edgar/data/350698/000035069825000029/an-20241231.htm,downloaded
 111,AN,350698,0000350698-24-000021,10-K,2024-02-16,2024,https://www.sec.gov/Archives/edgar/data/350698/000035069824000021/an-20231231.htm,downloaded

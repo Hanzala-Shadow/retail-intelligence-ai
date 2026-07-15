@@ -1,0 +1,36 @@
+BEGIN
+=== Database state before APC removal ===
+ companies | companies_with_filings | annual_filings | documents 
+-----------+------------------------+----------------+-----------
+       194 |                    193 |            571 |       571
+(1 row)
+
+ company_id | ticker |    cik     |        name         | filings | documents | sections | chunks | sustainability_reports 
+------------+--------+------------+---------------------+---------+-----------+----------+--------+------------------------
+        110 | APC    | 0002080921 | ARKO PETROLEUM CORP |       1 |         1 |       18 |    268 |                      0
+(1 row)
+
+=== Validating expected pre-removal state ===
+DO
+=== Deleting APC; dependent rows cascade automatically ===
+ company_id | ticker |    cik     |        name         
+------------+--------+------------+---------------------
+        110 | APC    | 0002080921 | ARKO PETROLEUM CORP
+(1 row)
+
+DELETE 1
+=== Validating final state ===
+NOTICE:  PASS: companies=193, companies_with_filings=192, filings=570, documents=570, APC rows=0
+DO
+COMMIT
+=== Final verified totals ===
+ companies | companies_with_filings | annual_filings | documents | sections | chunks 
+-----------+------------------------+----------------+-----------+----------+--------
+       193 |                    192 |            570 |       570 |    10390 | 113179
+(1 row)
+
+ company_id | ticker |    cik     |   name    
+------------+--------+------------+-----------
+        128 | ARKO   | 0001823794 | ARKO CORP
+(1 row)
+
