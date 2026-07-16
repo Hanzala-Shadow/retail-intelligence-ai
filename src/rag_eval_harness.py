@@ -23,7 +23,9 @@ import argparse
 import csv
 import json
 import math
+import re
 import sys
+import unicodedata
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -70,8 +72,59 @@ def split_multi(value: str) -> list[str]:
     return [part.strip() for part in str(value).split(MULTI_VALUE_SEPARATOR) if part.strip()]
 
 
+# Filing text reaches the chunk files with typographic characters and spacing
+# artifacts from HTML/PDF extraction that a hand-copied quote will not carry:
+# curly quotes and dashes, non-breaking spaces, and a space before punctuation
+# ("reputation ."). Fold all of it before comparing, or true quotes read as
+# missing evidence.
+TYPOGRAPHIC_CHARACTERS = {
+    0x2018: "'",
+    0x2019: "'",
+    0x201A: "'",
+    0x201B: "'",
+    0x201C: '"',
+    0x201D: '"',
+    0x201E: '"',
+    0x201F: '"',
+    0x2013: "-",
+    0x2014: "-",
+    0x2015: "-",
+    0x2212: "-",
+    0x00A0: " ",
+}
+SPACE_BEFORE_PUNCTUATION = re.compile(r"\s+([.,;:!?)\]])")
+
+# A contract passage may elide text between two excerpts of the same chunk.
+ELLIPSIS = re.compile(r"\.{3,}|…")
+
+
 def normalise_text(value: str) -> str:
-    return " ".join(str(value or "").split()).casefold()
+    text = unicodedata.normalize("NFKC", str(value or ""))
+    text = text.translate(TYPOGRAPHIC_CHARACTERS)
+    text = " ".join(text.split())
+    text = SPACE_BEFORE_PUNCTUATION.sub(r"\1", text)
+    return text.casefold()
+
+
+def passage_segments(passage: str) -> list[str]:
+    """Split a quoted passage on its ellipses into the excerpts it asserts."""
+    return [segment for segment in (normalise_text(p) for p in ELLIPSIS.split(passage)) if segment]
+
+
+def passage_supported_by(passage: str, chunk_text: str) -> bool:
+    """True when every excerpt of the passage appears in the chunk, in order.
+
+    An ellipsis in a quotation means "text omitted here", so the excerpts either
+    side must both be present and correctly ordered - but need not be adjacent.
+    """
+    haystack = normalise_text(chunk_text)
+    cursor = 0
+    for segment in passage_segments(passage):
+        found = haystack.find(segment, cursor)
+        if found == -1:
+            return False
+        cursor = found + len(segment)
+    return True
 
 
 # --------------------------------------------------------------------------
@@ -441,9 +494,7 @@ def gate_evidence_present(
             if record is None:
                 continue
             checked += 1
-            haystack = normalise_text(record.get(text_field, ""))
-            needle = normalise_text(passages[index])
-            if needle and needle not in haystack:
+            if not passage_supported_by(passages[index], record.get(text_field, "")):
                 missing.append({"question_id": question["question_id"], "chunk_id": chunk_id})
 
     if not checked and not misalignments:
