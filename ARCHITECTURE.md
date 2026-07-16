@@ -73,6 +73,7 @@ rag_action = exclude_from_esg_index
 - `docs/ESG_PIPELINE.md`
 - `docs/AI_RAG_ARCHITECTURE.md`
 - `docs/RAG_EVALUATION_PLAN.md`
+- `docs/RAG_EVAL_HARNESS.md`
 - `docs/DATABASE.md`
 
 ## Current Scale
