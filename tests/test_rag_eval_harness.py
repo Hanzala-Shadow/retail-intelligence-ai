@@ -1,5 +1,4 @@
 from pathlib import Path
-import csv
 import math
 import sys
 
@@ -26,6 +25,7 @@ from src.rag_eval_harness import (
     gate_wrong_doc_type,
     hit_at_k,
     load_retrieval,
+    main,
     ndcg_at_k,
     recall_at_k,
     reciprocal_rank_at_k,
@@ -317,6 +317,39 @@ def test_evidence_gate_not_evaluated_without_a_text_column():
     assert result["status"] == NOT_EVALUATED
 
 
+def test_evidence_gate_reports_passage_count_mismatch_instead_of_skipping():
+    # Two chunks but one passage: the row cannot be verified. Silently checking
+    # only the first chunk would let unverified evidence through.
+    question = dict(QUESTION, supporting_chunk_ids="c1|c2", supporting_passages="only one")
+    catalogue = {
+        "c1": {"chunk_id": "c1", "embedding_text": "only one"},
+        "c2": {"chunk_id": "c2", "embedding_text": "only one"},
+    }
+    result = gate_evidence_present([question], catalogue, "embedding_text")
+    assert result["status"] == FAIL
+    assert result["misalignment_count"] == 1
+    assert result["misalignments"][0]["chunk_count"] == 2
+    assert result["misalignments"][0]["passage_count"] == 1
+
+
+def test_gold_integrity_reports_field_count_mismatch_instead_of_skipping():
+    question = dict(
+        QUESTION,
+        supporting_chunk_ids="c1|c2",
+        supporting_tickers="ASO",  # one ticker for two chunks
+        supporting_filing_years="2024|2024",
+        supporting_section_codes="Item_1|Item_1",
+    )
+    catalogue = {
+        "c1": {"chunk_id": "c1", "ticker": "ASO", "filing_year": "2024", "section_code": "Item_1"},
+        "c2": {"chunk_id": "c2", "ticker": "ASO", "filing_year": "2024", "section_code": "Item_1"},
+    }
+    result = gate_gold_integrity([question], catalogue)
+    assert result["status"] == FAIL
+    assert result["misalignment_count"] == 1
+    assert result["misalignments"][0]["field"] == "supporting_tickers"
+
+
 # --------------------------------------------------------------------------
 # Decision rule (Ayse Cetinel, 2026-07-16)
 # --------------------------------------------------------------------------
@@ -423,13 +456,6 @@ def test_decision_needs_both_models_present():
 # --------------------------------------------------------------------------
 
 
-def write_csv(path, header, rows):
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.writer(handle, lineterminator="\n")
-        writer.writerow(header)
-        writer.writerows(rows)
-
-
 def test_evaluate_excludes_refusal_rows_from_retrieval_scoring():
     questions = [
         dict(QUESTION),
@@ -480,6 +506,27 @@ def test_evaluate_marks_gates_not_evaluated_without_metadata():
     retrieval = {"m": {"q1": ["c1"]}}
     report = evaluate(questions, retrieval, None, "embedding_text")
     assert report["models"]["m"]["gates"]["overall"] == NOT_EVALUATED
+
+
+def test_main_exits_nonzero_when_gates_could_not_be_evaluated(tmp_path):
+    # A run that certified nothing must not report success via exit code 0.
+    retrieval = tmp_path / "retrieval.csv"
+    retrieval.write_text(
+        "model_id,question_id,rank,chunk_id\n"
+        "bge_base_en_v1_5,10K-V2-I1-001,1,238872\n",
+        encoding="utf-8",
+    )
+    code = main(
+        [
+            "--questions",
+            str(PROJECT_ROOT / "data" / "00_reference" / "rag_eval_questions.csv"),
+            "--retrieval",
+            str(retrieval),
+            "--out",
+            str(tmp_path / "out"),
+        ]
+    )
+    assert code == 1
 
 
 def test_evaluate_full_pass_with_complete_metadata():
