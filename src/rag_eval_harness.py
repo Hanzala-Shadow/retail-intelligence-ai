@@ -94,7 +94,6 @@ TYPOGRAPHIC_CHARACTERS = {
 }
 SPACE_BEFORE_PUNCTUATION = re.compile(r"\s+([.,;:!?)\]])")
 
-# A contract passage may elide text between two excerpts of the same chunk.
 ELLIPSIS = re.compile(r"\.{3,}|…")
 
 
@@ -106,25 +105,21 @@ def normalise_text(value: str) -> str:
     return text.casefold()
 
 
-def passage_segments(passage: str) -> list[str]:
-    """Split a quoted passage on its ellipses into the excerpts it asserts."""
-    return [segment for segment in (normalise_text(p) for p in ELLIPSIS.split(passage)) if segment]
-
-
 def passage_supported_by(passage: str, chunk_text: str) -> bool:
-    """True when every excerpt of the passage appears in the chunk, in order.
+    """True when the passage appears verbatim and unbroken in the chunk.
 
-    An ellipsis in a quotation means "text omitted here", so the excerpts either
-    side must both be present and correctly ordered - but need not be adjacent.
+    A supporting passage is required to be an exact, contiguous quote. Only the
+    typographic and spacing artifacts of extraction are folded away.
+
+    An elided quote - one that splices non-adjacent excerpts together with an
+    ellipsis - is deliberately not accepted. Elision can silently drop the
+    qualifiers a figure depends on, such as the year it belongs to, leaving a
+    passage that no longer evidences the answer it is cited for.
     """
-    haystack = normalise_text(chunk_text)
-    cursor = 0
-    for segment in passage_segments(passage):
-        found = haystack.find(segment, cursor)
-        if found == -1:
-            return False
-        cursor = found + len(segment)
-    return True
+    needle = normalise_text(passage)
+    if not needle:
+        return False
+    return needle in normalise_text(chunk_text)
 
 
 # --------------------------------------------------------------------------
@@ -495,7 +490,18 @@ def gate_evidence_present(
                 continue
             checked += 1
             if not passage_supported_by(passages[index], record.get(text_field, "")):
-                missing.append({"question_id": question["question_id"], "chunk_id": chunk_id})
+                missing.append(
+                    {
+                        "question_id": question["question_id"],
+                        "chunk_id": chunk_id,
+                        "reason": (
+                            "passage is an elided quote (contains an ellipsis); the contract "
+                            "requires an exact contiguous quote"
+                            if ELLIPSIS.search(passages[index])
+                            else "passage text does not appear in the cited chunk"
+                        ),
+                    }
+                )
 
     if not checked and not misalignments:
         return {"status": NOT_EVALUATED, "reason": "no passage/chunk pairs available to check"}
