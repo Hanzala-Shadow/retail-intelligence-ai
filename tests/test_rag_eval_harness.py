@@ -310,31 +310,38 @@ def test_passage_matching_tolerates_typographic_quotes_and_dashes():
     assert passage_supported_by('(together, the "CCPA"), which gives', chunk)
 
 
-def test_passage_matching_accepts_an_ellipsis_spliced_quote():
-    # Real case, GRWG chunk 280029: the passage elides text between two
-    # excerpts of the same chunk.
-    chunk = (
-        "we identified a $9.3 million impairment related to goodwill. "
-        "Additionally, for the year ended December 31, 2022, "
-        "we recorded a goodwill impairment loss of $116.7 million."
-    )
+GRWG_CHUNK = (
+    "we identified a $9.3 million impairment related to goodwill. "
+    "Additionally, for the year ended December 31, 2022, "
+    "we recorded a goodwill impairment loss of $116.7 million."
+)
+
+
+def test_an_elided_quote_is_not_an_exact_quote_and_fails():
+    # Real case, GRWG chunk 280029. Both halves are in the chunk, but the
+    # ellipsis hides "for the year ended December 31, 2022" - the year the
+    # $116.7 million belongs to. The passage no longer evidences its answer,
+    # so it must not pass as a supporting quote.
     passage = (
         "we identified a $9.3 million impairment related to goodwill... "
         "we recorded a goodwill impairment loss of $116.7 million."
     )
-    assert passage_supported_by(passage, chunk)
+    assert not passage_supported_by(passage, GRWG_CHUNK)
 
 
-def test_ellipsis_splice_still_requires_both_excerpts_present():
-    chunk = "we identified a $9.3 million impairment related to goodwill. Nothing further."
-    passage = "we identified a $9.3 million impairment... we recorded a loss of $116.7 million."
-    assert not passage_supported_by(passage, chunk)
+def test_the_same_quote_passes_once_the_elided_words_are_restored():
+    # The fix belongs in the contract, not in the matcher.
+    passage = (
+        "we identified a $9.3 million impairment related to goodwill. "
+        "Additionally, for the year ended December 31, 2022, "
+        "we recorded a goodwill impairment loss of $116.7 million."
+    )
+    assert passage_supported_by(passage, GRWG_CHUNK)
 
 
-def test_ellipsis_splice_requires_the_excerpts_in_order():
-    # A quote may omit text, but it may not reorder the source.
-    chunk = "second excerpt appears first. first excerpt appears second."
-    assert not passage_supported_by("first excerpt appears second... second excerpt appears first.", chunk)
+def test_an_empty_passage_never_counts_as_supported():
+    assert not passage_supported_by("", GRWG_CHUNK)
+    assert not passage_supported_by("   ", GRWG_CHUNK)
 
 
 def test_evidence_gate_fails_when_the_passage_is_not_in_the_cited_chunk():
