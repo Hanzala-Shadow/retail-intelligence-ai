@@ -21,6 +21,7 @@
 - `docs/ESG_PIPELINE.md` - ESG parsing, sectioning, chunking, QA, and DB load
 - `docs/AI_RAG_ARCHITECTURE.md` - next-phase RAG indexing rules
 - `docs/RAG_EVALUATION_PLAN.md` - RAG evaluation gates and metrics
+- `docs/RAG_EVAL_HARNESS.md` - retrieval evaluation harness: inputs, gates, and model selection
 
 ## Getting Started
 
