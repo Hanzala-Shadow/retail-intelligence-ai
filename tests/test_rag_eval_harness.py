@@ -27,6 +27,7 @@ from src.rag_eval_harness import (
     load_retrieval,
     main,
     ndcg_at_k,
+    passage_supported_by,
     recall_at_k,
     reciprocal_rank_at_k,
     score_question,
@@ -294,6 +295,46 @@ def test_gold_integrity_skips_refusal_rows_which_have_no_chunks():
     catalogue = {"c1": {"chunk_id": "c1", "ticker": "ASO", "filing_year": "2024",
                         "section_code": "Item_1"}}
     assert gate_gold_integrity([refusal], catalogue)["status"] == PASS
+
+
+def test_passage_matching_tolerates_html_space_before_punctuation():
+    # Real case, RCKY chunk 313088: the extracted filing reads "reputation ."
+    # while the quoted passage reads "reputation.".
+    chunk = "A cyber-security breach could have a material adverse effect on our reputation . We rely"
+    assert passage_supported_by("a material adverse effect on our reputation. We rely", chunk)
+
+
+def test_passage_matching_tolerates_typographic_quotes_and_dashes():
+    # Real case, BOBS chunk 245459: the filing carries U+201C/U+201D.
+    chunk = "the California Privacy Rights Act of 2020 (together, the “CCPA”), which gives"
+    assert passage_supported_by('(together, the "CCPA"), which gives', chunk)
+
+
+def test_passage_matching_accepts_an_ellipsis_spliced_quote():
+    # Real case, GRWG chunk 280029: the passage elides text between two
+    # excerpts of the same chunk.
+    chunk = (
+        "we identified a $9.3 million impairment related to goodwill. "
+        "Additionally, for the year ended December 31, 2022, "
+        "we recorded a goodwill impairment loss of $116.7 million."
+    )
+    passage = (
+        "we identified a $9.3 million impairment related to goodwill... "
+        "we recorded a goodwill impairment loss of $116.7 million."
+    )
+    assert passage_supported_by(passage, chunk)
+
+
+def test_ellipsis_splice_still_requires_both_excerpts_present():
+    chunk = "we identified a $9.3 million impairment related to goodwill. Nothing further."
+    passage = "we identified a $9.3 million impairment... we recorded a loss of $116.7 million."
+    assert not passage_supported_by(passage, chunk)
+
+
+def test_ellipsis_splice_requires_the_excerpts_in_order():
+    # A quote may omit text, but it may not reorder the source.
+    chunk = "second excerpt appears first. first excerpt appears second."
+    assert not passage_supported_by("first excerpt appears second... second excerpt appears first.", chunk)
 
 
 def test_evidence_gate_fails_when_the_passage_is_not_in_the_cited_chunk():
