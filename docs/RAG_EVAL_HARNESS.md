@@ -71,9 +71,9 @@ Rejected on load, rather than scored wrongly:
 
 A `score` column is permitted and ignored.
 
-**Depth matters.** MRR@10 and nDCG@10 cannot be computed from 5 results. If
-depth is under 10 the harness reports the `@10` figures as truncated and warns;
-it does not present them as true `@10`. See Open questions.
+**Depth.** Five results per question is the specified procedure and is what the
+reported `@5` metrics need. If depth falls below 5 the harness warns that the
+`@5` figures are truncated.
 
 ### 3. Chunk metadata (`--chunk-metadata`)
 
@@ -100,15 +100,26 @@ Binary relevance. A question's relevant set is its `supporting_chunk_ids`, so a
 cross-company question has two relevant chunks and finding one scores 0.5
 recall.
 
+These are the four metrics named by the project owner, reported overall and per
+question group:
+
 | Metric        | Definition                                        |
 | ------------- | ------------------------------------------------- |
 | `recall_at_5` | fraction of relevant chunks appearing in the top 5 |
 | `hit_at_5`    | 1 if any relevant chunk is in the top 5            |
-| `mrr_at_10`   | 1 / rank of the first relevant chunk within 10     |
-| `ndcg_at_10`  | standard nDCG, ideal capped at k                   |
+| `mrr_at_5`    | 1 / rank of the first relevant chunk within 5      |
+| `ndcg_at_5`   | standard nDCG at 5, ideal capped at k              |
 
-`mrr_at_5` and `ndcg_at_5` are also reported. Every metric is given overall and
-per question group.
+The `@5` cutoff follows the specified procedure: the retriever returns "a
+ranked list of 5 chunk IDs per question", and the metrics recorded are
+"Recall@5, Hit Rate@5, MRR, and nDCG@5".
+
+`mrr_at_10` and `ndcg_at_10` are also computed and kept in the JSON, and
+`--decision-metric mrr_at_10` selects the deeper figure, but they are not
+reported by default — a top-5 run cannot produce a true `@10`. Note that
+`embedding_model_benchmark.py` names MRR@10 and nDCG@10 in its own
+interpretation note; where that differs from the owner's specification, the
+specification wins.
 
 Refusal questions have no supporting chunks and are **excluded from retrieval
 scoring**. They test answer-generation behaviour, not the retriever.
@@ -204,21 +215,15 @@ Exit code is `0` only when every model's gates `PASS`. Any `FAIL`,
 `NOT_EVALUATED`, or a run that scored no models exits `1`, so a caller checking
 only the exit code cannot mistake an uncertified run for success.
 
-## Open questions for the project owner
+## Open question for the project owner
 
-Two points in the spec are ambiguous. The harness takes a documented position
-rather than guessing silently; both should be confirmed.
+One point in the rule is genuinely ambiguous. The harness takes a documented
+position rather than guessing silently; it should be confirmed.
 
-1. **Retrieval depth.** The bake-off procedure returns "a ranked list of 5
-   chunk IDs per question", but the metrics named are MRR@10 and nDCG@10 (and
-   nDCG@5 in an earlier message). `@10` cannot be computed from 5 results.
-   The harness reports both depths and marks `@10` truncated when depth < 10.
-   Either the retrieval goes to 10, or the recorded metrics are `@5`.
-
-2. **The 4-of-6 condition.** "That improvement holds across at least 4 of the
-   6 question groups" — must each of those groups also improve by >= 0.03, or
-   does any improvement count? The harness requires 0.03 per group, adjustable
-   via `--per-group-threshold`.
+**The 4-of-6 condition.** "MRR improves by at least 0.03 absolute points, and
+that improvement holds across at least 4 of the 6 question groups" — must each
+of those 4 groups also improve by >= 0.03, or does any improvement count? The
+harness requires 0.03 per group, adjustable via `--per-group-threshold`.
 
 Contract note: `required_doc_type` reads `10-K|10-K` on XC-001, XC-002, TC-003
 and TC-004 but `10-K` on XC-003 and XC-004. Both behave identically here; worth

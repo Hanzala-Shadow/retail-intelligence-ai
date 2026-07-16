@@ -525,14 +525,23 @@ def test_evaluate_excludes_refusal_rows_from_retrieval_scoring():
     assert [r["question_id"] for r in report["models"]["m"]["per_question"]] == ["q1"]
 
 
-def test_evaluate_warns_when_depth_is_too_shallow_for_at_10_metrics():
-    # Ayse's procedure asks for top-5, but the metric spec names MRR@10 and
-    # nDCG@10. A 5-deep run cannot produce a true @10 figure.
+def test_evaluate_does_not_warn_at_the_specified_depth_of_five():
+    # Ayse's 2026-07-16 email specifies a ranked list of 5 chunk IDs per question
+    # and metrics Recall@5, Hit Rate@5, MRR and nDCG@5. A 5-deep run is the
+    # expected input and must not warn; the @10 figures are simply truncated.
     questions = [dict(QUESTION)]
     retrieval = {"m": {"q1": ["c1", "x", "y", "z", "w"]}}
     report = evaluate(questions, retrieval, None, "embedding_text")
     assert report["models"]["m"]["deep_metrics_truncated"] is True
-    assert any("NOT true @10" in w for w in report["warnings"])
+    assert report["warnings"] == []
+
+
+def test_evaluate_warns_when_depth_is_too_shallow_for_at_5_metrics():
+    # Fewer than 5 results means the reported @5 metrics are not true @5 figures.
+    questions = [dict(QUESTION)]
+    retrieval = {"m": {"q1": ["c1", "x", "y"]}}
+    report = evaluate(questions, retrieval, None, "embedding_text")
+    assert any("NOT true @5" in w for w in report["warnings"])
 
 
 def test_evaluate_does_not_flag_truncation_at_full_depth():
