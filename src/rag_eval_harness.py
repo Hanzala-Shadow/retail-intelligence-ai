@@ -332,20 +332,40 @@ def gate_gold_integrity(
     }
 
     mismatches: list[dict[str, str]] = []
+    misalignments: list[dict[str, Any]] = []
     unresolved: list[str] = []
     checked = 0
     for question in questions:
         if question["question_group"] == REFUSAL_GROUP:
             continue
         chunk_ids = split_multi(question["supporting_chunk_ids"])
-        for index, chunk_id in enumerate(chunk_ids):
+        if not chunk_ids:
+            continue
+        records = []
+        for chunk_id in chunk_ids:
             record = catalogue.get(chunk_id)
             if record is None:
                 unresolved.append(chunk_id)
+            records.append(record)
+
+        for meta_field in available:
+            claimed = split_multi(question.get(contract_fields[meta_field], ""))
+            # These fields are positional: value i describes chunk i. A length
+            # mismatch means the row cannot be checked at all, which is a
+            # contract defect - report it rather than skipping the comparison.
+            if len(claimed) != len(chunk_ids):
+                misalignments.append(
+                    {
+                        "question_id": question["question_id"],
+                        "field": contract_fields[meta_field],
+                        "chunk_count": len(chunk_ids),
+                        "value_count": len(claimed),
+                    }
+                )
                 continue
-            for meta_field in available:
-                claimed = split_multi(question.get(contract_fields[meta_field], ""))
-                if index >= len(claimed):
+            for index, chunk_id in enumerate(chunk_ids):
+                record = records[index]
+                if record is None:
                     continue
                 checked += 1
                 actual = (record.get(meta_field) or "").strip()
@@ -370,10 +390,12 @@ def gate_gold_integrity(
         }
 
     return {
-        "status": PASS if not mismatches else FAIL,
+        "status": PASS if not (mismatches or misalignments) else FAIL,
         "fields_checked": checked,
         "mismatches": mismatches[:20],
         "mismatch_count": len(mismatches),
+        "misalignments": misalignments[:20],
+        "misalignment_count": len(misalignments),
     }
 
 
@@ -394,15 +416,27 @@ def gate_evidence_present(
         }
 
     missing: list[dict[str, str]] = []
+    misalignments: list[dict[str, Any]] = []
     checked = 0
     for question in questions:
         if question["question_group"] == REFUSAL_GROUP:
             continue
         chunk_ids = split_multi(question["supporting_chunk_ids"])
+        if not chunk_ids:
+            continue
         passages = split_multi(question.get("supporting_passages", ""))
+        # Passage i is the evidence for chunk i. If the counts disagree the row
+        # cannot be verified, which is itself a defect worth reporting.
+        if len(passages) != len(chunk_ids):
+            misalignments.append(
+                {
+                    "question_id": question["question_id"],
+                    "chunk_count": len(chunk_ids),
+                    "passage_count": len(passages),
+                }
+            )
+            continue
         for index, chunk_id in enumerate(chunk_ids):
-            if index >= len(passages):
-                continue
             record = catalogue.get(chunk_id)
             if record is None:
                 continue
@@ -412,13 +446,15 @@ def gate_evidence_present(
             if needle and needle not in haystack:
                 missing.append({"question_id": question["question_id"], "chunk_id": chunk_id})
 
-    if not checked:
+    if not checked and not misalignments:
         return {"status": NOT_EVALUATED, "reason": "no passage/chunk pairs available to check"}
     return {
-        "status": PASS if not missing else FAIL,
+        "status": PASS if not (missing or misalignments) else FAIL,
         "passages_checked": checked,
         "passages_not_found": missing[:20],
         "not_found_count": len(missing),
+        "misalignments": misalignments[:20],
+        "misalignment_count": len(misalignments),
     }
 
 
@@ -726,8 +762,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--text-field",
-        default="embedding_text",
-        help="metadata column holding chunk text, for passage verification",
+        default="chunk_text",
+        help=(
+            "metadata column holding chunk text, for passage verification. "
+            "Defaults to chunk_text because the contract's supporting passages were "
+            "quoted from the chunk files; embedding_text is a cleaned derivative and "
+            "may not contain the passage verbatim"
+        ),
     )
     parser.add_argument(
         "--decision-metric",
@@ -776,8 +817,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"decision: {decision.get('winner', decision['status'])}")
     print(f"wrote {json_path}, {md_path}, {csv_path}")
 
-    blocked = any(m["gates"]["overall"] == FAIL for m in report["models"].values())
-    return 1 if blocked else 0
+    # Exit 0 only when every model produced a fully gated result. A run whose
+    # gates could not be evaluated has certified nothing, and must not read as
+    # success to a caller that only checks the exit code.
+    if not report["models"]:
+        return 1
+    return 0 if all(m["gates"]["overall"] == PASS for m in report["models"].values()) else 1
 
 
 if __name__ == "__main__":
