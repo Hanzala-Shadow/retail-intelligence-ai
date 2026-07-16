@@ -4,7 +4,17 @@ Consumes the approved benchmark contract plus one ranked-retrieval result set
 per candidate embedding model, and produces the gated retrieval metrics the
 project requires before a production model may be selected:
 
-    Recall@5, Hit Rate@5, MRR@10, nDCG@10 - overall and per question group.
+    Recall@5, Hit Rate@5, MRR@5, nDCG@5 - overall and per question group.
+
+Those four are the metrics named by the project owner, and @5 matches the
+bake-off procedure she specified: the retriever returns "a ranked list of 5
+chunk IDs per question". MRR@10 and nDCG@10 are also computed and kept in the
+JSON, and `--decision-metric mrr_at_10` can select the deeper figure, but they
+are not reported by default: a top-5 run cannot produce a true @10.
+
+(`src/embedding_model_benchmark.py` names MRR@10 and nDCG@10 in its own
+interpretation note. Where that differs from the owner's specification, the
+specification wins.)
 
 `src/embedding_model_benchmark.py` measures throughput and resource use only.
 It states that the production model "must not be selected from speed or
@@ -53,7 +63,8 @@ SCORED_GROUPS = (
 )
 REFUSAL_GROUP = "refusal"
 
-# Depth required to report MRR@10 / nDCG@10 without truncation.
+# SHALLOW_K is the reported cutoff and matches the specified bake-off procedure
+# (top 5 per question). DEEP_K only bounds the optional @10 figures.
 DEEP_K = 10
 SHALLOW_K = 5
 
@@ -639,10 +650,10 @@ def evaluate(
         depths = {row["retrieved_depth"] for row in rows}
         min_depth = min(depths)
         truncated = min_depth < DEEP_K
-        if truncated:
+        if min_depth < SHALLOW_K:
             warnings.append(
-                f"{model_id}: retrieval depth is {min_depth}; mrr_at_10 and ndcg_at_10 are "
-                f"computed over {min_depth} results and are NOT true @10 figures"
+                f"{model_id}: retrieval depth is {min_depth}; the reported @5 metrics are "
+                f"computed over {min_depth} results and are NOT true @5 figures"
             )
 
         doc_type_gate = gate_wrong_doc_type(by_id, per_question_results, catalogue)
@@ -718,13 +729,13 @@ def write_markdown(report: dict[str, Any], decision: dict[str, Any], path: Path)
         )
     lines.append("")
 
-    lines += ["## Overall scores", "", "| Model | Recall@5 | Hit@5 | MRR@10 | nDCG@10 |", "| --- | --- | --- | --- | --- |"]
+    lines += ["## Overall scores", "", "| Model | Recall@5 | Hit@5 | MRR@5 | nDCG@5 |", "| --- | --- | --- | --- | --- |"]
     for model_id, model in report["models"].items():
         overall = model["scores"]["overall"]
         lines.append(
             f"| {model_id} | {format_value(overall['recall_at_5'])} | "
-            f"{format_value(overall['hit_at_5'])} | {format_value(overall['mrr_at_10'])} | "
-            f"{format_value(overall['ndcg_at_10'])} |"
+            f"{format_value(overall['hit_at_5'])} | {format_value(overall['mrr_at_5'])} | "
+            f"{format_value(overall['ndcg_at_5'])} |"
         )
     lines.append("")
 
@@ -732,14 +743,14 @@ def write_markdown(report: dict[str, Any], decision: dict[str, Any], path: Path)
         lines += [
             f"### {model_id} by question group",
             "",
-            "| Group | Recall@5 | Hit@5 | MRR@10 | nDCG@10 |",
+            "| Group | Recall@5 | Hit@5 | MRR@5 | nDCG@5 |",
             "| --- | --- | --- | --- | --- |",
         ]
         for group, values in model["scores"]["by_group"].items():
             lines.append(
                 f"| {group} | {format_value(values['recall_at_5'])} | "
-                f"{format_value(values['hit_at_5'])} | {format_value(values['mrr_at_10'])} | "
-                f"{format_value(values['ndcg_at_10'])} |"
+                f"{format_value(values['hit_at_5'])} | {format_value(values['mrr_at_5'])} | "
+                f"{format_value(values['ndcg_at_5'])} |"
             )
         lines.append("")
 
@@ -779,8 +790,8 @@ def write_per_question_csv(report: dict[str, Any], path: Path) -> None:
                 "retrieved_depth",
                 "recall_at_5",
                 "hit_at_5",
-                "mrr_at_10",
-                "ndcg_at_10",
+                "mrr_at_5",
+                "ndcg_at_5",
                 "retrieved_chunk_ids",
             ]
         )
@@ -795,8 +806,8 @@ def write_per_question_csv(report: dict[str, Any], path: Path) -> None:
                         row["retrieved_depth"],
                         f"{row['recall_at_5']:.6f}",
                         f"{row['hit_at_5']:.6f}",
-                        f"{row['mrr_at_10']:.6f}",
-                        f"{row['ndcg_at_10']:.6f}",
+                        f"{row['mrr_at_5']:.6f}",
+                        f"{row['ndcg_at_5']:.6f}",
                         MULTI_VALUE_SEPARATOR.join(row["retrieved_chunk_ids"]),
                     ]
                 )
@@ -829,8 +840,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--decision-metric",
-        default="mrr_at_10",
-        choices=["mrr_at_10", "mrr_at_5"],
+        default="mrr_at_5",
+        choices=["mrr_at_5", "mrr_at_10"],
         help="metric used for the BGE Base vs BGE Large rule",
     )
     parser.add_argument(
