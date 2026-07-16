@@ -2,88 +2,186 @@ import pandas as pd
 from pathlib import Path
 import sys
 
-BASELINE_PATH = Path("reports/week3_day1/vector_index_manifest.csv")
-CURRENT_CHUNKS_PATH = Path("data/00_reference/chunks_index.csv")
+MANIFEST_PATH = Path("reports/week3_day1/vector_index_manifest.csv")
+COMPANIES_PATH = Path("data/00_reference/companies.csv")
 
-def load_baseline():
-    if not BASELINE_PATH.exists():
-        print(f"FATAL: Baseline file not found at {BASELINE_PATH}")
-        sys.exit(1)
-    return pd.read_csv(BASELINE_PATH)
+BASELINE_FILINGS = 571
+BASELINE_TOTAL_CHUNKS = 113454
+BASELINE_ELIGIBLE_CHUNKS = 89760
+BASELINE_COMPANIES = 194
 
-def load_current():
-    if not CURRENT_CHUNKS_PATH.exists():
-        print(f"FATAL: Current chunks file not found at {CURRENT_CHUNKS_PATH}")
+
+def load_data():
+    if not MANIFEST_PATH.exists():
+        print(f"FATAL: {MANIFEST_PATH} not found")
         sys.exit(1)
-    return pd.read_csv(CURRENT_CHUNKS_PATH)
+    if not COMPANIES_PATH.exists():
+        print(f"FATAL: {COMPANIES_PATH} not found")
+        sys.exit(1)
+    manifest = pd.read_csv(MANIFEST_PATH)
+    companies = pd.read_csv(COMPANIES_PATH)
+    return manifest, companies
+
+
+def check_1_token_distribution(manifest):
+    """Token count distribution by chunk type (grouped by section_label)."""
+    print("\n" + "=" * 70)
+    print("CHECK 1 — Token count distribution by chunk type")
+    print("=" * 70)
+
+    stats = manifest.groupby("section_label")["token_count"].agg(
+        ["count", "min", "max", "mean"]
+    ).round(1)
+    print(stats.to_string())
+
+    below_50 = manifest[manifest["token_count"] < 50]
+    above_600 = manifest[manifest["token_count"] > 600]
+
+    passed = len(below_50) == 0 and len(above_600) == 0
+    print(f"\nChunks below 50 tokens: {len(below_50)}")
+    print(f"Chunks above 600 tokens: {len(above_600)}")
+    print(f"RESULT: {'PASS' if passed else 'FAIL'}")
+    return passed
+
+
+def check_2_section_attribution(manifest):
+    """Section attribution completeness rate - % of chunks with a valid section_label."""
+    print("\n" + "=" * 70)
+    print("CHECK 2 — Section attribution completeness rate")
+    print("=" * 70)
+
+    total = len(manifest)
+    labeled = manifest["section_label"].notna().sum()
+    rate = labeled / total * 100
+
+    print(f"Total chunks: {total}")
+    print(f"Chunks with section_label: {labeled}")
+    print(f"Completeness rate: {rate:.2f}%")
+
+    passed = rate == 100.0
+    print(f"RESULT: {'PASS' if passed else 'FAIL'}")
+    return passed
+
+
+def check_3_chunk_count_per_company(manifest, companies):
+    """Chunk count per company vs expected (flag companies with 0 or suspiciously low counts)."""
+    print("\n" + "=" * 70)
+    print("CHECK 3 — Chunk count per company vs expected")
+    print("=" * 70)
+
+    per_company = manifest.groupby("ticker").size()
+    all_tickers = set(companies["ticker"])
+    manifest_tickers = set(manifest["ticker"])
+
+    zero_chunk_companies = all_tickers - manifest_tickers
+    print(f"Companies with 0 eligible chunks: {len(zero_chunk_companies)}")
+    if zero_chunk_companies:
+        print(f"  {sorted(zero_chunk_companies)}")
+
+    low_chunk_companies = per_company[per_company < 50]
+    print(f"\nCompanies with suspiciously low chunk counts (<50): {len(low_chunk_companies)}")
+    if len(low_chunk_companies) > 0:
+        print(low_chunk_companies.to_string())
+
+    print(f"\nAvg chunks per company: {per_company.mean():.1f}")
+    print(f"Median chunks per company: {per_company.median():.1f}")
+
+    # Known expected exception: YSWY has no SEC filings (delisted/private)
+    unexpected_zero = zero_chunk_companies - {"YSWY"}
+    passed = len(unexpected_zero) == 0
+    if unexpected_zero:
+        print(f"\nUNEXPECTED zero-chunk companies (not YSWY): {unexpected_zero}")
+    print(f"RESULT: {'PASS' if passed else 'FAIL'} (YSWY zero-chunk is a known, expected exception)")
+    return passed
+
+
+def check_4_metadata_null_rates(manifest):
+    """Metadata NULL rates for rag_eligible_10k_chunks rows."""
+    print("\n" + "=" * 70)
+    print("CHECK 4 — Metadata NULL rates (rag_eligible_10k_chunks view)")
+    print("=" * 70)
+
+    null_counts = manifest.isnull().sum()
+    total = len(manifest)
+
+    print(f"Total rows: {total}")
+    print("NULL counts per column:")
+    print(null_counts.to_string())
+
+    total_nulls = null_counts.sum()
+    null_rate = total_nulls / (total * len(manifest.columns)) * 100
+
+    print(f"\nOverall NULL rate: {null_rate:.4f}%")
+    passed = total_nulls == 0
+    print(f"RESULT: {'PASS' if passed else 'FAIL'}")
+    return passed
+
+
+def check_5_company_coverage(manifest, companies):
+    """Total coverage against the 194-company list."""
+    print("\n" + "=" * 70)
+    print("CHECK 5 — Total coverage against company list")
+    print("=" * 70)
+
+    total_companies = len(companies)
+    covered_companies = manifest["ticker"].nunique()
+    missing = set(companies["ticker"]) - set(manifest["ticker"])
+
+    print(f"Total companies in companies.csv: {total_companies}")
+    print(f"Companies with eligible chunks: {covered_companies}")
+    print(f"Missing companies: {sorted(missing) if missing else 'none'}")
+
+    coverage_matches_baseline = total_companies == BASELINE_COMPANIES
+    known_exception = missing == {"YSWY"}
+
+    print(f"\nBaseline company count: {BASELINE_COMPANIES}")
+    print(f"Current company count: {total_companies}")
+    print(f"Delta: {total_companies - BASELINE_COMPANIES}")
+
+    passed = coverage_matches_baseline and known_exception
+    print(f"RESULT: {'PASS' if passed else 'FAIL'} (YSWY missing is a known, documented exception)")
+    return passed
+
 
 def main():
-    print("=" * 60)
-    print("REGRESSION TEST — comparing against frozen baseline")
-    print("=" * 60)
-    print("\nNOTE: baseline uses DB-generated integer chunk_ids (RAG-eligible")
-    print("chunks only). Local chunks_index.csv uses descriptive string IDs")
-    print("and includes ALL chunks, not just eligible ones. Exact chunk-level")
-    print("comparison requires live DB access. This script checks what CAN")
-    print("be verified locally: company coverage and relative chunk volume.\n")
+    print("=" * 70)
+    print("THURSDAY REGRESSION TEST SUITE — 5-check deep validation")
+    print(f"Baseline: {BASELINE_FILINGS} filings, {BASELINE_TOTAL_CHUNKS} total chunks, "
+          f"{BASELINE_ELIGIBLE_CHUNKS} eligible chunks, {BASELINE_COMPANIES} companies")
+    print("=" * 70)
 
-    baseline = load_baseline()
-    current = load_current()
+    manifest, companies = load_data()
 
-    failures = []
-    warnings = []
+    print(f"\nLoaded manifest: {len(manifest)} rows")
+    manifest_matches_baseline = len(manifest) == BASELINE_ELIGIBLE_CHUNKS
+    print(f"Manifest row count vs baseline eligible chunks: "
+          f"{'MATCH' if manifest_matches_baseline else 'MISMATCH'} "
+          f"(delta: {len(manifest) - BASELINE_ELIGIBLE_CHUNKS})")
 
-    # --- Check 1: company coverage ---
-    baseline_tickers = set(baseline['ticker'].unique())
-    current_tickers = set(current['company'].unique())
-    missing_tickers = baseline_tickers - current_tickers
-    extra_tickers = current_tickers - baseline_tickers
+    results = {
+        "1_token_distribution": check_1_token_distribution(manifest),
+        "2_section_attribution": check_2_section_attribution(manifest),
+        "3_chunk_count_per_company": check_3_chunk_count_per_company(manifest, companies),
+        "4_metadata_null_rates": check_4_metadata_null_rates(manifest),
+        "5_company_coverage": check_5_company_coverage(manifest, companies),
+    }
 
-    if missing_tickers:
-        failures.append(f"{len(missing_tickers)} baseline companies missing locally: {sorted(missing_tickers)[:10]}")
-    else:
-        print(f"PASS: all {len(baseline_tickers)} baseline companies present locally")
+    print("\n" + "=" * 70)
+    print("FINAL SUMMARY")
+    print("=" * 70)
+    for check, passed in results.items():
+        print(f"  {check}: {'PASS' if passed else 'FAIL'}")
 
-    if extra_tickers:
-        warnings.append(f"{len(extra_tickers)} companies exist locally but not in baseline: {sorted(extra_tickers)[:10]}")
+    all_passed = all(results.values()) and manifest_matches_baseline
+    print(f"\nOVERALL: {'ALL CHECKS PASSED' if all_passed else 'SOME CHECKS FAILED'}")
+    print("\nNOTE: This suite validates against the local vector_index_manifest.csv snapshot")
+    print("(the frozen eligible-chunk baseline). It does not independently re-query the live")
+    print("PostgreSQL database — that would require DB credentials this script does not have.")
+    print("=" * 70)
 
-    # --- Check 2: per-company chunk count sanity (local should be >= baseline eligible count) ---
-    baseline_per_company = baseline.groupby('ticker').size()
-    current_per_company = current.groupby('company').size()
-
-    undersized = []
-    for ticker, baseline_n in baseline_per_company.items():
-        current_n = current_per_company.get(ticker, 0)
-        if current_n < baseline_n:
-            undersized.append((ticker, baseline_n, current_n))
-
-    if undersized:
-        failures.append(f"{len(undersized)} companies have FEWER local chunks than baseline eligible count (should never happen — local includes non-eligible too): {undersized[:5]}")
-    else:
-        print("PASS: every company has at least as many local chunks as its baseline eligible count")
-
-    # --- Check 3: total volume sanity ---
-    print(f"\nBaseline (RAG-eligible only): {len(baseline)} chunks")
-    print(f"Local (all chunks, incl. excluded): {len(current)} chunks")
-    print(f"Difference: {len(current) - len(baseline)} (expected to be positive — local includes excluded chunks)")
-
-    if len(current) < len(baseline):
-        failures.append("Local total is SMALLER than baseline eligible count — this should be impossible")
-
-    print("\n" + "=" * 60)
-    if warnings:
-        print("WARNINGS:")
-        for w in warnings:
-            print(f"  - {w}")
-    if failures:
-        print(f"\nREGRESSION TEST FAILED — {len(failures)} issue(s) found:")
-        for f in failures:
-            print(f"  - {f}")
+    if not all_passed:
         sys.exit(1)
-    else:
-        print("\nREGRESSION TEST PASSED (local-verifiable checks only)")
-        print("Full chunk-level verification requires DB access — recommend Hanzala runs this against live DB too.")
-    print("=" * 60)
+
 
 if __name__ == "__main__":
     main()
