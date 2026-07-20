@@ -1,0 +1,745 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 6593.81it/s]
+/home/ubuntu/projects/retail-intelligence-ai/src/retrieval_embedding_benchmark.py:104: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  dimension = loaded.get_sentence_embedding_dimension()
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 6864.76it/s]
+{
+  "cross_encoder_only_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.6875,
+        "ndcg_at_5": 0.7654015779112127,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_5": 0.375,
+        "recall_at_5": 0.5
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_5": 0.375,
+        "recall_at_5": 0.5
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.75,
+        "ndcg_at_5": 0.5258774252172416,
+        "recall_at_5": 0.5
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.14583333333333331,
+        "ndcg_at_5": 0.23266913951834828,
+        "recall_at_5": 0.5
+      }
+    },
+    "misses": [
+      "10K-V2-I7-002",
+      "10K-V2-I7-004",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-XC-002",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.5208333333333334,
+      "ndcg_at_5": 0.5302800968399445,
+      "recall_at_5": 0.6666666666666666
+    }
+  },
+  "cross_encoder_semantic_lexical_union_10": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.6875,
+        "ndcg_at_5": 0.7654015779112127,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.375,
+        "ndcg_at_5": 0.4077324383928644,
+        "recall_at_5": 0.5
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_5": 0.375,
+        "recall_at_5": 0.5
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.75,
+        "ndcg_at_5": 0.5258774252172416,
+        "recall_at_5": 0.5
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.08333333333333333,
+        "ndcg_at_5": 0.125,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-002",
+      "10K-V2-I7-004",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-XC-002",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.6666666666666666,
+      "mrr": 0.517361111111111,
+      "ndcg_at_5": 0.5177906466523639,
+      "recall_at_5": 0.625
+    }
+  },
+  "cross_encoder_semantic_lexical_union_20": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.6875,
+        "ndcg_at_5": 0.7654015779112127,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_5": 0.375,
+        "recall_at_5": 0.5
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_5": 0.375,
+        "recall_at_5": 0.5
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.75,
+        "ndcg_at_5": 0.5258774252172416,
+        "recall_at_5": 0.5
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.14583333333333331,
+        "ndcg_at_5": 0.23266913951834828,
+        "recall_at_5": 0.5
+      }
+    },
+    "misses": [
+      "10K-V2-I7-002",
+      "10K-V2-I7-004",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-XC-002",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.5208333333333334,
+      "ndcg_at_5": 0.5302800968399445,
+      "recall_at_5": 0.6666666666666666
+    }
+  },
+  "cross_encoder_semantic_lexical_union_5": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.7083333333333334,
+        "ndcg_at_5": 0.7827324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.425,
+        "ndcg_at_5": 0.5044456402014998,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.75,
+        "ndcg_at_5": 0.5258774252172416,
+        "recall_at_5": 0.5
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.08333333333333333,
+        "ndcg_at_5": 0.125,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-XC-002",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.625,
+      "mrr": 0.47361111111111115,
+      "ndcg_at_5": 0.47429799036741166,
+      "recall_at_5": 0.5833333333333334
+    }
+  },
+  "equal_three_way_rrf_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.7083333333333334,
+        "ndcg_at_5": 0.7827324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.20833333333333331,
+        "ndcg_at_5": 0.2827324383928644,
+        "recall_at_5": 0.5
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.14583333333333331,
+        "ndcg_at_5": 0.23266913951834828,
+        "recall_at_5": 0.5
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7098603945740938,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-002",
+      "10K-V2-I7-004",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.5104166666666666,
+      "ndcg_at_5": 0.5122432146106499,
+      "recall_at_5": 0.6458333333333334
+    }
+  },
+  "hybrid_rank_plus_cross_encoder_rrf_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.7083333333333334,
+        "ndcg_at_5": 0.7827324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.875,
+        "ndcg_at_5": 0.9077324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.20833333333333331,
+        "ndcg_at_5": 0.2827324383928644,
+        "recall_at_5": 0.5
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.14583333333333331,
+        "ndcg_at_5": 0.23266913951834828,
+        "recall_at_5": 0.5
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8333333333333334,
+        "ndcg_at_5": 0.6025208243129239,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-002",
+      "10K-V2-I7-004",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.4826388888888889,
+      "ndcg_at_5": 0.49435328623378827,
+      "recall_at_5": 0.6458333333333334
+    }
+  },
+  "lexical_only_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.3625,
+        "ndcg_at_5": 0.4543823413269837,
+        "recall_at_5": 0.75
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 0.5,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_5": 0.25,
+        "recall_at_5": 0.5
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.25,
+        "recall_at_5": 0.25
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      }
+    },
+    "misses": [
+      "10K-V2-I1-001",
+      "10K-V2-I1A-003",
+      "10K-V2-I1A-004",
+      "10K-V2-I7-001",
+      "10K-V2-I7-002",
+      "10K-V2-I7-003",
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-XC-001",
+      "10K-V2-XC-003",
+      "10K-V2-XC-004",
+      "10K-V2-TC-001",
+      "10K-V2-TC-002",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.25,
+      "mrr": 0.12986111111111112,
+      "ndcg_at_5": 0.15906372355449727,
+      "recall_at_5": 0.25
+    }
+  },
+  "semantic_2x_lexical_1x_cross_encoder_1x_rrf_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5833333333333334,
+        "ndcg_at_5": 0.6904648767857288,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.625,
+        "ndcg_at_5": 0.7231973151785931,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.3730707174295609,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.08333333333333333,
+        "ndcg_at_5": 0.125,
+        "recall_at_5": 0.25
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7098603945740938,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.4444444444444444,
+      "ndcg_at_5": 0.46322095706014016,
+      "recall_at_5": 0.6458333333333334
+    }
+  },
+  "semantic_2x_lexical_1x_cross_encoder_1x_rrf_union_10": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5833333333333334,
+        "ndcg_at_5": 0.6904648767857288,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.625,
+        "ndcg_at_5": 0.7231973151785931,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.2708333333333333,
+        "ndcg_at_5": 0.39040157791121266,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.08333333333333333,
+        "ndcg_at_5": 0.125,
+        "recall_at_5": 0.25
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7098603945740938,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.4479166666666667,
+      "ndcg_at_5": 0.46610943380708214,
+      "recall_at_5": 0.6458333333333334
+    }
+  },
+  "semantic_2x_lexical_1x_cross_encoder_1x_rrf_union_20": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5833333333333334,
+        "ndcg_at_5": 0.6904648767857288,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.625,
+        "ndcg_at_5": 0.7231973151785931,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.3730707174295609,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.08333333333333333,
+        "ndcg_at_5": 0.125,
+        "recall_at_5": 0.25
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7098603945740938,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.7083333333333334,
+      "mrr": 0.4444444444444444,
+      "ndcg_at_5": 0.46322095706014016,
+      "recall_at_5": 0.6458333333333334
+    }
+  },
+  "semantic_3x_cross_encoder_1x_rrf_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5625,
+        "ndcg_at_5": 0.673134016304077,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5,
+        "ndcg_at_5": 0.6309297535714575,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.22916666666666666,
+        "ndcg_at_5": 0.3576691395183483,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.6458333333333334,
+        "ndcg_at_5": 0.4492340261215592,
+        "recall_at_5": 0.5
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.6666666666666666,
+      "mrr": 0.34375,
+      "ndcg_at_5": 0.3781165623180511,
+      "recall_at_5": 0.5833333333333334
+    }
+  },
+  "semantic_lexical_rrf_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5625,
+        "ndcg_at_5": 0.673134016304077,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5416666666666666,
+        "ndcg_at_5": 0.6577324383928644,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.2708333333333333,
+        "ndcg_at_5": 0.39040157791121266,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "cross_company": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8333333333333334,
+        "ndcg_at_5": 0.6332169954784115,
+        "recall_at_5": 0.625
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.6666666666666666,
+      "mrr": 0.3888888888888889,
+      "ndcg_at_5": 0.418702911079905,
+      "recall_at_5": 0.6041666666666666
+    }
+  },
+  "semantic_only_full": {
+    "by_group": {
+      "Item_1": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.5625,
+        "ndcg_at_5": 0.673134016304077,
+        "recall_at_5": 1.0
+      },
+      "Item_1A": {
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.41666666666666663,
+        "ndcg_at_5": 0.5654648767857288,
+        "recall_at_5": 1.0
+      },
+      "Item_7": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.2708333333333333,
+        "ndcg_at_5": 0.39040157791121266,
+        "recall_at_5": 0.75
+      },
+      "Item_8": {
+        "hit_rate_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "cross_company": {
+        "hit_rate_at_5": 0.75,
+        "mrr": 0.5833333333333334,
+        "ndcg_at_5": 0.3832169954784115,
+        "recall_at_5": 0.375
+      },
+      "time_change": {
+        "hit_rate_at_5": 0.25,
+        "mrr": 0.125,
+        "ndcg_at_5": 0.15773243839286438,
+        "recall_at_5": 0.25
+      }
+    },
+    "misses": [
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-XC-002",
+      "10K-V2-TC-001",
+      "10K-V2-TC-003",
+      "10K-V2-TC-004"
+    ],
+    "overall": {
+      "hit_rate_at_5": 0.625,
+      "mrr": 0.3263888888888889,
+      "ndcg_at_5": 0.36165831747871574,
+      "recall_at_5": 0.5625
+    }
+  }
+}
+elapsed_seconds=181.457188
+total_candidate_pairs_scored=1100
+PASS: wrote immutable fusion result: reports/week3_retrieval/retrieval_benchmark_20260716T164940Z/bge_large_candidate_pilot_20260718/bge_large_retrieval_pass2.json
+PASS2_EXIT_CODE=0
+Sat Jul 18 15:50:38 UTC 2026

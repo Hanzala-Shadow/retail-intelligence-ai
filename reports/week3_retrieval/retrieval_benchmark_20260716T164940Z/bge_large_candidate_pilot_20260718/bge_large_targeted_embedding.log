@@ -1,0 +1,26 @@
+PASS: schema ready without vector index: public.benchmark_embeddings_bge_large_en_v15
+{
+  "already_embedded": 94,
+  "authorized_unique_chunks": 1100,
+  "manifest_sha256": "6b56ca4f104ac6cbe67a7e78d613efb34d748ad110786dc8707a5a5fbadece8a",
+  "pending_embeddings": 1006
+}
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 3944.22it/s]
+/home/ubuntu/projects/retail-intelligence-ai/src/retrieval_embedding_benchmark.py:104: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  dimension = loaded.get_sentence_embedding_dimension()
+[bge_large_en_v15] embedded 2/1006
+[bge_large_en_v15] embedded 100/1006
+[bge_large_en_v15] embedded 200/1006
+[bge_large_en_v15] embedded 300/1006
+[bge_large_en_v15] embedded 400/1006
+[bge_large_en_v15] embedded 500/1006
+[bge_large_en_v15] embedded 600/1006
+[bge_large_en_v15] embedded 700/1006
+[bge_large_en_v15] embedded 800/1006
+[bge_large_en_v15] embedded 900/1006
+[bge_large_en_v15] embedded 1000/1006
+[bge_large_en_v15] embedded 1006/1006
+{"finished_at": "2026-07-18T12:22:14.524423+00:00", "model": "bge_large_en_v15", "new_rows": 1006, "seconds": 3186.302390041994}
+EXIT_CODE=0
+Sat Jul 18 12:22:15 UTC 2026
