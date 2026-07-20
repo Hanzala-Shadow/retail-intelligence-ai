@@ -1,0 +1,450 @@
+ticker,pdf_file,page,stratum,decision_class,subtype,note
+LEG,LEG-LEGGETT & PLATT INC-2021.pdf,21,representative,prose,prose_multicol,Two flowing prose columns and an independent bullet list have no cross-column row correspondence.
+HD,HD-HOME DEPOT INC-2021.pdf,129,representative,ambiguous_or_mixed,chart_infographic,A prose block sits beside a standalone six-step PAC process graphic with no single natural linear order.
+DELL,DELL-DELL TECHNOLOGIES INC-2023.pdf,68,representative,prose,prose_multicol,Two prose columns and self-contained program-stat callouts do not detach label-value pairs.
+PVH,PVH-PVH CORP-2022.pdf,92,representative,table_dominant,disclosure_index_table,The large TCFD-to-CDP index maps row disclosures to a separate response column.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2021.pdf,81,representative,table_dominant,disclosure_index_table,This SASB index maps topics and codes to disclosure and reference fields across rows.
+FIVE,FIVE-FIVE BELOW INC-2026.pdf,7,representative,table_dominant,disclosure_index_table,The SASB topic-metric-response grid requires each row's fields to stay aligned.
+CASY,CASY-CASEYS GENERAL STORES INC-2023.pdf,54,representative,table_dominant,disclosure_index_table,Each SDG column pairs a shared description and Casey contribution/report-section rows, so column-major order separates row fields.
+TDUP,TDUP-THREDUP INC-2021.pdf,2,representative,prose,prose_multicol,A CEO letter uses standard flowing text columns with an adjacent portrait.
+WHR,WHR-WHIRLPOOL CORP-2023.pdf,89,representative,table_dominant,disclosure_index_table,The GRI number-name-response index is a row-aligned table.
+WSM,WSM-WILLIAMS-SONOMA INC-2022.pdf,46,representative,table_dominant,disclosure_index_table,The SDG, goal, target, initiative, and reference fields form a wide row-structured disclosure index.
+MELI,MELI-MERCADOLIBRE-2025.pdf,16,representative,ambiguous_or_mixed,other,Executive profile cards and committee cards are independent boxed content rather than a single linear text flow.
+MUSA,MUSA-MURPHY USA INC-2021.pdf,4,representative,prose,prose_multicol,A CEO message is laid out as two conventional flowing prose columns.
+TJX,TJX-Tjx Cos Inc-2025.pdf,15,representative,prose,prose_multicol,This is standard two-column narrative prose with section headings.
+CAL,CAL-CALERES INC-2023.pdf,51,representative,table_dominant,disclosure_index_table,The TCFD metric and company-response rows form a disclosure index table.
+AEO,AEO-AMERICAN EAGLE OUTFITTERS INC-2022.pdf,57,representative,prose,prose_multicol,Two prose areas and a self-contained progress timeline do not have cross-column row dependencies.
+M,M-MACY'S INC-2025.pdf,45,representative,prose,prose_multicol,The page contains two continuous prose columns under product-sourcing headings.
+VRA,VRA-VERA BRADLEY INC-2024.pdf,9,representative,table_dominant,data_table_ruled,A ruled SASB disclosure table aligns metric descriptions, units, responses, and codes by row.
+WHR,WHR-WHIRLPOOL CORP-2021.pdf,96,representative,prose,prose_multicol,The large left callout and adjacent narrative columns are independent prose content.
+KR,KR-KROGER CO-2022.pdf,57,representative,prose,prose_multicol,A narrative column dominates and the adjacent policy-resource table is a minor portion of the page.
+HD,HD-HOME DEPOT INC-2021.pdf,52,representative,prose,prose_multicol,Story prose, a bullet timeline, quotation, and photos have no row-level cross-column matching.
+MUSA,MUSA-MURPHY USA INC-2022.pdf,17,representative,prose,prose_multicol,Two narrative sections contain self-contained highlighted statistics rather than cross-column table rows.
+RL,RL-RALPH LAUREN CORP-2023.pdf,109,representative,table_dominant,disclosure_index_table,A SASB topic-response table aligns each disclosure item with its response.
+CRI,CRI-CARTER'S INC-2021.pdf,44,representative,prose,prose_multicol,The page presents short prose and independent bullets beside a photo.
+NKE,NKE-NIKE INC -CL B-2024.pdf,37,representative,table_dominant,data_table_ruled,The large emission-factor table aligns source, source type, and factor fields by row.
+FL,FL-FOOT LOCKER INC-2021.pdf,45,representative,prose,prose_multicol,Separate narrative columns, bullet lists, and photographs do not constitute a row-aligned table.
+WHR,WHR-WHIRLPOOL CORP-2021.pdf,75,representative,prose,prose_multicol,The governance and ethics bullet lists are independent content areas with no shared rows.
+XOM,XOM-EXXON MOBIL CORP-2022.pdf,54,representative,prose,prose_multicol,Two standard prose columns and links are accompanied by icons and a photo.
+BBWI,BBWI-BATH & BODY WORKS INC-2024.pdf,96,representative,prose,other,This is a two-page assurance letter reproduced side by side rather than a cross-column table.
+PLCE,PLCE-The Childrens Place-2022.pdf,90,representative,table_dominant,disclosure_index_table,The GRI disclosure-number, description, requirement, and language fields are row-aligned.
+LAD,LAD-LITHIA MOTORS INC -CL A-2022.pdf,3,representative,prose,prose_multicol,A CEO letter uses flowing text columns alongside a photograph.
+ROST,ROST-ROSS STORES INC-2021.pdf,13,representative,prose,prose_multicol,Narrative text columns sit beside a photograph with no table row relationships.
+DLTR,DLTR-DOLLAR TREE INC-2023.pdf,29,representative,table_dominant,data_table_ruled,The emissions categories and two yearly value columns are a row-aligned data table.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2022.pdf,71,representative,table_dominant,disclosure_index_table,The SDG target and National Vision initiative columns are aligned by row.
+RL,RL-RALPH LAUREN CORP-2024.pdf,58,representative,prose,prose_multicol,A self-contained side callout accompanies flowing narrative prose.
+BRLT,BRLT-BRILLIANT EARTH GP INC-2022.pdf,55,representative,table_dominant,disclosure_index_table,The GRI standard, disclosure, location, detail, and code columns are row-structured.
+DELL,DELL-DELL TECHNOLOGIES INC-2022.pdf,26,representative,table_dominant,data_table_ruled,Goals, measures, yearly values, and performance commentary form a wide data table.
+HD,HD-HOME DEPOT INC-2023.pdf,122,representative,table_dominant,disclosure_index_table,TCFD recommended-disclosure topics map to report sections, page numbers, and sources by row.
+M,M-MACY'S INC-2024.pdf,15,representative,prose,prose_multicol,Narrative text and a separate boxed program list are not row-aligned.
+LOVE,LOVE-LOVESAC CO (THE)-2025.pdf,47,representative,prose,chart_infographic,The board icons and donut statistic are self-contained callouts beside ordinary prose.
+NKE,NKE-NIKE INC -CL B-2021.pdf,114,representative,prose,prose_multicol,A side callout and portrait accompany a continuous waste narrative without row pairing.
+MELI,MELI-MERCADOLIBRE-2025.pdf,49,representative,prose,prose_multicol,Two independent narrative cards and a portrait have no row-level correspondence.
+LAD,LAD-LITHIA MOTORS INC -CL A-2025.pdf,6,representative,prose,prose_multicol,This is a multi-column event story with profiles and photos rather than a table.
+JWN,JWN-NORSTROM-2023.pdf,34,representative,prose,prose_multicol,Narrative supplier and environmental-impact text is arranged beside a photograph.
+M,M-MACY'S INC-2023.pdf,94,representative,prose,prose_multicol,Two continuous text columns sit above a photograph without cross-column row dependencies.
+LEG,LEG-LEGGETT & PLATT INC-2023.pdf,3,representative,prose,prose_multicol,A CEO letter, values callout, and bullet list are independent prose content.
+KTB,KTB-KONTOOR BRANDS INC-2024.pdf,22,representative,prose,prose_multicol,Two narrative columns and a standalone quote card are paired with an image.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2021.pdf,4,representative,prose,prose_multicol,The report introduction is standard flowing prose in two columns beside a portrait.
+DECK,DECK-DECKERS OUTDOOR CORP-2025.pdf,190,representative,table_dominant,data_table_ruled,The wide supplier-facility listing has many corresponding fields aligned across rows.
+LULU,LULU-LULULEMON ATHLETICA INC-2022.pdf,65,representative,prose,prose_multicol,Two narrative text columns and a photograph form a standard story layout.
+ETSY,ETSY-Etsy-2021.pdf,7,representative,ambiguous_or_mixed,other,Long prose occupies the top while a substantial two-column DEI-goal and narrative grid occupies the lower page.
+APC,APC-ARKO PETROLEUM CORP-2021.pdf,37,representative,prose,prose_multicol,This closing disclaimer page contains two flowing prose columns.
+W,W-WAYFAIR INC-2023.pdf,27,representative,table_dominant,disclosure_index_table,The GRI disclosure and location columns are aligned in a disclosure index.
+PLCE,PLCE-The Childrens Place-2022.pdf,4,representative,prose,prose_multicol,A CEO letter is laid out in two narrative columns with a portrait.
+T,T-AT&T INC-2025.pdf,8,representative,prose,prose_multicol,Narrative text and self-contained target statistic cards have no row dependencies.
+DELL,DELL-DELL TECHNOLOGIES INC-2024.pdf,22,representative,prose,prose_multicol,Two narrative and bullet-list columns sit beside a photograph.
+PVH,PVH-PVH CORP-2021.pdf,20,representative,prose,other,Independent partner lists under separate headers do not have cross-column row correspondence.
+M,M-MACY'S INC-2023.pdf,22,representative,prose,prose_multicol,A large callout beside continuous career-development prose and photos is not a table.
+AAP,AAP-ADVANCE AUTO PARTS INC-2022.pdf,33,representative,prose,prose_multicol,Two narrative safety sections and a photograph have no table-row structure.
+MUSA,MUSA-MURPHY USA INC-2023.pdf,34,representative,prose,prose_multicol,The compliance-reporting blocks are self-contained content alongside prose and a photo.
+ARKO,ARKO-ARKO CORP-2021.pdf,29,representative,prose,prose_multicol,Two narrative ethics columns and a standalone principles callout are not row-aligned.
+DECK,DECK-DECKERS OUTDOOR CORP-2024.pdf,151,representative,table_dominant,disclosure_index_table,This GRI content index maps disclosure numbers and titles to notes and locations by row.
+WMT,WMT-WALMART INC-2022.pdf,38,representative,prose,prose_multicol,Two independent community narrative-and-bullet sections share no row correspondence.
+AAPL,AAPL-APPLE INC-2021.pdf,12,representative,prose,prose_multicol,Standard three-column prose with two self-contained statistics has no table structure.
+M,M-MACY'S INC-2023.pdf,72,representative,prose,prose_multicol,The sustainability narrative and highlighted traceability callout are not row-aligned.
+SGC,SGC-SUPERIOR GROUP OF COS INC-2023.pdf,15,representative,ambiguous_or_mixed,other,A prose column sits beside separate boxed security and certification content without a canonical single order.
+UEIC,UEIC-UNIVERSAL ELECTRONICS INC-2023.pdf,27,representative,table_dominant,disclosure_index_table,The GRI disclosure and response fields form a structured row-aligned index.
+HD,HD-HOME DEPOT INC-2023.pdf,97,representative,prose,prose_multicol,Two prose columns and a statistic callout sit beside a photo.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2021.pdf,55,representative,prose,prose_multicol,Separate partner descriptions occupy independent columns with no shared label-value rows.
+TSCO,TSCO-TRACTOR SUPPLY CO-2025.pdf,24,representative,prose,prose_multicol,The animal-services story and each icon statistic are self-contained.
+WMK,WMK-WEIS MARKETS INC-2021.pdf,12,representative,prose,chart_infographic,The waste-category diagram uses self-contained label-and-value cards rather than cross-column table rows.
+LOVE,LOVE-LOVESAC CO (THE)-2025.pdf,26,representative,prose,prose_multicol,Separate benefits-program descriptions and photographs are not aligned table rows.
+ETSY,ETSY-Etsy-2021.pdf,8,representative,table_dominant,disclosure_index_table,The employee and supplier DEI goals are aligned with explanatory response fields in a large grid.
+DECK,DECK-DECKERS OUTDOOR CORP-2021.pdf,165,representative,table_dominant,data_table_ruled,The materials breakdown contains multiple row-structured material and percentage tables.
+MOV,MOV-MOVADO GROUP INC-2025.pdf,31,representative,ambiguous_or_mixed,stat_card_grid,A metric-and-material grid occupies the left half while independent recovery narrative occupies the right.
+CVS,CVS-CVS HEALTH CORP-2022.pdf,35,representative,prose,prose_multicol,The accomplishments callout and separate narrative sections do not contain shared table rows.
+GES,GES-GUESS-2021-2020.pdf,4,representative,prose,prose_multicol,Company narrative and self-contained values panel sit beside a photograph.
+MHK,MHK-MOHAWK INDUSTRIES INC-2023.pdf,31,representative,prose,prose_multicol,Two prose areas are accompanied by a self-contained small bar chart and photos.
+WRBY,WRBY-WARBY PARKER INC-2022.pdf,28,representative,prose,prose_multicol,The page has standard narrative columns and independent highlighted bullet points.
+COLM,COLM-COLUMBIA SPORTSWEAR CO-2021.pdf,46,representative,prose,prose_multicol,Two narrative columns describe audit programs without row-aligned fields.
+SNBR,SNBR-SLEEP NUMBER CORP-2022.pdf,22,representative,ambiguous_or_mixed,other,A substantial five-column benefits grid appears alongside real prose and separate principle cards.
+BBY,BBY-BEST BUY CO INC-2022.pdf,100,representative,table_dominant,disclosure_index_table,The TCFD topic and recommendation fields map to locations of disclosure in a row-aligned index.
+DECK,DECK-DECKERS OUTDOOR CORP-2025.pdf,47,representative,prose,prose_multicol,Two continuous materials narratives sit beside self-contained performance statistics and a small chart.
+VSXY,VSXY-Victorias Secret-2023.pdf,96,representative,table_dominant,disclosure_index_table,The IFRS category, details, and response columns are aligned as a disclosure table.
+WWW,WWW-WOLVERINE WORLD WIDE-2022.pdf,4,representative,prose,prose_multicol,A CEO letter uses flowing narrative columns beside a full-page portrait.
+NKE,NKE-NIKE INC -CL B-2022.pdf,51,representative,prose,chart_infographic,Two prose columns accompany self-contained engagement and inclusion bar-chart panels.
+HD,HD-HOME DEPOT INC-2023.pdf,112,representative,table_dominant,disclosure_index_table,The GRI disclosure and location fields are a structured row-aligned content index.
+DKS,DKS-DICKS SPORTING GOODS INC-2021.pdf,51,representative,prose,prose_multicol,Separate story text, photographs, and quotation callout do not have cross-column row correspondence.
+DLTR,DLTR-DOLLAR TREE INC-2021.pdf,3,representative,prose,prose_multicol,The mission statement and adjacent narrative sections are continuous prose blocks without table rows.
+AAPL,AAPL-APPLE INC-2022.pdf,35,representative,prose,prose_multicol,Two narrative columns and a photograph constitute a standard prose layout.
+SGC,SGC-SUPERIOR GROUP OF COS INC-2025.pdf,49,representative,table_dominant,disclosure_index_table,The SASB topics, metrics, codes, and responses are aligned across table rows.
+ARKO,ARKO-ARKO CORP-2024.pdf,44,representative,prose,prose_multicol,Two continuous cybersecurity narrative columns have no row-level correspondence.
+ULTA,ULTA-ULTA BEAUTY INC-2022.pdf,26,representative,ambiguous_or_mixed,other,A substantial Scope 1/2 versus Scope 3 explanatory grid shares the page with significant narrative prose.
+NKE,NKE-NIKE INC -CL B-2022.pdf,161,representative,ambiguous_or_mixed,chart_infographic,Large governance prose and a separate hierarchical organization diagram lack a single canonical reading order.
+COLM,COLM-COLUMBIA SPORTSWEAR CO-2022.pdf,23,representative,prose,prose_multicol,Two community-program narratives and a self-contained photo card do not form a table.
+CRI,CRI-CARTER'S INC-2022.pdf,39,representative,prose,prose_multicol,Recruitment narratives, a bullet list, and an independent partnership callout have no shared rows.
+CASY,CASY-CASEYS GENERAL STORES INC-2025.pdf,15,representative,prose,chart_infographic,Narrative prose accompanies a small self-contained yearly charging table and a decorative milestone graphic.
+ROST,ROST-ROSS STORES INC-2021.pdf,24,representative,prose,prose_multicol,The community-partner stories, photograph, and quotation are independent prose content.
+GAP,GAP-GAP-2022.pdf,7,representative,ambiguous_or_mixed,other,Three large self-contained overview panels combine statistics, lists, and images without a canonical linear order.
+SGI,SGI-SOMNIGROUP INTERNATIONAL INC-2025.pdf,11,representative,prose,prose_multicol,The page consists of continuous land-management and logistics prose with photographs and callouts.
+CRI,CRI-CARTER'S INC-2023.pdf,6,representative,prose,other,Separate brand descriptions pair each logo with its own contiguous narrative and imagery.
+RL,RL-RALPH LAUREN CORP-2023.pdf,86,representative,prose,prose_multicol,The ethics callout, prose, and bullet list are standard narrative content without cross-column row pairing.
+PTRN,PTRN-Pattern Group-2024(Italian).pdf,77,representative,table_dominant,disclosure_index_table,The GRI category and metrics map across multiple disclosure-reference columns by row.
+DLTR,DLTR-DOLLAR TREE INC-2021.pdf,17,representative,prose,prose_multicol,The environmental statement and adjacent policy bullets are independent prose blocks.
+SONO,SONO-SONOS INC-2023.pdf,42,representative,ambiguous_or_mixed,disclosure_index_table,A substantial TCFD recommendation-response table shares the page with significant introductory prose.
+SFM,SFM-SPROUTS FARMERS MARKET-2021.pdf,35,representative,prose,prose_multicol,The compensation narrative and separate image card have no row-aligned structure.
+SNBR,SNBR-SLEEP NUMBER CORP-2023.pdf,64,representative,table_dominant,disclosure_index_table,The GRI and SASB standards map to indicators and disclosure responses across rows.
+PVH,PVH-PVH CORP-2022.pdf,105,representative,table_dominant,disclosure_index_table,Disclosure-number and title fields are aligned with corresponding 2022 response rows.
+SNBR,SNBR-SLEEP NUMBER CORP-2023.pdf,47,representative,prose,prose_multicol,Two narrative columns and a contiguous photograph form a conventional prose page.
+KSS,KSS-KOHL'S-2024.pdf,7,representative,prose,prose_multicol,Workforce-safety prose and bullets accompany a self-contained two-bar comparison chart.
+SGC,SGC-SUPERIOR GROUP OF COS INC-2021.pdf,10,representative,prose,other,An awards list and separate recognition-badge images are independent content rather than row-aligned fields.
+GES,GES-GUESS-2021-2020.pdf,3,representative,prose,prose_multicol,A CEO letter flows across facing narrative columns with a separate portrait page.
+COLM,COLM-COLUMBIA SPORTSWEAR CO-2021.pdf,5,representative,prose,prose_multicol,Report-scope and framework descriptions are conventional prose areas alongside a photograph.
+WRBY,WRBY-WARBY PARKER INC-2024.pdf,64,representative,prose,prose_multicol,Two continuous supply-chain narrative columns sit below a self-contained photograph.
+T,T-AT&T INC-2023.pdf,48,representative,ambiguous_or_mixed,chart_infographic,Substantial waste-management prose is paired with large statistic and goal infographic panels.
+ROST,ROST-ROSS STORES INC-2023.pdf,9,representative,prose,prose_multicol,The DEI narrative uses standard prose columns with independent doughnut-chart callouts.
+AAP,AAP-ADVANCE AUTO PARTS INC-2022.pdf,57,representative,prose,prose_multicol,Two continuous data-security narrative columns and a photograph have no table structure.
+TGT,TGT-TARGET CORP-2024.pdf,19,representative,prose,prose_multicol,The product-design discussion is normal prose in two columns beside a photograph.
+RL,RL-RALPH LAUREN CORP-2025.pdf,45,representative,table_dominant,disclosure_index_table,The GRI disclosure, title, and response fields are aligned in a row-structured index.
+FIGS,FIGS-FIGS INC-2022.pdf,11,representative,ambiguous_or_mixed,other,Large donation totals and two independent recipient-list panels have no single canonical reading order.
+ACI,ACI-ALBERTSONS COS INC-2023.pdf,30,representative,table_dominant,disclosure_index_table,The SDG, company-efforts, and report-reference columns are aligned across rows.
+MELI,MELI-MERCADOLIBRE-2023.pdf,79,representative,table_dominant,disclosure_index_table,The GRI content and responses form a large row-aligned disclosure table with a nested employment data grid.
+XOM,XOM-EXXON MOBIL CORP-2021.pdf,18,representative,prose,chart_infographic,Emergency-preparedness prose is accompanied by a self-contained lost-time-rate line chart.
+LULU,LULU-LULULEMON ATHLETICA INC-2024.pdf,29,representative,prose,prose_multicol,The packaging narrative and a small self-contained progress chart sit beside a photograph.
+WOOF,WOOF-PETCO HEALTH AND WELLNESS CO-2022.pdf,25,representative,prose,prose_multicol,Two flowing community-engagement narratives and a bullet list have no table-row correspondence.
+TGT,TGT-TARGET CORP-2023.pdf,106,representative,table_dominant,disclosure_index_table,The SDG goals, accomplishments, impacts, and related-target fields are organized in rows.
+WRBY,WRBY-WARBY PARKER INC-2022.pdf,49,representative,prose,prose_multicol,Two continuous product-quality prose columns are paired with a large product photograph.
+KSS,KSS-KOHL'S CORP-2021.pdf,13,representative,prose,chart_infographic,Energy-efficiency prose accompanies a self-contained multi-year bar and trend chart.
+MHK,MHK-MOHAWK INDUSTRIES INC-2021.pdf,64,representative,table_dominant,disclosure_index_table,The disclosure number, title, and response columns are a row-structured GRI index.
+BBY,BBY-BEST BUY CO INC-2025.pdf,19,representative,prose,prose_multicol,Energy-savings narrative and a self-contained time-series graphic sit beside a photograph.
+BBY,BBY-BEST BUY CO INC-2022.pdf,69,representative,ambiguous_or_mixed,other,A substantial metric-and-performance list shares the page with extensive responsible-sourcing prose.
+LOW,LOW-LOWE'S COS INC-2023.pdf,43,representative,prose,prose_multicol,The business-resilience narratives and photographs are independent prose content.
+HD,HD-HOME DEPOT INC-2023.pdf,90,representative,prose,prose_multicol,Two narrative program descriptions and a photograph form a standard multi-column story page.
+TSCO,TSCO-TRACTOR SUPPLY CO-2025.pdf,29,representative,prose,prose_multicol,The development-program narrative and separate bullet groups have no shared table rows.
+WRBY,WRBY-WARBY PARKER INC-2022.pdf,22,representative,prose,prose_multicol,Employee-engagement narratives and a photograph are a conventional prose layout.
+LULU,LULU-LULULEMON ATHLETICA INC-2024.pdf,28,representative,prose,prose_multicol,The chemicals-management discussion is flowing prose with a contiguous process photograph.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2023.pdf,18,representative,prose,prose_multicol,The training and EV-safety narratives are independent prose-and-photo panels.
+LOVE,LOVE-LOVESAC CO (THE)-2024.pdf,15,representative,table_dominant,data_table_ruled,The targets, units, yearly values, changes, and target years form a wide row-aligned data table.
+FL,FL-FOOT LOCKER INC-2021.pdf,65,representative,table_dominant,disclosure_index_table,The activity metrics, categories, units, codes, and reference/data fields are aligned by row.
+NWL,NWL-NEWELL BRANDS INC-2022.pdf,60,representative,prose,other,This independent third-party verification statement is continuous single-column prose.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2021.pdf,28,representative,prose,prose_multicol,A program narrative and large quotation accompany an independent photograph without table structure.
+BBY,BBY-BEST BUY CO INC-2021.pdf,41,representative,prose,prose_multicol,This leadership feature uses continuous two-column narrative prose and a portrait.
+CROX,CROX-CROCS INC-2023.pdf,36,representative,table_dominant,disclosure_index_table,The SASB topic, code, metric, category, response, and reference fields are row-aligned.
+AAPL,AAPL-APPLE INC-2025.pdf,10,representative,prose,chart_infographic,A carbon-neutrality chart and its adjacent explanatory prose are self-contained rather than table rows.
+VRA,VRA-VERA BRADLEY INC-2025.pdf,28,representative,table_dominant,disclosure_index_table,The SASB prompts, responses, and metric codes are arranged in corresponding rows.
+M,M-MACY'S INC-2023.pdf,34,representative,ambiguous_or_mixed,other,Extensive colleague prose is combined with a substantial grid of independent employee-resource-group cards.
+PTRN,PTRN-Pattern Group-2022.pdf,24,representative,prose,prose_multicol,Two ordinary manufacturing narrative columns have no cross-column row relationships.
+BRLT,BRLT-BRILLIANT EARTH GP INC-2022.pdf,59,representative,table_dominant,disclosure_index_table,GRI disclosures, locations, details, and SASB metrics are aligned in a structured table.
+HD,HD-HOME DEPOT INC-2024.pdf,7,representative,ambiguous_or_mixed,other,The eight core-value wheel and separate value panels are independent boxed content without a single reading order.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2023.pdf,30,representative,table_dominant,data_table_ruled,The governance area, position, and responsibility fields are aligned across rows.
+AZO,AZO-AUTOZONE INC-2023.pdf,44,representative,prose,prose_multicol,The safety and fleet sections are standard continuous prose with an independent awards callout.
+ULTA,ULTA-ULTA BEAUTY INC-2021.pdf,10,representative,prose,prose_multicol,Two data-stewardship narrative columns, a portrait, and a self-contained scorecard do not form table rows.
+PTRN,PTRN-Pattern Group-2021.pdf,28,representative,prose,prose_multicol,The governance descriptions and name-title lists are independent flowing content.
+CASY,CASY-CASEYS GENERAL STORES INC-2022.pdf,17,representative,prose,prose_multicol,Human-rights and advocacy narratives sit beside a large photograph with no row correspondence.
+ULTA,ULTA-ULTA BEAUTY INC-2022.pdf,24,representative,prose,prose_multicol,Separate supplier-diversity narratives and lists share a conventional multi-column prose layout.
+SONO,SONO-SONOS INC-2024.pdf,23,representative,ambiguous_or_mixed,data_table_ruled,A substantial workforce-diversity data grid shares the page with extensive DEI prose.
+WOOF,WOOF-PETCO HEALTH AND WELLNESS CO-2023.pdf,34,representative,prose,prose_multicol,The veterinary-skills narrative and quotation card are independent prose content beside a photograph.
+DG,DG-DOLLAR GENERAL CORP-2025.pdf,10,representative,prose,prose_multicol,The access-and-opportunities narrative is arranged with a self-contained statistic callout and photograph.
+TGT,TGT-TARGET CORP-2021.pdf,36,representative,prose,prose_multicol,The inclusion narrative, callout, and product image do not have row-aligned fields.
+AAPL,AAPL-APPLE INC-2021.pdf,47,representative,prose,prose_multicol,Community-program prose and self-contained statistics are standard multi-column content.
+AZO,AZO-AUTOZONE INC-2026.pdf,20,representative,table_dominant,disclosure_index_table,The SASB codes, accounting metrics, and data fields are aligned across table rows.
+BBWI,BBWI-BATH & BODY WORKS INC-2023.pdf,25,representative,prose,prose_multicol,Two narrative columns, a photo, and a self-contained DEI highlight panel have no cross-column row pairing.
+WHR,WHR-WHIRLPOOL CORP-2022.pdf,103,representative,table_dominant,data_table_ruled,The ESG-pillar, partner, and organization-description fields are aligned in substantial table rows.
+FL,FL-FOOT LOCKER INC-2022.pdf,29,representative,prose,prose_multicol,The Scope 1, 2, and 3 descriptions are self-contained cards beside narrative text and a photo.
+VSXY,VSXY-Victorias Secret-2022.pdf,49,representative,prose,prose_multicol,Two continuous narrative columns and a self-contained recycling callout sit beside photos.
+EBAY,EBAY-eBay-2023-Report.pdf,35,representative,prose,prose_multicol,Two standard flowing prose columns and bullet lists have no row-level correspondence.
+KSS,KSS-KOHL'S-2023.pdf,13,representative,prose,prose_multicol,Narrative prose and a vertically arranged list of self-contained award descriptions are not a shared-row table.
+GIII,GII-G-III APPAREL GROUP LTD-2025.pdf,19,representative,prose,prose_multicol,The circularity and traceability narratives are conventional independent prose columns with a self-contained initiative list.
+ULTA,ULTA-ULTA BEAUTY INC-2021.pdf,15,representative,prose,prose_multicol,DEI prose, a photograph, and a contiguous three-statistic callout do not create table rows.
+MUSA,MUSA-MURPHY USA INC-2024.pdf,28,representative,table_dominant,disclosure_index_table,The SASB metric labels at left align with their corresponding detailed responses and values at right.
+AAPL,AAPL-APPLE INC-2025.pdf,36,representative,prose,prose_multicol,Two flowing narrative columns sit beside a photograph without cross-column row dependencies.
+ULTA,ULTA-ULTA BEAUTY INC-2025.pdf,18,representative,prose,prose_multicol,Continuous packaging prose is accompanied by independent goal and collection-statistic callouts.
+DECK,DECK-DECKERS OUTDOOR CORP-2024.pdf,76,representative,prose,prose_multicol,Brand-specific stories and photographs are self-contained narrative panels rather than shared table rows.
+CVS,CVS-CVS HEALTH CORP-2023.pdf,29,representative,prose,prose_multicol,The maternal-health narrative and independent bulleted investment descriptions have no row correspondence.
+DELL,DELL-DELL TECHNOLOGIES INC-2023.pdf,58,representative,prose,prose_multicol,Five self-contained service descriptions and a photograph do not depend on cross-column row alignment.
+SONO,SONO-SONOS INC-2024.pdf,24,representative,prose,prose_multicol,Two prose sections and a contiguous employee-resource-group list are independent content blocks.
+DKS,DKS-DICKS SPORTING GOODS INC-2021.pdf,48,representative,ambiguous_or_mixed,stat_card_grid,Substantial independent sustainable-attribute and certification panels lack a single canonical linear order.
+BIRD,BIRD-ALLBIRDS INC-2022.pdf,5,representative,prose,prose_multicol,This is ordinary two-column introductory prose with no row-level field alignment.
+ORLY,ORLY-O'REILLY AUTOMOTIVE INC-2024.pdf,31,representative,ambiguous_or_mixed,other,Large independent charity, volunteering, and United Way panels combine separate stories and photos without one natural order.
+MHK,MHK-MOHAWK INDUSTRIES INC-2023.pdf,63,representative,prose,prose_multicol,Narrative program descriptions, photographs, and a self-contained recovery graphic do not form a table.
+AZO,AZO-AUTOZONE INC-2022.pdf,28,representative,prose,prose_multicol,The two key-initiative prose columns and a standalone quotation have no cross-column row dependency.
+PTRN,PTRN-Pattern Group-2021.pdf,35,representative,table_dominant,data_table_ruled,The KPI goals and strategy fields are aligned across ruled table rows.
+GES,GES-GUESS-2025.pdf,70,representative,table_dominant,disclosure_index_table,The GRI disclosure codes and corresponding response fields are structured in aligned rows.
+AZO,AZO-AUTOZONE INC-2022.pdf,8,representative,prose,prose_multicol,Two flowing culture narratives sit below a photograph without table-row structure.
+GES,GES-GUESS-2023-2022.pdf,99,representative,table_dominant,disclosure_index_table,The GRI disclosure number, title, coverage, and location fields are row-aligned.
+WMT,WMT-WALMART INC-2022.pdf,5,representative,prose,prose_multicol,The forward-looking statement is conventional prose in two columns beside a photo.
+LZB,LZB-LA-Z-BOY INC-2023.pdf,41,representative,prose,prose_multicol,Employee-development narratives and a photo form a standard prose layout.
+BBY,BBY-BEST BUY CO INC-2022.pdf,21,representative,prose,prose_multicol,Two packaging narratives and a photograph have no row-aligned fields.
+AZO,AZO-AUTOZONE INC-2024.pdf,3,representative,prose,prose_multicol,A CEO letter is laid out as flowing prose columns alongside a portrait.
+SGC,SGC-SUPERIOR GROUP OF COS INC-2022.pdf,20,representative,ambiguous_or_mixed,chart_infographic,Substantial headcount and tenure charts share the page with extensive talent-retention prose.
+BBWI,BBWI-BATH & BODY WORKS INC-2025.pdf,61,representative,ambiguous_or_mixed,stat_card_grid,A large volunteering-statistic grid and separate narrative feature share the page without a single linear order.
+WWW,WWW-WOLVERINE WORLD WIDE-2024.pdf,51,representative,prose,prose_multicol,Two continuous cybersecurity prose columns accompany a contiguous photograph.
+WHR,WHR-WHIRLPOOL CORP-2022.pdf,36,representative,prose,prose_multicol,Water-management prose and self-contained goal callouts sit beside a photograph.
+ABG,ABG-ASBURY AUTOMOTIVE GROUP INC-2022.pdf,17,representative,prose,prose_multicol,The community narratives and self-contained program cards have no shared row dependencies.
+NKE,NKE-NIKE INC -CL B-2023.pdf,162,representative,table_dominant,data_table_ruled,The electricity and emissions metrics are aligned by location and fiscal-year columns.
+KSS,KSS-KOHL'S CORP-2021.pdf,65,representative,prose,prose_multicol,The conflict-minerals sections are ordinary parallel prose columns with no table fields.
+UEIC,UEIC-UNIVERSAL ELECTRONICS INC-2025.pdf,57,representative,table_dominant,disclosure_index_table,The TCFD requirements and references are aligned in a structured disclosure table.
+DECK,DECK-DECKERS OUTDOOR CORP-2023.pdf,173,representative,table_dominant,disclosure_index_table,The GRI numbers, titles, notes, and locations form a row-aligned disclosure index.
+LOVE,LOVE-LOVESAC CO (THE)-2021.pdf,14,representative,prose,prose_multicol,Narrative text and a self-contained recycling callout are arranged around a photograph.
+WHR,WHR-WHIRLPOOL CORP-2022.pdf,95,representative,prose,prose_multicol,Anti-corruption content is ordinary two-column prose beneath a banner photograph.
+M,M-MACY'S INC-2022.pdf,22,representative,prose,prose_multicol,This private-brand sourcing discussion is flowing prose with a contiguous photograph.
+VVV,VVV-VALVOLINE INC-2023.pdf,38,representative,table_dominant,disclosure_index_table,The GRI topic, disclosure, and response fields are aligned across table rows.
+VZ,VZ-VERIZON COMMUNICATIONS INC-2024.pdf,4,representative,ambiguous_or_mixed,other,An independent four-pillar process panel shares the page with substantial stakeholder narrative.
+OXM,OXM-OXFORD INDUSTRIES INC-2021.pdf,19,representative,prose,prose_multicol,Human-rights narrative and a contiguous code-of-conduct list have no cross-column row alignment.
+VFC,VFC-VF CORP-2024.pdf,78,representative,prose,prose_multicol,The safe-harbor text is continuous three-column prose.
+W,W-WAYFAIR INC-2021.pdf,5,representative,ambiguous_or_mixed,other,The governance-structure boxes and separate large quotation lack one canonical linear order.
+LOVE,LOVE-LOVESAC CO (THE)-2025.pdf,44,representative,prose,prose_multicol,Code-of-conduct prose, lists, and training descriptions are independent continuous content areas.
+LAD,LAD-LITHIA MOTORS INC -CL A-2021.pdf,13,representative,prose,prose_multicol,The community stories and large photograph are self-contained narrative panels.
+WHR,WHR-WHIRLPOOL CORP-2024.pdf,42,representative,prose,prose_multicol,Compensation prose, an employee-story block, and photographs have no row correspondence.
+VFC,VFC-VF CORP-2022.pdf,63,representative,prose,prose_multicol,The sustainable-design narrative and self-contained story panel form a conventional prose page.
+AMZN,AMZN-Amazon-2021.pdf,71,representative,prose,prose_multicol,Disaster-relief prose, a quote, statistics, and a photograph have no shared table rows.
+JWN,JWN-NORSTROM-2023.pdf,29,representative,prose,prose_multicol,Multiple independent community stories and a photograph are not row-aligned fields.
+DECK,DECK-DECKERS OUTDOOR CORP-2024.pdf,21,representative,ambiguous_or_mixed,data_table_ruled,Substantial workforce tables and gender charts share the page with compensation narrative.
+PVH,PVH-PVH CORP-2023.pdf,69,representative,table_dominant,disclosure_index_table,The UNGP question, response, and policy-reference fields are aligned by row.
+LULU,LULU-LULULEMON ATHLETICA INC-2021.pdf,56,representative,prose,prose_multicol,A small packaging baseline table is minor beside extensive independent packaging narrative.
+WHR,WHR-WHIRLPOOL CORP-2023.pdf,43,representative,prose,prose_multicol,Water-management prose and self-contained goal and facility panels do not form a table.
+DLTR,DLTR-DOLLAR TREE INC-2024.pdf,32,representative,prose,prose_multicol,Climate narrative and a self-contained target list sit alongside a photograph.
+NKE,NKE-NIKE INC -CL B-2022.pdf,103,representative,prose,prose_multicol,Three flowing materials narratives and a photograph have no row-level field alignment.
+SGC,SGC-SUPERIOR GROUP OF COS INC-2024.pdf,19,representative,prose,prose_multicol,Responsible-sourcing narratives and the contiguous cotton callout are independent content areas.
+VZ,VZ-VERIZON COMMUNICATIONS INC-2024.pdf,16,representative,prose,prose_multicol,The resource-management content is standard multi-column prose.
+TGT,TGT-TARGET CORP-2022.pdf,27,representative,ambiguous_or_mixed,data_table_ruled,A substantial partner-program table shares the page with biodiversity narrative.
+CURV,CURV-TORRID HOLDINGS-2022.pdf,32,representative,prose,prose_multicol,Methodology and assurance sections are ordinary independent prose columns.
+WMT,WMT-WALMART INC-2021.pdf,24,representative,ambiguous_or_mixed,data_table_ruled,A meaningful goal-metric-progress table shares the page with waste prose.
+ACI,ACI-ALBERTSONS COS INC-2025.pdf,17,representative,ambiguous_or_mixed,data_table_ruled,A substantive carbon-footprint data table and chart are embedded with narrative.
+KSS,KSS-KOHL'S-2023.pdf,59,representative,prose,prose_multicol,The social-responsibility sections are flowing prose columns with independent callouts.
+WMT,WMT-WALMART INC-2025.pdf,99,representative,prose,chart_infographic,The political-action donut chart is self-contained beside separate prose columns.
+AAPL,AAPL-APPLE INC-2023.pdf,58,representative,prose,prose_multicol,The chemistry approach is continuous multi-column prose with a self-contained strategy panel.
+ACI,ACI-ALBERTSONS COS INC-2024.pdf,18,representative,prose,prose_multicol,Food-waste narratives and a contiguous product-highlights callout have no shared rows.
+KR,KR-KROGER CO-2024.pdf,60,representative,prose,prose_multicol,Responsible-sourcing prose and a linked-resource panel form a standard narrative layout.
+LEVI,LEVI-LEVI STRAUSS & CO-2022.pdf,3,representative,prose,prose_multicol,A CEO letter uses flowing prose columns beside a portrait.
+AMZN,AMZN-Amazon-2024.pdf,44,representative,prose,prose_multicol,The multi-column community narrative and self-contained program cards are not table rows.
+TGT,TGT-TARGET CORP-2021.pdf,91,representative,table_dominant,disclosure_index_table,The SASB topic, metric, code, data, and reference fields are row-aligned.
+KR,KR-KROGER CO-2022.pdf,21,representative,prose,prose_multicol,The food-access narratives form independent flowing columns beside a photo.
+ABG,ABG-ASBURY AUTOMOTIVE GROUP INC-2021.pdf,49,representative,table_dominant,disclosure_index_table,GRI disclosures map to their response locations across structured rows.
+LOVE,LOVE-LOVESAC CO (THE)-2024.pdf,52,representative,prose,prose_multicol,Scope and forward-looking statements are ordinary prose columns above a photograph.
+W,W-WAYFAIR INC-2021.pdf,10,representative,prose,prose_multicol,DEI, talent-development, and employee-story prose areas have no row correspondence.
+CRI,CRI-CARTER'S INC-2024.pdf,19,representative,prose,prose_multicol,Brand narratives, achievement bullets, and photographs are independent prose content.
+LZB,LZB-LA-Z-BOY INC-2025.pdf,21,representative,prose,prose_multicol,The TranZform narrative, bullets, quotations, and photo form independent content areas.
+VFC,VFC-VF CORP-2023.pdf,17,representative,prose,prose_multicol,Employee-development narratives and photographs have no shared-row table structure.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2023.pdf,5,representative,prose,prose_multicol,A CEO letter is laid out as flowing prose columns beside a portrait.
+BURL,BURL-Burlington Stores-2024.pdf,28,representative,ambiguous_or_mixed,other,The connected governance structure diagram and separate ethics content lack a single linear reading order.
+GO,GO-GROCERY OUTLET HLDNG CORP-2022.pdf,3,representative,prose,prose_multicol,The CEO letter uses independent prose and bullet sections beside a portrait.
+TJX,TJX-Tjx Cos Inc-2024.pdf,54,representative,prose,prose_multicol,Sustainable-sourcing narrative and self-contained packaging goal graphic are not row-aligned.
+ORLY,ORLY-O'REILLY AUTOMOTIVE INC-2024.pdf,50,representative,prose,prose_multicol,Human-capital policy excerpts are arranged in ordinary independent prose columns.
+VFC,VFC-VF CORP-2024.pdf,23,representative,prose,prose_multicol,Human-rights prose and the self-contained progress callout have no shared rows.
+HD,HD-HOME DEPOT INC-2024.pdf,51,representative,prose,prose_multicol,The forestry narratives and bullet lists are independent prose columns.
+BURL,BURL-Burlington Stores-2022.pdf,44,representative,prose,prose_multicol,Ethical-conduct and privacy prose with a photograph do not form a table.
+T,T-AT&T INC-2021.pdf,3,representative,prose,prose_multicol,A CEO letter is arranged in flowing narrative columns alongside portraits.
+MELI,MELI-MERCADOLIBRE-2023.pdf,35,representative,ambiguous_or_mixed,other,A large organizational DNA diagram sits beside independent narrative and principle lists without a canonical order.
+NKE,NKE-NIKE INC -CL B-2022.pdf,112,representative,prose,prose_multicol,Manufacturing-waste narrative is continuous prose in columns beside a photograph.
+VSXY,VSXY-Victorias Secret-2022.pdf,35,representative,prose,prose_multicol,Human-rights prose and a self-contained guidebook/policy callout do not form shared rows.
+UEIC,UEIC-UNIVERSAL ELECTRONICS INC-2023.pdf,33,representative,table_dominant,disclosure_index_table,The TCFD requirements and response-reference columns are aligned by row.
+BBY,BBY-BEST BUY CO INC-2021.pdf,79,representative,prose,prose_short_columns,The state-by-state location lists are independent short columns with no row correspondence.
+NWL,NWL-NEWELL BRANDS INC-2021.pdf,73,representative,table_dominant,disclosure_index_table,The TCFD topic, accounting-metric, and referenced-disclosure fields are row-aligned.
+GAP,GAP-GAP-2025.pdf,26,representative,prose,prose_multicol,The employment story and quotation flow beside a portrait without table structure.
+ULTA,ULTA-ULTA BEAUTY INC-2025.pdf,21,representative,prose,prose_multicol,Inclusive-growth prose and self-contained mentor profiles have no cross-column row dependencies.
+AMZN,AMZN-Amazon-2025.pdf,16,representative,prose,prose_multicol,Water-management prose and self-contained program callouts have no shared row correspondence.
+KMX,KMX-CARMAX INC-2023.pdf,53,representative,table_dominant,data_table_ruled,The SDG goals, targets, company responses, and progress fields are aligned in a large ruled table.
+DELL,DELL-DELL TECHNOLOGIES INC-2024.pdf,16,representative,prose,prose_multicol,Strategy and public-advocacy narratives are independent prose areas beside a self-contained emissions card.
+W,W-WAYFAIR INC-2023.pdf,24,representative,ambiguous_or_mixed,stat_card_grid,The large certification-logo grid shares the page with distinct narrative panels and lacks a single linear order.
+AZO,AZO-AUTOZONE INC-2024.pdf,71,representative,table_dominant,disclosure_index_table,The GRI standards and corresponding references and responses are aligned across table rows.
+LOVE,LOVE-LOVESAC CO (THE)-2022.pdf,39,representative,prose,prose_multicol,Governance prose and a self-contained board-representation callout have no row-level table pairing.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2022.pdf,21,representative,prose,prose_multicol,The strategy commitments are presented as independent continuous prose sections.
+JWN,JWN-NORSTROM-2024.pdf,41,representative,table_dominant,disclosure_index_table,The SASB topic, activity metric, category, code, and response fields are aligned by row.
+WMT,WMT-WALMART INC-2025.pdf,21,representative,prose,prose_multicol,The career-mobility narrative, callout, challenge list, and photo are independent content areas.
+GAP,GAP-GAP-2023.pdf,19,representative,prose,prose_multicol,The water-savings table is a minor element beside substantial independent narrative and a photograph.
+PVH,PVH-PVH CORP-2022.pdf,110,representative,table_dominant,disclosure_index_table,The SDG goals, material topics, targets, and report references are aligned across rows.
+SFM,SFM-SPROUTS FARMERS MARKET-2021.pdf,36,representative,prose,prose_multicol,Two independent governance prose columns and a self-contained callout sit beside an illustration.
+TGT,TGT-TARGET CORP-2022.pdf,20,representative,ambiguous_or_mixed,data_table_ruled,A substantial emissions-scope table is embedded between related narrative and intervention lists.
+SNBR,SNBR-SLEEP NUMBER CORP-2021.pdf,45,representative,prose,prose_multicol,Packaging, pallets, and store-environment narratives are independent continuous prose columns.
+GROV,GROV-GROVE COLLABORATIVE HLDG INC-2021.pdf,35,representative,prose,prose_multicol,The carbon-offset narratives and independent methodology lists have no row correspondence.
+LOVE,LOVE-LOVESAC CO (THE)-2022.pdf,45,representative,ambiguous_or_mixed,data_table_ruled,A substantial Scope 3 management-plan grid shares the page with emissions narrative.
+CPNG,CPNG-Coupang-2023.pdf,3,representative,prose,prose_multicol,A management letter is flowing prose across columns beside a photograph.
+DELL,DELL-DELL TECHNOLOGIES INC-2021.pdf,47,representative,prose,prose_multicol,The two goal narratives, charts, and self-contained highlights panels are not row-aligned.
+AMZN,AMZN-Amazon-2023.pdf,83,representative,prose,prose_multicol,Health-and-safety prose, bullet lists, and a photograph are independent content areas.
+CRI,CRI-CARTER'S INC-2021.pdf,42,representative,prose,prose_multicol,Chemicals-management prose and a self-contained employee spotlight have no table-row structure.
+WSM,WSM-WILLIAMS-SONOMA INC-2023.pdf,19,representative,ambiguous_or_mixed,other,A large continuous-improvement process diagram shares the page with independent narrative blocks.
+NWL,NWL-NEWELL BRANDS INC-2024.pdf,26,representative,ambiguous_or_mixed,stat_card_grid,Independent audit, training, and goal panels occupy the page without a canonical reading order.
+AAPL,AAPL-APPLE INC-2022.pdf,57,representative,prose,prose_multicol,Product-safety narrative, self-contained service cards, and device illustrations have no shared rows.
+PAG,PAG-PENSKE AUTOMOTIVE GROUP INC-2023.pdf,17,representative,prose,prose_multicol,DEI narratives and a self-contained colleague-network callout are independent content areas.
+BRLT,BRLT-BRILLIANT EARTH GP INC-2023.pdf,25,representative,table_dominant,data_table_ruled,Year, goal, ambition, progress, and future-ambition fields are aligned by row.
+AMZN,AMZN-Amazon-2025.pdf,30,representative,prose,prose_multicol,Compensation and benefits narratives include a minor self-contained pay-equity table.
+GAP,GAP-GAP-2021.pdf,35,representative,prose,prose_multicol,Water-stewardship prose, a photograph, and partnership callout have no row correspondence.
+LOW,LOW-LOWE'S COS INC-2021.pdf,18,representative,ambiguous_or_mixed,stat_card_grid,The eight independent business-resource-group cards have no single canonical linear order.
+KTB,KTB-KONTOOR BRANDS INC-2021.pdf,23,representative,prose,prose_multicol,The value-chain topics are independent narrative columns accompanied by photographs.
+GROV,GROV-GROVE COLLABORATIVE HLDG INC-2023.pdf,5,representative,ambiguous_or_mixed,stat_card_grid,The sustainability tenets are separate text cards arranged in an irregular multi-column grid.
+TGT,TGT-TARGET CORP-2023.pdf,66,representative,prose,prose_multicol,Animal-welfare prose and a minor metric table have no dominant cross-column row structure.
+AAPL,AAPL-APPLE INC-2023.pdf,43,representative,prose,prose_multicol,Repairability, software, and reuse discussions are flowing prose columns without row-aligned fields.
+EYE,EYE-NATIONAL VISION HOLDINGS INC-2022.pdf,45,representative,prose,prose_multicol,Environmental-performance narrative and an independent bullet list form standard prose columns.
+AMZN,AMZN-Amazon-2023.pdf,76,representative,ambiguous_or_mixed,chart_infographic,A large semicircular benefits infographic shares the page with an independent narrative column.
+AAPL,AAPL-APPLE INC-2025.pdf,54,representative,prose,prose_multicol,Project narratives dominate while the replenishment-projects table is a minor portion of the page.
+KTB,KTB-KONTOOR BRANDS INC-2021.pdf,36,representative,prose,prose_multicol,Human-rights impact, approach, and compliance-principle prose columns are independent.
+KR,KR-KROGER CO-2022.pdf,24,representative,prose,prose_multicol,Customer-experience prose and a self-contained delivery feature have no row-level table pairing.
+NKE,NKE-NIKE INC -CL B-2024.pdf,2,representative,prose,prose_multicol,Reporting-methodology and safe-harbor text are continuous prose columns.
+AMZN,AMZN-Amazon-2023.pdf,77,representative,prose,prose_multicol,Compensation and benefits narratives are laid out as independent flowing columns.
+AMZN,AMZN-Amazon-2021.pdf,38,representative,prose,prose_multicol,The sustainability-data initiative stories and photographs are independent narrative content blocks.
+GAP,GAP-GAP-2025.pdf,45,representative,table_dominant,disclosure_index_table,GRI standards, disclosure topics, and Gap references are aligned across structured rows.
+TPR,TPR-TAPESTRY INC-2024.pdf,38,representative,ambiguous_or_mixed,stat_card_grid,Four equal social-impact story panels are independent boxes without one canonical reading order.
+KR,KR-KROGER CO-2025.pdf,26,representative,prose,prose_multicol,Health-and-nutrition discussion is flowing prose in independent columns beside a photograph.
+AAPL,AAPL-APPLE INC-2022.pdf,56,representative,prose,prose_multicol,Customer-safety, repairability, and product-longevity narratives form independent prose columns.
+COLM,COLM-COLUMBIA SPORTSWEAR CO-2022.pdf,40,boundary,prose,prose_multicol,Supply-chain responsibility prose, a photo, and a self-contained quotation have no shared row structure.
+DECK,DECK-DECKERS OUTDOOR CORP-2024.pdf,31,boundary,table_dominant,data_table_ruled,People targets are structured across fiscal-year result and progress columns.
+ULTA,ULTA-ULTA BEAUTY INC-2025.pdf,38,boundary,ambiguous_or_mixed,stat_card_grid,The board-member portraits and composition statistics form independent grid-like content beside narrative.
+TGT,TGT-TARGET CORP-2021.pdf,66,boundary,ambiguous_or_mixed,data_table_ruled,A substantial corporate-political-contributions table shares the page with civic-engagement prose.
+ROST,ROST-ROSS STORES INC-2021.pdf,14,boundary,prose,prose_multicol,Hiring and advancement prose is independent of the self-contained promotional statistics.
+SNBR,SNBR-SLEEP NUMBER CORP-2024.pdf,26,boundary,prose,prose_multicol,DEI topics and team-member group lists are independent prose sections rather than shared table rows.
+KTB,KTB-KONTOOR BRANDS INC-2021.pdf,38,boundary,prose,prose_multicol,Basic-rights narratives and a photograph form a standard prose page.
+LOW,LOW-LOWE'S COS INC-2024.pdf,32,boundary,prose,prose_multicol,Sustainable-shopping and recycling narratives are independent of the self-contained product visuals.
+CURV,CURV-TORRID HOLDINGS-2023.pdf,9,boundary,ambiguous_or_mixed,data_table_ruled,Two substantive supplier-performance tables share the page with chemical-management prose and photography.
+PVH,PVH-PVH CORP-2021.pdf,17,boundary,prose,prose_multicol,Highlights and bullet stories are independent prose areas beside a large photograph.
+WWW,WWW-WOLVERINE WORLD WIDE-2022.pdf,31,boundary,ambiguous_or_mixed,stat_card_grid,Separate packaging and innovative-product story panels are arranged as an independent grid.
+WWW,WWW-WOLVERINE WORLD WIDE-2024.pdf,16,boundary,prose,prose_multicol,Benefits prose and a self-contained bulleted list have no shared row correspondence.
+AZO,AZO-AUTOZONE INC-2024.pdf,34,boundary,prose,prose_multicol,The DEI narrative and navigation list are ordinary independent prose content beside a photograph.
+NWL,NWL-NEWELL BRANDS INC-2021.pdf,60,boundary,prose,prose_multicol,Disaster-relief narrative, quotation, and photo are independent content areas.
+WSM,WSM-WILLIAMS-SONOMA INC-2022.pdf,53,boundary,table_dominant,disclosure_index_table,TCFD disclosure prompts and their detailed responses are aligned by row.
+XOM,XOM-EXXON MOBIL CORP-2026.pdf,74,boundary,prose,prose_multicol,Supplier-forum content is presented as two independent narrative columns around a photograph.
+LOW,LOW-LOWE'S COS INC-2021.pdf,42,boundary,ambiguous_or_mixed,other,The large risk-oversight hierarchy graphic sits alongside governance prose without a single linear order.
+ARKO,ARKO-ARKO CORP-2022.pdf,41,boundary,table_dominant,disclosure_index_table,SASB topics, metric types, codes, and disclosures are aligned across structured rows.
+VFC,VFC-VF CORP-2024.pdf,29,boundary,prose,prose_multicol,The two development narratives and self-contained activity lists do not have shared-row correspondence.
+NKE,NKE-NIKE INC -CL B-2023.pdf,30,boundary,ambiguous_or_mixed,chart_infographic,A substantial engagement-favorability bar chart shares the page with explanatory prose.
+BIRD,BIRD-ALLBIRDS INC-2023.pdf,19,boundary,table_dominant,disclosure_index_table,The description, response, and SASB-standard fields are aligned by row.
+TGT,TGT-TARGET CORP-2022.pdf,66,boundary,prose,prose_multicol,Report context and forward-looking statements are continuous prose columns.
+PTRN,PTRN-Pattern Group-2021.pdf,88,boundary,prose,prose_multicol,The wastewater-tool descriptions and icons are independent prose content areas.
+BBWI,BBWI-BATH & BODY WORKS INC-2023.pdf,17,boundary,prose,prose_multicol,Benefits prose, lists, and a self-contained DailyPay feature have no row-level pairing.
+AAP,AAP-ADVANCE AUTO PARTS INC-2021.pdf,38,boundary,prose,prose_multicol,DEI training and inclusion-council descriptions are independent prose columns.
+UEIC,UEIC-UNIVERSAL ELECTRONICS INC-2025.pdf,49,boundary,table_dominant,disclosure_index_table,GRI disclosure items map directly to their detailed references in aligned rows.
+NKE,NKE-NIKE INC -CL B-2023.pdf,25,boundary,prose,prose_multicol,Minority-design-program stories and photographs are independent narrative columns.
+BRLT,BRLT-BRILLIANT EARTH GP INC-2022.pdf,30,boundary,prose,prose_multicol,The three mining-partnership stories are independent prose columns with photographs.
+DECK,DECK-DECKERS OUTDOOR CORP-2023.pdf,158,boundary,ambiguous_or_mixed,data_table_ruled,A significant safety chart and multi-year volatile-organic-compounds table share the page.
+CROX,CROX-CROCS INC-2022.pdf,4,boundary,ambiguous_or_mixed,other,Letter, values panels, product feature, and timeline are independent visual content blocks.
+XOM,XOM-EXXON MOBIL CORP-2022.pdf,47,boundary,prose,prose_multicol,Human-rights and remedy discussions are continuous prose columns with independent linked resources.
+PTRN,PTRN-Pattern Group-2021.pdf,57,boundary,prose,prose_multicol,The social-responsibility requirements are continuous parallel prose columns.
+WHR,WHR-WHIRLPOOL CORP-2024.pdf,12,boundary,ambiguous_or_mixed,other,Independent ESG-oversight panels and a photograph share the page with separate governance prose.
+VRA,VRA-VERA BRADLEY INC-2025.pdf,25,boundary,table_dominant,data_table_ruled,The raw-material sourcing and activity-metric fields are aligned across substantial table rows.
+CRMT,CRMT-AMERICA'S CAR-MART INC-2023.pdf,30,boundary,prose,prose_short_columns,Stakeholder groups and their independent bullet lists are correctly read as short columns.
+PVH,PVH-PVH CORP-2023.pdf,22,boundary,prose,prose_multicol,Hazardous-chemical and microfiber narrative with a photo and progress callout has no table pairing.
+VZ,VZ-VERIZON COMMUNICATIONS INC-2023.pdf,33,boundary,prose,prose_multicol,The three supplier-management narratives are independent prose columns.
+AZO,AZO-AUTOZONE INC-2024.pdf,64,boundary,table_dominant,disclosure_index_table,GRI identifiers descriptions and responses are aligned across structured rows.
+DG,DG-DOLLAR GENERAL CORP-2025.pdf,19,boundary,prose,prose_multicol,Employee-safety stories and bullet points are continuous prose around a photograph.
+KMX,KMX-CARMAX INC-2021.pdf,29,boundary,prose,prose_multicol,Education and awareness prose with a self-contained policy list has no shared-row structure.
+VFC,VFC-VF CORP-2022.pdf,30,boundary,prose,prose_multicol,Community stories in separate text columns are independent of the photograph.
+WHR,WHR-WHIRLPOOL CORP-2022.pdf,106,boundary,table_dominant,data_table_ruled,Metrics values units and criteria form a structured assurance table.
+LAD,LAD-LITHIA MOTORS INC -CL A-2025.pdf,14,boundary,ambiguous_or_mixed,stat_card_grid,Independent quarterly-focus and employee-story panels have no single linear reading order.
+FL,FL-FOOT LOCKER INC-2023.pdf,71,boundary,table_dominant,data_table_ruled,Data used emission factors and notes align in substantial table rows.
+COLM,COLM-COLUMBIA SPORTSWEAR CO-2023.pdf,51,boundary,prose,prose_multicol,The audit-program descriptions are independent two-column prose content.
+MELI,MELI-MERCADOLIBRE-2023.pdf,38,boundary,ambiguous_or_mixed,stat_card_grid,Independent leadership-program panels and participant callouts surround a self-contained photograph.
+COST,COST-COSTCO WHOLESALE CORP-2022.pdf,2,boundary,prose,toc_nav,The page is a conventional contents list with independent hierarchical entries.
+BURL,BURL-Burlington Stores-2023.pdf,15,boundary,prose,prose_multicol,Safety and labor-rights narratives are independent prose areas around visual callouts.
+VVV,VVV-VALVOLINE INC-2024.pdf,47,boundary,table_dominant,disclosure_index_table,GRI topics disclosures and references map in structured rows.
+DECK,DECK-DECKERS OUTDOOR CORP-2024.pdf,25,boundary,ambiguous_or_mixed,stat_card_grid,Two independent demographic chart cards sit beside employee-program prose and a photograph.
+DECK,DECK-DECKERS OUTDOOR CORP-2025.pdf,81,boundary,table_dominant,data_table_ruled,Targets and annual results are aligned across a substantial multi-year table.
+NKE,NKE-NIKE INC -CL B-2024.pdf,50,boundary,table_dominant,disclosure_index_table,SASB topics categories codes data and references are aligned by row.
+RL,RL-RALPH LAUREN CORP-2022.pdf,27,boundary,prose,prose_multicol,Supplier-capacity narrative runs as continuous two-column prose below a photograph.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2023.pdf,29,boundary,ambiguous_or_mixed,other,A substantial governance hierarchy graphic shares the page with governance prose.
+LEG,LEG-LEGGETT & PLATT INC-2023.pdf,32,boundary,prose,prose_multicol,Community narratives and the self-contained employee feature are independent content blocks.
+HD,HD-HOME DEPOT INC-2024.pdf,64,boundary,prose,prose_multicol,Eco-actions narratives and self-contained product-resource callouts have no row correspondence.
+VZ,VZ-VERIZON COMMUNICATIONS INC-2023.pdf,14,boundary,prose,prose_multicol,Compensation benefits and wellness narratives are continuous independent columns.
+DELL,DELL-DELL TECHNOLOGIES INC-2023.pdf,14,boundary,prose,prose_multicol,Governance narrative and bullet points sit beside a self-contained photograph.
+HD,HD-HOME DEPOT INC-2024.pdf,21,boundary,prose,prose_multicol,Priority-assessment and continuity narratives are independent columns beside a photograph.
+TPR,TPR-TAPESTRY INC-2022.pdf,64,boundary,table_dominant,disclosure_index_table,GRI disclosures and their responses are aligned across structured rows.
+WSM,WSM-WILLIAMS-SONOMA INC-2023.pdf,45,boundary,table_dominant,disclosure_index_table,SDG goals targets initiatives and references are aligned by row.
+PVH,PVH-PVH CORP-2021.pdf,42,boundary,prose,prose_multicol,Ethical-recruitment narrative and progress bullets are independent of the photographs.
+BBWI,BBWI-BATH & BODY WORKS INC-2025.pdf,26,boundary,ambiguous_or_mixed,stat_card_grid,Independent sourcing narrative and prominent palm-oil statistic cards have no single reading order.
+ACI,ACI-ALBERTSONS COS INC-2024.pdf,24,boundary,prose,prose_multicol,Community-program narratives and independent bullet list are standard prose columns.
+VFC,VFC-VF CORP-2022.pdf,35,boundary,prose,prose_multicol,Human-rights narrative and callout are independent prose areas around photographs.
+PAG,PAG-PENSKE AUTOMOTIVE GROUP INC-2021.pdf,21,boundary,prose,prose_multicol,Electric-vehicle and waste-management narratives are independent content columns.
+WHR,WHR-WHIRLPOOL CORP-2023.pdf,96,boundary,table_dominant,disclosure_index_table,GRI disclosure numbers names and responses are aligned by row.
+MHK,MHK-MOHAWK INDUSTRIES INC-2022.pdf,28,boundary,prose,prose_multicol,Portrait profiles and stewardship interview narratives are independent content areas.
+ROST,ROST-ROSS STORES INC-2024.pdf,54,boundary,table_dominant,disclosure_index_table,TCFD recommended topics map directly to reference locations in rows.
+GES,GES-GUESS-2025.pdf,44,boundary,prose,prose_multicol,The two case-study pages contain independent prose and photographs with no row pairing.
+WHR,WHR-WHIRLPOOL CORP-2021.pdf,114,boundary,table_dominant,disclosure_index_table,GRI disclosure items and current-year responses are aligned across rows.
+FL,FL-FOOT LOCKER INC-2023.pdf,70,boundary,table_dominant,data_table_ruled,Emissions scope categories sources and calculation methodologies are structured in rows.
+DG,DG-DOLLAR GENERAL CORP-2025.pdf,12,boundary,prose,prose_multicol,Product-safety and chemical-policy narratives are independent prose columns.
+TPR,TPR-TAPESTRY INC-2021.pdf,19,boundary,prose,prose_multicol,The resource-group list and event narrative are independent of the photograph.
+ROST,ROST-ROSS STORES INC-2021.pdf,51,boundary,prose,prose_multicol,Responsible-sourcing narrative is continuous prose alongside a photograph.
+AMZN,AMZN-Amazon-2025.pdf,48,boundary,table_dominant,data_table_ruled,Commodity goals and annual progress fields align across a large structured table.
+KMX,KMX-CARMAX INC-2023.pdf,10,boundary,table_dominant,data_table_ruled,Topic groups and their FY2023 highlights align in paired row fields.
+TGT,TGT-TARGET CORP-2023.pdf,69,boundary,table_dominant,disclosure_index_table,Signature goals milestones and progress align across structured rows.
+SNBR,SNBR-SLEEP NUMBER CORP-2021.pdf,10,boundary,prose,prose_multicol,Human-rights narrative and independent principle sections have no shared-row structure.
+KR,KR-KROGER CO-2022.pdf,20,boundary,prose,prose_multicol,Recall-management narrative is continuous prose beside a photograph and a self-contained callout.
+MHK,MHK-MOHAWK INDUSTRIES INC-2022.pdf,78,boundary,table_dominant,disclosure_index_table,GRI disclosure numbers titles and responses are aligned across rows.
+HD,HD-HOME DEPOT INC-2021.pdf,50,boundary,prose,prose_multicol,Associate-safety stories are independent prose columns around a photograph.
+MNRO,MNRO-MONRO INC-2023.pdf,19,boundary,prose,prose_multicol,Engagement narrative and independent training statistics have no row correspondence.
+SNBR,SNBR-SLEEP NUMBER CORP-2021.pdf,12,boundary,prose,prose_multicol,Conflict-minerals discussion and supplier expectations are independent prose columns.
+JWN,JWN-NORSTROM-2022.pdf,14,boundary,prose,prose_multicol,Resource-group narrative and event lists are independent of the photograph.
+BURL,BURL-Burlington Stores-2023.pdf,30,boundary,prose,prose_multicol,Corrective-action and supplier-diversity narratives are independent prose columns beside a photograph.
+DELL,DELL-DELL TECHNOLOGIES INC-2023.pdf,51,boundary,prose,prose_multicol,Sustainable-PC and repair narratives are independent of the self-contained photograph.
+ULTA,ULTA-ULTA BEAUTY INC-2022.pdf,3,boundary,prose,prose_multicol,The CEO message is continuous multi-column prose around a portrait.
+UEIC,UEIC-UNIVERSAL ELECTRONICS INC-2024.pdf,12,boundary,table_dominant,data_table_ruled,Topics goals dates and progress are aligned across detailed table rows.
+DELL,DELL-DELL TECHNOLOGIES INC-2022.pdf,153,boundary,prose,prose_multicol,Glossary entries are independent columnar definitions without row correspondence.
+CPNG,CPNG-Coupang-2023.pdf,6,boundary,prose,prose_multicol,Employee-health narrative and case-study columns are independent content areas.
+DELL,DELL-DELL TECHNOLOGIES INC-2021.pdf,75,boundary,table_dominant,data_table_ruled,Metrics annual values and notes align across a structured data table.
+TJX,TJX-Tjx Cos Inc-2024.pdf,79,boundary,prose,prose_multicol,Conflict-minerals and fur-practices narratives are independent prose columns.
+JWN,JWN-NORSTROM-2022.pdf,43,boundary,table_dominant,data_table_ruled,CSR goals progress values and SDG indicators align in rows.
+T,T-AT&T INC-2023.pdf,39,boundary,prose,prose_multicol,Training narrative and independent metrics and bullet list have no row pairing.
+DECK,DECK-DECKERS OUTDOOR CORP-2021.pdf,17,boundary,table_dominant,data_table_ruled,Targets annual achievements status and due dates form a large structured table.
+SVV,SVV-Savers Value Village-2023.pdf,44,boundary,table_dominant,disclosure_index_table,SASB accounting metrics responses and codes are aligned by row.
+GES,GES-GUESS-2023-2022.pdf,47,boundary,prose,prose_multicol,Team narrative and its self-contained goals panel have no row correspondence.
+PVH,PVH-PVH CORP-2021.pdf,82,boundary,table_dominant,disclosure_index_table,GRI disclosure items and 2021 responses are aligned across rows.
+CRI,CRI-CARTER'S INC-2021.pdf,22,boundary,prose,prose_multicol,Development-program narratives and a self-contained participant summary are independent columns.
+HD,HD-HOME DEPOT INC-2022.pdf,84,boundary,table_dominant,disclosure_index_table,GRI standards descriptions and reference answers map across rows.
+JWN,JWN-NORSTROM-2024.pdf,11,boundary,prose,prose_multicol,Human-rights narrative is continuous prose beside a large photograph.
+ULTA,ULTA-ULTA BEAUTY INC-2022.pdf,11,boundary,prose,prose_multicol,Inclusion stories and photographs are independent prose content areas.
+RL,RL-RALPH LAUREN CORP-2023.pdf,108,boundary,table_dominant,disclosure_index_table,SASB topics and detailed responses are aligned in structured rows.
+RCKY,RCKY-ROCKY BRANDS INC-2023.pdf,25,boundary,prose,prose_multicol,Membership descriptions are independent prose columns beside a graphic.
+WWW,WWW-WOLVERINE WORLD WIDE-2022.pdf,12,boundary,ambiguous_or_mixed,chart_infographic,Substantial workforce diversity charts share the spread with separate DEI narratives.
+MNRO,MNRO-MONRO INC-2023.pdf,31,boundary,prose,prose_multicol,Environmental-impact and energy-efficiency narratives are independent prose columns.
+SHOO,SHOO-MADDEN STEVEN LTD-2024.pdf,18,boundary,table_dominant,data_table_ruled,Targets annual progress and status are aligned across structured rows.
+DELL,DELL-DELL TECHNOLOGIES INC-2021.pdf,35,boundary,table_dominant,data_table_ruled,Ethics and privacy goals performance and supporting narrative form aligned rows.
+BBW,BBW-BUILD-A-BEAR WORKSHOP INC-2023.pdf,26,boundary,ambiguous_or_mixed,stat_card_grid,Independent compensation cards and benefits list share the page with prose.
+NKE,NKE-NIKE INC -CL B-2023.pdf,46,boundary,prose,prose_multicol,The retail-employee program descriptions are continuous independent text columns.
+CPNG,CPNG-Coupang-2024.pdf,8,boundary,prose,prose_multicol,Employee-care narrative and photographs are independent content areas.
+LOVE,LOVE-LOVESAC CO (THE)-2021.pdf,16,boundary,prose,prose_multicol,Product-quality narrative and the navigation sidebar are independent prose content.
+MNRO,MNRO-MONRO INC-2021.pdf,5,boundary,prose,prose_multicol,The board-chair letter is continuous two-column prose with a portrait.
+BIRD,BIRD-ALLBIRDS INC-2023.pdf,43,boundary,table_dominant,data_table_ruled,Commitments and status responses are aligned in structured flight-status rows.
+KR,KR-KROGER CO-2025.pdf,61,boundary,table_dominant,data_table_ruled,Goals and annual performance values align across a large data table.
+GES,GES-GUESS-2025.pdf,20,boundary,prose,prose_multicol,Water and chemical-management narratives are continuous independent prose columns.
+WOOF,WOOF-PETCO HEALTH AND WELLNESS CO-2021.pdf,73,boundary,prose,prose_multicol,The ethical-business and governance sections are independent prose columns.
+LAD,LAD-LITHIA MOTORS INC -CL A-2025.pdf,38,boundary,table_dominant,disclosure_index_table,GRI framework identifiers descriptions and detailed responses are aligned in rows.
+LULU,LULU-LULULEMON ATHLETICA INC-2022.pdf,85,boundary,table_dominant,disclosure_index_table,GRI disclosures notes and age-group values are aligned across structured rows.
+FIGS,FIGS-FIGS INC-2023.pdf,11,boundary,prose,prose_multicol,The two donation lists and their self-contained total callouts have no shared-row correspondence.
+VZ,VZ-VERIZON COMMUNICATIONS INC-2023.pdf,16,boundary,prose,prose_multicol,Training and career-development sections are independent prose content columns.
+HD,HD-HOME DEPOT INC-2023.pdf,61,boundary,prose,prose_multicol,Packaging narrative and self-contained statistic callouts have no row correspondence.
+GES,GES-GUESS-2025.pdf,51,boundary,prose,prose_multicol,Case-study and cybersecurity content are independent prose areas with photographs and callouts.
+BBY,BBY-BEST BUY CO INC-2025.pdf,21,boundary,prose,prose_multicol,Packaging sections are continuous independent prose columns beside a photograph.
+CROX,CROX-CROCS INC-2023.pdf,48,boundary,table_dominant,disclosure_index_table,TCFD metrics disclosures and references map across structured table rows.
+LOVE,LOVE-LOVESAC CO (THE)-2025.pdf,13,boundary,prose,prose_multicol,The environment and product-quality sections contain independent achievement and initiative lists.
+PAG,PAG-PENSKE AUTOMOTIVE GROUP INC-2022.pdf,42,boundary,prose,prose_multicol,The three risk-management narratives are continuous independent prose columns.
+AMZN,AMZN-Amazon-2021.pdf,7,boundary,prose,prose_multicol,The COVID-response stories are independent prose columns with a self-contained cost callout.
+TPR,TPR-TAPESTRY INC-2021.pdf,61,boundary,table_dominant,disclosure_index_table,TCFD core elements disclosures and responses are aligned in table rows.
+URBN,URBN-Urban Outfitters-2023-2024.pdf,38,boundary,prose,prose_multicol,Data-privacy and security sections are independent prose columns.
+BBY,BBY-BEST BUY CO INC-2025.pdf,10,boundary,ambiguous_or_mixed,chart_infographic,Four independent environmental-progress charts have no single canonical text order.
+ARKO,ARKO-ARKO CORP-2023.pdf,44,boundary,prose,prose_multicol,Data-privacy narrative and its bullet list are continuous prose rather than shared rows.
+GPI,GPI-GROUP 1 AUTOMOTIVE INC-2022.pdf,19,boundary,prose,prose_multicol,DEI narrative and self-contained mission-statement callouts have no row correspondence.
+SHOO,SHOO-MADDEN STEVEN LTD-2022.pdf,29,boundary,prose,prose_multicol,The learning-session descriptions are independent sequential prose listings.
+PTRN,PTRN-Pattern Group-2022.pdf,106,boundary,prose,prose_multicol,The corporate-academy prose dominates while the training-hours table is minor.
+LOW,LOW-LOWE'S COS INC-2022.pdf,52,boundary,table_dominant,disclosure_index_table,GRI disclosures and multiple framework alignments map across structured rows.
+KTB,KTB-KONTOOR BRANDS INC-2023.pdf,3,boundary,prose,prose_multicol,The report introduction uses independent prose columns and self-contained publication links.
+CURV,CURV-TORRID HOLDINGS-2022.pdf,22,boundary,ambiguous_or_mixed,data_table_ruled,A substantial safety-performance table shares the page with health-and-safety prose and location boxes.
+GES,GES-GUESS-2023-2022.pdf,66,boundary,prose,prose_multicol,Data-protection and privacy sections are independent prose columns beside a photograph.
+TGT,TGT-TARGET CORP-2021.pdf,39,boundary,prose,prose_multicol,Cybersecurity prose is continuous across columns beside a self-contained photograph.
+CRI,CRI-CARTER'S INC-2022.pdf,3,boundary,prose,prose_multicol,The CEO message is continuous prose around a portrait.
+KTB,KTB-KONTOOR BRANDS INC-2024.pdf,11,boundary,table_dominant,data_table_ruled,Goals definitions and annual performance fields are aligned in structured rows.
+LEG,LEG-LEGGETT & PLATT INC-2023.pdf,59,boundary,prose,prose_multicol,The risk and other-information narratives are independent prose columns.
+TPR,TPR-TAPESTRY INC-2021.pdf,63,boundary,table_dominant,disclosure_index_table,SASB topics accounting metrics and company responses align in table rows.
+AAPL,AAPL-APPLE INC-2022.pdf,33,boundary,prose,prose_multicol,Health-and-safety content is continuous independent prose across columns.
+ACI,ACI-ALBERTSONS COS INC-2024.pdf,10,boundary,prose,prose_multicol,Energy transportation and value-chain sections are independent prose columns around photographs.
+CROX,CROX-CROCS INC-2021.pdf,20,boundary,ambiguous_or_mixed,other,Independent packaging and case-study panels with photographs have no single canonical reading order.
+LZB,LZB-LA-Z-BOY INC-2022.pdf,27,boundary,prose,prose_multicol,Employee-recognition and training narratives are independent prose areas beside a photograph.
+GAP,GAP-GAP-2022.pdf,64,boundary,table_dominant,disclosure_index_table,GRI standards disclosures and reference locations align across structured table rows.
