@@ -7,7 +7,6 @@ AEO,AMERN EAGLE OUTFITTERS INC,ACCEPT,Clean QA pass,4
 AKA,A.K.A. BRAND HOLD CORP,NOT_FOUND,No ESG report found for this company,1
 AMZN,AMAZON.COM INC,EXCLUDE_PENDING_FIX,High-severity garbled text or low readable word ratio detected,5
 AN,AUTONATION INC,ACCEPT,Clean QA pass,5
-ANF,ABERCROMBIE & FITCH  -CL A,NOT_FOUND,No ESG report found for this company,1
 APC,ARKO PETROLEUM CORP,ACCEPT,Clean QA pass,4
 ARHS,ARHAUS INC,NOT_FOUND,No ESG report found for this company,1
 ARKO,ARKO CORP,ACCEPT,Clean QA pass,4
@@ -15,7 +14,6 @@ ASO,ACADEMY SPO AND OU INC,ACCEPT,Clean QA pass,1
 ATER,ATERIAN INC,NOT_FOUND,No ESG report found for this company,1
 AZO,AUTOZONE INC,ACCEPT,Clean QA pass,6
 BARK,BARK INC,NOT_FOUND,No ESG report found for this company,1
-BBBY,BED BATH & BEYOND INC,NOT_FOUND,No ESG report found for this company,1
 BBW,BUILD-A-BEAR WORKSHOP INC,ACCEPT,Clean QA pass,2
 BBWI,BATH & BODY WORKS INC,ACCEPT,Clean QA pass,4
 BBY,BEST BUY CO INC,ACCEPT,Clean QA pass,5
@@ -25,7 +23,6 @@ BKE,BUCKLE INC,NOT_FOUND,No ESG report found for this company,1
 BNED,BARNES & NOBLE EDUCATION INC,NOT_FOUND,No ESG report found for this company,1
 BOBS,BOBS DISCOUNT FURNITURE INC,NOT_FOUND,No ESG report found for this company,1
 BOOT,BOOT BARN HOLDINGS INC,NOT_FOUND,No ESG report found for this company,1
-BRLT,BRILLIANT EARTH GP INC,NOT_FOUND,No ESG report found for this company,1
 BSET,BASSETT FURNITURE INDS,NOT_FOUND,No ESG report found for this company,1
 BURL,BURLINGTON STORES INC,ACCEPT,Clean QA pass,4
 CAL,CALERES INC,ACCEPT,Clean QA pass,4
@@ -124,7 +121,6 @@ ONEW,ONEWATER MARINE INC,NOT_FOUND,No ESG report found for this company,1
 ORBS,EIGHTCO HOLDINGS INC,NOT_FOUND,No ESG report found for this company,1
 ORLY,O'REILLY AUTOMOTIVE INC,ACCEPT_MINOR_ISSUES,"Minor issues (e.g. missing citation metadata), acceptable for staging",1
 OXM,OXFORD INDUSTRIES INC,ACCEPT,Clean QA pass,1
-PAG,PENSKE AUTOMOTIVE GROUP INC,NOT_FOUND,No ESG report found for this company,1
 PETS,PETMED EXPRESS INC,NOT_FOUND,No ESG report found for this company,1
 PEW,GRABAGUN DIGITAL HOLDING INC,NOT_FOUND,No ESG report found for this company,1
 PLBY,PLAYBOY INC,NOT_FOUND,No ESG report found for this company,1
@@ -192,3 +188,7 @@ XOM,EXXON MOBIL CORP,ACCEPT,Clean QA pass,5
 YHGJ,YUNHONG GREEN CTI LTD,NOT_FOUND,No ESG report found for this company,1
 YSWY,YESWAY INC,NOT_FOUND,No ESG report found for this company,1
 ZUMZ,ZUMIEZ INC,NOT_FOUND,No ESG report found for this company,1
+ANF,ABERCROMBIE & FITCH -CL A,PENDING_AUDIT,Newly ingested Monday Week 4 - awaiting Tuesday staging audit,0
+BRLT,BRILLIANT EARTH GP INC,PENDING_AUDIT,Newly ingested Monday Week 4 - awaiting Tuesday staging audit,0
+PAG,PENSKE AUTOMOTIVE GROUP INC,PENDING_AUDIT,Newly ingested Monday Week 4 - awaiting Tuesday staging audit,0
+BBBY,BED BATH & BEYOND INC,PENDING_AUDIT,"Found via Drive audit, not in tracker as downloaded - newly ingested Monday Week 4",0
