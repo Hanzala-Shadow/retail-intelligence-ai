@@ -1,0 +1,163 @@
+{
+  "contract_version": "1.0.0",
+  "evidence": [
+    {
+      "accession_number": "0000909832-23-000042",
+      "aggregated_rank": 1,
+      "chunk_id": 252111,
+      "chunk_text": "Item 7. Management's Discussion and Analysis of Financial Conditions and Results of Operations\n\n(amounts in millions, except per share, share, membership fee, and warehouse count data)\nThe following Management's Discussion and Analysis of Financial Condition and Results of Operations (MD&A) is intended to promote understanding of the results of operations and financial condition. MD&A is provided as a supplement to, and should be read in conjunction with, our consolidated financial statements and the accompanying Notes to Financial Statements (Part II,\n\nItem 8.\n\nof this Form 10-K). This section generally discusses the results of operations for 2023 compared to 2022. For discussion related to the results of operations and changes in financial condition for 2022 compared to 2021 refer to Part II, Item 7, Management's Discussion and Analysis of Financial Condition and Results of Operations in our fiscal year 2022 Form 10-K, which was filed with the United States Securities and Exchange Commission (SEC) on October 5, 2022.\nOverview\nWe believe that the most important driver of our profitability is increasing net sales, particularly comparable sales. Net sales includes our core merchandise categories (foods and sundries, non-foods, and fresh foods), warehouse ancillary (gasoline, pharmacy, optical, food court, hearing aids, and tire installation) and other businesses (e-commerce, business centers, travel and other). Comparable sales is defined as net sales from warehouses open for more than one year, including remodels, relocations and expansions, and sales related to e-commerce websites operating for more than one year. The measure is intended as supplemental information and is not a substitute for net sales presented in accordance with U.S. generally accepted accounting principles (U.S. GAAP). Comparable sales growth is achieved through increasing shopping frequency from new and existing members and the amount they spend on each visit (average ticket). Sales comparisons can also be particularly influenced by certain factors that are beyond our control: fluctuations in currency exchange rates (with respect to our international operations); inflation or deflation and changes in the cost of gasoline and associated competitive conditions. The higher our comparable sales exclusive of these items, the more we can leverage our SG&A expenses, reducing them as a percentage of sales and enhancing profitability. Generating comparable sales growth is foremost a question of making available to our members the right merchandise at the right prices, a skill that we believe we have repeatedly demonstrated over the long-term. Another substantial factor in net sales",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2023-Item_7-gross-margin",
+      "cross_encoder_rank": 1,
+      "cross_encoder_score": -0.08474155515432358,
+      "doc_type": "10-K",
+      "filing_year": 2023,
+      "page_end": null,
+      "page_start": null,
+      "page_unavailable_reason": "html_source",
+      "provenance": [
+        {
+          "comparison_side_id": "COST-2023-Item_7-gross-margin",
+          "subquery_id": "week4-costco-temporal-smoke-sq-1"
+        }
+      ],
+      "section_code": "Item_7",
+      "semantic_rank": 3,
+      "subquery_id": "week4-costco-temporal-smoke-sq-1",
+      "ticker": "COST"
+    },
+    {
+      "accession_number": "0000909832-24-000049",
+      "aggregated_rank": 2,
+      "chunk_id": 252228,
+      "chunk_text": "Item 7. Management's Discussion and Analysis of Financial Conditions and Results of Operations\n\n(amounts in millions, except per share, share, membership fee, and warehouse count data)\nManagement's Discussion and Analysis of Financial Condition and Results of Operations (MD&A) is intended to promote understanding of the results of operations and financial condition. MD&A is provided as a supplement to, and should be read in conjunction with, our consolidated financial statements and the accompanying Notes to Financial Statements (Part II,\n\nItem 8.\n\nof this Form 10-K). This section generally discusses the results of operations for 2024 compared to 2023. For discussion related to the results of operations and changes in financial condition for 2023 compared to 2022 refer to Part II, Item 7, Management's Discussion and Analysis of Financial Condition and Results of Operations in our fiscal year 2023 Form 10-K, which was filed with the United States Securities and Exchange Commission (SEC) on October 11, 2023.\nOverview\nWe believe that the most important driver of our profitability is increasing net sales, particularly comparable sales. Net sales includes our core merchandise categories (foods and sundries, non-foods, and fresh foods), warehouse ancillary (gasoline, pharmacy, optical, food court, hearing aids, and tire installation) and other businesses (e-commerce, business centers, travel and other). E-commerce and business center sales are allocated to the appropriate merchandise categories in the Net Sales discussion. Comparable sales is defined as net sales from warehouses open for more than one year, including remodels, relocations and expansions, and sales related to e-commerce sites operating for more than one year. The measure is intended as supplemental information and is not a substitute for net sales presented in accordance with U.S. generally accepted accounting principles (U.S. GAAP) and should be reviewed in conjunction with results reported in accordance with U.S. GAAP. Comparable sales growth is achieved through increasing shopping frequency from new and existing members and the amount they spend on each visit (average ticket). Sales comparisons can also be particularly influenced by certain factors that are beyond our control: fluctuations in currency exchange rates (with respect to our international operations) and inflation or deflation in the cost of gasoline and associated competitive conditions. The higher our comparable sales exclusive of these items, the more we can leverage our SG&A expenses, reducing them as a percentage of sales and enhancing profitability. Generating comparable sales growth is foremost a question",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2024-Item_7-gross-margin",
+      "cross_encoder_rank": 1,
+      "cross_encoder_score": -0.16478729248046875,
+      "doc_type": "10-K",
+      "filing_year": 2024,
+      "page_end": null,
+      "page_start": null,
+      "page_unavailable_reason": "html_source",
+      "provenance": [
+        {
+          "comparison_side_id": "COST-2024-Item_7-gross-margin",
+          "subquery_id": "week4-costco-temporal-smoke-sq-2"
+        }
+      ],
+      "section_code": "Item_7",
+      "semantic_rank": 1,
+      "subquery_id": "week4-costco-temporal-smoke-sq-2",
+      "ticker": "COST"
+    },
+    {
+      "accession_number": "0000909832-23-000042",
+      "aggregated_rank": 3,
+      "chunk_id": 252118,
+      "chunk_text": " of changes in sales penetration and gross margins from our warehouse ancillary and other businesses.\nGross margin on a segment basis, when expressed as a percentage of the segment's own sales and excluding the impact of changes in gasoline prices on net sales (segment gross margin percentage),\nincreased in our U.S. segment, due to a smaller LIFO charge and increases in core merchandise categories, primarily foods and sundries, partially offset by\nthe charges related to the discontinuation of our charter shipping activities discussed above and warehouse ancillary and other businesses. Gross margin percentage increased in our Canada segment, attributable to increases in core merchandise categories and warehouse ancillary and other businesses. Our Other International gross margin percentage decreased, largely due to decreases in core merchandise categories, partially offset by warehouse ancillary and other businesses. All segments were negatively impacted by increased 2% rewards.\nSelling, General and Administrative Expenses\n\n[TABLE:table_21]\n2023\n2022\n2021\nSG&A expenses\n$\n21,590\n$\n19,779\n$\n18,537\nSG&A expenses as a percentage of net sales\n9.08\n%\n8.88\n%\n9.65\n%\n\n24\nTable of Contents\nSG&A expenses as a percentage of net sales increased 20 basis points compared to 2022. SG&A expenses as a percentage of net sales excluding the impact of gasoline price deflation was 9.02%, an increase of 14 basis points. The comparison to last year was negatively impacted by 16 basis points in warehouse operations and other businesses, largely driven by wage increases effective in March and July 2022, and March 2023, as well as lower sales growth. Central operating costs were also higher by six basis points. SG&A was positively impacted by eight basis points due to the prior year's write-off of information technology assets and a charge related to granting our employees additional vacation. Changes in foreign currencies relative to the U.S. dollar decreased SG&A expenses by approximately $281 compared to 2022, attributable to our Canadian and Other International Operations.\nInterest Expense\n\n[TABLE:table_22]\n2023\n2022\n2021\nInterest expense\n$\n160\n$\n158\n$\n171\n\nInterest expense is primarily related to Senior Notes and financing leases. For more information on our debt arrangements, refer to the consolidated financial statements included in\n\nItem 8.\n\nof this Report.\nInterest Income and Other, Net\n\n[TABLE:table",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2023-Item_7-gross-margin",
+      "cross_encoder_rank": 2,
+      "cross_encoder_score": -3.005298376083374,
+      "doc_type": "10-K",
+      "filing_year": 2023,
+      "page_end": null,
+      "page_start": null,
+      "page_unavailable_reason": "html_source",
+      "provenance": [
+        {
+          "comparison_side_id": "COST-2023-Item_7-gross-margin",
+          "subquery_id": "week4-costco-temporal-smoke-sq-1"
+        }
+      ],
+      "section_code": "Item_7",
+      "semantic_rank": 1,
+      "subquery_id": "week4-costco-temporal-smoke-sq-1",
+      "ticker": "COST"
+    },
+    {
+      "accession_number": "0000909832-24-000049",
+      "aggregated_rank": 4,
+      "chunk_id": 252232,
+      "chunk_text": "2024;\n\u2022\nMembership fee revenue increased 5% to $4,828, driven by new member sign-ups and upgrades to Executive membership, partially offset by one less week of membership fee income in 2024;\n\u2022\nGross margin percentage increased 35 basis points, driven primarily by warehouse ancillary and other businesses, largely e-commerce and gasoline, and the absence of charges related to the discontinuation of our charter shipping activities recorded in 2023;\n\u2022\nSG&A expenses as a percentage of net sales increased six basis points, primarily due to warehouse operations and other businesses, which included the impact of wage increases in March and September 2023 and July 2024, partially offset by sales leverage and improved productivity;\n\u2022\nThe effective tax rate in 2024 was 24.4%, compared to 25.9% in 2023;\n\u2022\nNet income increased 17% to $7,367, or $16.56 per diluted share compared to $6,292, or $14.16 per diluted share in 2023;\n\u2022\nWe paid a special cash dividend of $15 per share in January 2024; and\n\u2022\nIn April, the Board of Directors approved a 14% increase in the quarterly cash dividend.\n24\nTable of Contents\nRESULTS OF OPERATIONS\nNet Sales\n\n[TABLE:table_18]\n2024\n2023\n2022\nNet Sales\n$\n249,625\n$\n237,710\n$\n222,730\nChanges in net sales:\nU.S.\n4\n%\n7\n%\n17\n%\nCanada\n6\n%\n4\n%\n16\n%\nOther International\n9\n%\n9\n%\n10\n%\nTotal Company\n5\n%\n7\n%\n16\n%\nChanges in comparable sales\n(1)\n:\nU.S.\n4\n%\n3\n%\n16\n%\nCanada\n7\n%\n2\n%\n15\n%\nOther International\n8\n%\n3\n%\n7\n%\nTotal Company\n5\n%\n3\n%\n14\n%\nE-commerce\n16\n%\n(6)\n%\n10\n%\nChanges in comparable sales excluding the impact of changes in foreign-currency and gasoline prices\n(1)\n:\nU.S.\n5\n%\n4\n%\n10\n%\nCanada\n8\n%\n8\n%\n12\n%\nOther International\n8\n%\n8\n%\n10\n%\nTotal Company\n6\n%\n5\n%\n11\n%\nE-commerce\n",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2024-Item_7-gross-margin",
+      "cross_encoder_rank": 2,
+      "cross_encoder_score": -3.291721820831299,
+      "doc_type": "10-K",
+      "filing_year": 2024,
+      "page_end": null,
+      "page_start": null,
+      "page_unavailable_reason": "html_source",
+      "provenance": [
+        {
+          "comparison_side_id": "COST-2024-Item_7-gross-margin",
+          "subquery_id": "week4-costco-temporal-smoke-sq-2"
+        }
+      ],
+      "section_code": "Item_7",
+      "semantic_rank": 4,
+      "subquery_id": "week4-costco-temporal-smoke-sq-2",
+      "ticker": "COST"
+    },
+    {
+      "accession_number": "0000909832-23-000042",
+      "aggregated_rank": 5,
+      "chunk_id": 252117,
+      "chunk_text": " relative to the U.S. dollar negatively impacted membership fees by $76 compared to 2022. At the end of 2023, our member renewal rates were 92.7% in the U.S. and Canada and 90.4% worldwide. More members auto renewing and higher penetration of Executive members benefit renewal rates. Our renewal rate, which excludes affiliates of Business members, is a trailing calculation that captures renewals during the period seven to eighteen months prior to the reporting date.\nWe account for membership fee revenue on a deferred basis, recognized ratably over the one-year membership period.\nGross Margin\n\n[TABLE:table_20]\n2023\n2022\n2021\nNet sales\n$\n237,710\n$\n222,730\n$\n192,052\nLess merchandise costs\n212,586\n199,382\n170,684\nGross margin\n$\n25,124\n$\n23,348\n$\n21,368\nGross margin percentage\n10.57\n%\n10.48\n%\n11.13\n%\n\nGross margin percentage increased nine basis points compared to 2022. Excluding the impact of gasoline price deflation on net sales, gross margin was 10.50%, an increase of two basis points. This two basis point increase was positively impacted by: 18 basis points due to a smaller LIFO charge in 2023 compared to 2022, and seven basis points due to core merchandise categories, predominantly foods and sundries. These were offset by: 16 basis points due to the downsizing and then discontinuation of our charter shipping activities; four basis points due to increased 2% rewards; and three basis points due to warehouse ancillary and other businesses, predominantly e-commerce, partially offset by gasoline and business centers. Changes in foreign currencies relative to the U.S. dollar negatively impacted gross margin by approximately $349, compared to 2022, attributable to our Canadian and Other International Operations.\nThe gross margin in core merchandise categories, when expressed as a percentage of core merchandise sales (rather than total net sales), increased two basis points, driven by foods and sundries and non-foods, partially offset by fresh foods. This measure eliminates the impact of changes in sales penetration and gross margins from our warehouse ancillary and other businesses.\nGross margin on a segment basis, when expressed as a percentage of the segment's own sales and excluding the impact of changes in gasoline prices on net sales (segment",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2023-Item_7-gross-margin",
+      "cross_encoder_rank": 3,
+      "cross_encoder_score": -3.1123905181884766,
+      "doc_type": "10-K",
+      "filing_year": 2023,
+      "page_end": null,
+      "page_start": null,
+      "page_unavailable_reason": "html_source",
+      "provenance": [
+        {
+          "comparison_side_id": "COST-2023-Item_7-gross-margin",
+          "subquery_id": "week4-costco-temporal-smoke-sq-1"
+        }
+      ],
+      "section_code": "Item_7",
+      "semantic_rank": 8,
+      "subquery_id": "week4-costco-temporal-smoke-sq-1",
+      "ticker": "COST"
+    }
+  ],
+  "evidence_completeness": "full",
+  "is_decomposed": true,
+  "original_question": "How did Costco's gross margin change from 2023 to 2024?",
+  "query_type": "temporal_comparison",
+  "required_sides": [
+    "COST-2023-Item_7-gross-margin",
+    "COST-2024-Item_7-gross-margin"
+  ],
+  "status": "success",
+  "subqueries": [
+    {
+      "accession_number": "0000909832-23-000042",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2023-Item_7-gross-margin",
+      "doc_type": "10-K",
+      "filing_year": 2023,
+      "question": "In the 2023 10-K filing for COST, Section Item_7, what are the key disclosures regarding gross margin performance and cost-of-sales drivers?",
+      "section_code": "Item_7",
+      "subquery_id": "week4-costco-temporal-smoke-sq-1",
+      "ticker": "COST"
+    },
+    {
+      "accession_number": "0000909832-24-000049",
+      "claim_key": "gross margin",
+      "comparison_side_id": "COST-2024-Item_7-gross-margin",
+      "doc_type": "10-K",
+      "filing_year": 2024,
+      "question": "In the 2024 10-K filing for COST, Section Item_7, what are the key disclosures regarding gross margin performance and cost-of-sales drivers?",
+      "section_code": "Item_7",
+      "subquery_id": "week4-costco-temporal-smoke-sq-2",
+      "ticker": "COST"
+    }
+  ]
+}
