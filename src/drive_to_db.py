@@ -4,7 +4,7 @@ import argparse
 import csv
 import os
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -13,6 +13,11 @@ REFERENCE_DIR = Path("data/00_reference")
 RAW_ESG_ROOT = Path("data/01_raw/sustainability")
 VALID_TRACKER_STATUSES = {"downloaded", "not_found"}
 VALID_PARSE_STATUSES = {"parsed", "ocr_required", "failed"}
+MIN_CHUNK_TOKENS = 100
+MAX_CHUNK_TOKENS = 600
+SHORT_EVIDENCE_MIN_TOKENS = 25
+CHUNK_TYPE_NORMAL = "normal"
+CHUNK_TYPE_SHORT_EVIDENCE = "short_evidence"
 
 Company = SustainabilityReport = Document = Section = Chunk = None
 
@@ -73,6 +78,16 @@ def parse_bool(value: str | bool | None) -> bool:
     if isinstance(value, bool):
         return value
     return (value or "").strip().lower() in {"true", "1", "yes", "y"}
+
+
+def valid_chunk_token_count(row: dict) -> bool:
+    token_count = parse_int(row.get("token_count"))
+    chunk_type = (row.get("chunk_type") or CHUNK_TYPE_NORMAL).strip()
+    if token_count is None:
+        return False
+    if chunk_type == CHUNK_TYPE_SHORT_EVIDENCE:
+        return SHORT_EVIDENCE_MIN_TOKENS <= token_count < MIN_CHUNK_TOKENS
+    return MIN_CHUNK_TOKENS <= token_count <= MAX_CHUNK_TOKENS
 
 
 def row_quality_flags(row: dict) -> set[str]:
@@ -291,23 +306,43 @@ def build_sections(section_rows: list[dict], documents: list[dict], anomalies: l
     doc_keys = {(doc["ticker"], doc["pdf_stem"]) for doc in documents}
     sections: list[dict] = []
     seen: set[tuple[str, str, str]] = set()
+    section_code_counts = Counter(
+        (
+            (row.get("ticker") or "").strip().upper(),
+            (row.get("pdf_stem") or "").strip(),
+            (row.get("section_code") or "").strip(),
+        )
+        for row in section_rows
+    )
 
     for row in section_rows:
         ticker = (row.get("ticker") or "").strip().upper()
         pdf_stem = (row.get("pdf_stem") or "").strip()
         section_code = (row.get("section_code") or "").strip()
-        key = (ticker, pdf_stem, section_code)
+        section_instance_id = (row.get("section_instance_id") or "").strip()
 
         if not ticker or not pdf_stem or not section_code:
             anomalies.append(f"section index row missing ticker/pdf_stem/section_code: {row}")
             continue
+        if not section_instance_id:
+            legacy_key = (ticker, pdf_stem, section_code)
+            if section_code_counts[legacy_key] != 1:
+                anomalies.append(
+                    f"{ticker} {pdf_stem} {section_code}: legacy section_code is not a "
+                    "safe section_instance_id because it occurs more than once"
+                )
+                continue
+            section_instance_id = section_code
+
+        key = (ticker, pdf_stem, section_instance_id)
         if (ticker, pdf_stem) not in doc_keys:
             anomalies.append(f"{ticker} {pdf_stem}: section has no matching document")
             continue
         if key in seen:
-            anomalies.append(f"{ticker} {pdf_stem} {section_code}: duplicate section index row")
+            anomalies.append(
+                f"{ticker} {pdf_stem} {section_instance_id}: duplicate section instance row"
+            )
             continue
-        seen.add(key)
 
         section_file = row.get("section_file") or ""
         path = resolve_path(section_file)
@@ -316,10 +351,12 @@ def build_sections(section_rows: list[dict], documents: list[dict], anomalies: l
             continue
 
         text = path.read_text(encoding="utf-8", errors="replace")
+        seen.add(key)
         sections.append(
             {
                 "ticker": ticker,
                 "pdf_stem": pdf_stem,
+                "section_instance_id": section_instance_id,
                 "section_code": section_code,
                 "section_title": row.get("section_title") or section_code.replace("_", " ").title(),
                 "section_text": text,
@@ -335,32 +372,65 @@ def build_sections(section_rows: list[dict], documents: list[dict], anomalies: l
 
 
 def build_chunks(chunk_rows: list[dict], sections: list[dict], anomalies: list[str]) -> list[dict]:
-    section_keys = {(s["ticker"], s["pdf_stem"], s["section_code"]) for s in sections}
+    section_keys = {
+        (s["ticker"], s["pdf_stem"], s["section_instance_id"])
+        for s in sections
+    }
+    section_instances_by_code: dict[tuple[str, str, str], list[str]] = defaultdict(list)
+    for section in sections:
+        section_instances_by_code[
+            (section["ticker"], section["pdf_stem"], section["section_code"])
+        ].append(section["section_instance_id"])
+
     chunks: list[dict] = []
     seen: set[tuple[str, str, str, int]] = set()
+    seen_external_chunk_ids: set[str] = set()
 
     for row in chunk_rows:
         ticker = (row.get("ticker") or "").strip().upper()
         pdf_stem = (row.get("pdf_stem") or "").strip()
         section_code = (row.get("section_code") or "").strip()
+        section_instance_id = (row.get("section_instance_id") or "").strip()
         chunk_index = parse_int(row.get("chunk_index"))
 
         if not ticker or not pdf_stem or not section_code or chunk_index is None:
             anomalies.append(f"chunk index row missing ticker/pdf_stem/section_code/chunk_index: {row}")
             continue
 
-        key = (ticker, pdf_stem, section_code, chunk_index)
-        section_key = (ticker, pdf_stem, section_code)
+        if not section_instance_id:
+            candidates = section_instances_by_code.get(
+                (ticker, pdf_stem, section_code), []
+            )
+            if len(candidates) != 1:
+                anomalies.append(
+                    f"{ticker} {pdf_stem} {section_code} chunk {chunk_index}: legacy "
+                    "section_code cannot identify exactly one section instance"
+                )
+                continue
+            section_instance_id = candidates[0]
+
+        key = (ticker, pdf_stem, section_instance_id, chunk_index)
+        section_key = (ticker, pdf_stem, section_instance_id)
         if section_key not in section_keys:
-            anomalies.append(f"{ticker} {pdf_stem} {section_code}: chunk has no matching section")
+            anomalies.append(
+                f"{ticker} {pdf_stem} {section_instance_id}: chunk has no matching section instance"
+            )
             continue
         if key in seen:
-            anomalies.append(f"{ticker} {pdf_stem} {section_code} chunk {chunk_index}: duplicate chunk row")
+            anomalies.append(
+                f"{ticker} {pdf_stem} {section_instance_id} chunk {chunk_index}: duplicate chunk row"
+            )
             continue
-        seen.add(key)
+
+        external_chunk_id = (
+            row.get("external_chunk_id") or row.get("chunk_id") or ""
+        ).strip() or None
+        if external_chunk_id and external_chunk_id in seen_external_chunk_ids:
+            anomalies.append(f"{external_chunk_id}: duplicate external chunk ID")
+            continue
 
         token_count = parse_int(row.get("token_count"))
-        if token_count is None or token_count < 100 or token_count > 600:
+        if not valid_chunk_token_count(row):
             anomalies.append(f"{ticker} {pdf_stem} {section_code} chunk {chunk_index}: invalid token_count {row.get('token_count')}")
             continue
 
@@ -370,15 +440,35 @@ def build_chunks(chunk_rows: list[dict], sections: list[dict], anomalies: list[s
             anomalies.append(f"{ticker} {pdf_stem} {section_code} chunk {chunk_index}: chunk file missing: {chunk_file}")
             continue
 
+        seen.add(key)
+        if external_chunk_id:
+            seen_external_chunk_ids.add(external_chunk_id)
+
         chunks.append(
             {
                 "ticker": ticker,
                 "pdf_stem": pdf_stem,
+                "section_instance_id": section_instance_id,
                 "section_code": section_code,
                 "chunk_index": chunk_index,
+                "external_chunk_id": external_chunk_id,
                 "chunk_text": path.read_text(encoding="utf-8", errors="replace"),
                 "token_count": token_count,
                 "doc_type": row.get("doc_type") or "sustainability",
+                "source_id": (row.get("source_id") or "").strip() or None,
+                "source_version_id": (
+                    row.get("source_version_id") or ""
+                ).strip() or None,
+                "chunk_type": (row.get("chunk_type") or CHUNK_TYPE_NORMAL).strip(),
+                "short_section_action": (
+                    row.get("short_section_action") or ""
+                ).strip() or None,
+                "short_section_reason": (
+                    row.get("short_section_reason") or ""
+                ).strip() or None,
+                "merged_section_ids": (
+                    row.get("merged_section_ids") or ""
+                ).strip() or None,
                 "doc_quality_status": row.get("doc_quality_status") or "needs_review",
                 "rag_action": row.get("rag_action") or "manual_review_before_indexing",
                 "quality_flags": row.get("quality_flags") or "",
@@ -387,6 +477,12 @@ def build_chunks(chunk_rows: list[dict], sections: list[dict], anomalies: list[s
                 "page_start": parse_int(row.get("page_start")),
                 "page_end": parse_int(row.get("page_end")),
                 "citation_ready": parse_bool(row.get("citation_ready")),
+                "citation_validation_status": (
+                    row.get("citation_validation_status") or ""
+                ).strip() or None,
+                "citation_validation_version": (
+                    row.get("citation_validation_version") or ""
+                ).strip() or None,
             }
         )
 
@@ -561,16 +657,34 @@ def apply_plan(plan: LoadPlan) -> dict[str, int]:
                 session.query(Section)
                 .filter(
                     Section.doc_id == document.doc_id,
-                    Section.section_code == row["section_code"],
+                    Section.section_instance_id == row["section_instance_id"],
                 )
                 .first()
             )
+            # Adopt a pre-V4 row for the first explicit instance instead of
+            # leaving stale, duplicate canonical content behind.
+            if section is None and row["section_instance_id"] != row["section_code"]:
+                section = (
+                    session.query(Section)
+                    .filter(
+                        Section.doc_id == document.doc_id,
+                        Section.section_code == row["section_code"],
+                        Section.section_instance_id == row["section_code"],
+                    )
+                    .first()
+                )
             if section is None:
-                section = Section(doc_id=document.doc_id, section_code=row["section_code"])
+                section = Section(
+                    doc_id=document.doc_id,
+                    section_instance_id=row["section_instance_id"],
+                    section_code=row["section_code"],
+                )
                 session.add(section)
                 counts["sections_inserted"] += 1
             else:
                 counts["sections_updated"] += 1
+                section.section_instance_id = row["section_instance_id"]
+                section.section_code = row["section_code"]
             section.section_title = row["section_title"]
             section.section_text = row["section_text"]
             section.char_count = row["char_count"]
@@ -579,16 +693,21 @@ def apply_plan(plan: LoadPlan) -> dict[str, int]:
             section.page_start = row.get("page_start")
             section.page_end = row.get("page_end")
             session.flush()
-            section_map[(row["ticker"], row["pdf_stem"], row["section_code"])] = section
+            section_map[
+                (row["ticker"], row["pdf_stem"], row["section_instance_id"])
+            ] = section
 
         for row in plan.chunks:
-            section = section_map.get((row["ticker"], row["pdf_stem"], row["section_code"]))
+            section = section_map.get(
+                (row["ticker"], row["pdf_stem"], row["section_instance_id"])
+            )
             document = doc_map.get((row["ticker"], row["pdf_stem"]))
             company = companies.get(row["ticker"])
             if section is None or document is None or company is None:
                 counts["chunks_skipped"] += 1
                 continue
-            chunk = (
+
+            chunk_at_location = (
                 session.query(Chunk)
                 .filter(
                     Chunk.section_id == section.section_id,
@@ -596,17 +715,50 @@ def apply_plan(plan: LoadPlan) -> dict[str, int]:
                 )
                 .first()
             )
+            chunk_by_external_id = None
+            if row.get("external_chunk_id"):
+                chunk_by_external_id = (
+                    session.query(Chunk)
+                    .filter(Chunk.external_chunk_id == row["external_chunk_id"])
+                    .first()
+                )
+            if (
+                chunk_at_location is not None
+                and chunk_by_external_id is not None
+                and chunk_at_location.chunk_id != chunk_by_external_id.chunk_id
+            ):
+                counts["chunks_conflicted"] += 1
+                continue
+
+            chunk = chunk_by_external_id or chunk_at_location
             if chunk is None:
-                chunk = Chunk(section_id=section.section_id, chunk_index=row["chunk_index"])
+                chunk = Chunk(
+                    external_chunk_id=row.get("external_chunk_id"),
+                    section_id=section.section_id,
+                    chunk_index=row["chunk_index"],
+                )
                 session.add(chunk)
                 counts["chunks_inserted"] += 1
             else:
                 counts["chunks_updated"] += 1
 
+            if row.get("external_chunk_id"):
+                chunk.external_chunk_id = row["external_chunk_id"]
+            chunk.section_id = section.section_id
             chunk.doc_id = document.doc_id
             chunk.company_id = company.company_id
             chunk.doc_type = row["doc_type"]
+            chunk.section_instance_id = row["section_instance_id"]
             chunk.section_code = row["section_code"]
+            if row.get("source_id") is not None:
+                chunk.source_id = row["source_id"]
+            if row.get("source_version_id") is not None:
+                chunk.source_version_id = row["source_version_id"]
+            chunk.chunk_type = row.get("chunk_type") or CHUNK_TYPE_NORMAL
+            chunk.short_section_action = row.get("short_section_action")
+            chunk.short_section_reason = row.get("short_section_reason")
+            chunk.merged_section_ids = row.get("merged_section_ids")
+            chunk.chunk_index = row["chunk_index"]
             chunk.chunk_text = row["chunk_text"]
             chunk.token_count = row["token_count"]
             chunk.doc_quality_status = row["doc_quality_status"]
@@ -617,6 +769,10 @@ def apply_plan(plan: LoadPlan) -> dict[str, int]:
             chunk.page_start = row["page_start"]
             chunk.page_end = row["page_end"]
             chunk.citation_ready = row["citation_ready"]
+            if row.get("citation_validation_status") is not None:
+                chunk.citation_validation_status = row["citation_validation_status"]
+            if row.get("citation_validation_version") is not None:
+                chunk.citation_validation_version = row["citation_validation_version"]
 
         session.commit()
 

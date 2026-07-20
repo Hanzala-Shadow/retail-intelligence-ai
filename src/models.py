@@ -1,7 +1,7 @@
 """
 models.py
 SQLAlchemy ORM models for Retail Intelligence Pipeline.
-Matches V1__Schema.sql + V2__Chunking_DB_Fixes.sql.
+Matches the migrations in data/05_db/migrations through V4.
 """
 
 from sqlalchemy import (
@@ -87,11 +87,12 @@ class Document(Base):
 class Section(Base):
     __tablename__ = "sections"
     __table_args__ = (
-        UniqueConstraint("doc_id", "section_code", name="uq_sections_doc_code"),
+        UniqueConstraint("doc_id", "section_instance_id", name="uq_sections_doc_instance"),
     )
 
     section_id = Column(Integer, primary_key=True)
     doc_id = Column(Integer, ForeignKey("documents.doc_id", ondelete="CASCADE"), nullable=False)
+    section_instance_id = Column(String(100), nullable=False)
     section_code = Column(String(50))
     section_title = Column(String(255))
     section_text = Column(Text)
@@ -108,14 +109,23 @@ class Chunk(Base):
     __tablename__ = "chunks"
     __table_args__ = (
         UniqueConstraint("section_id", "chunk_index", name="uq_chunks_section_index"),
+        UniqueConstraint("external_chunk_id", name="uq_chunks_external_chunk_id"),
     )
 
     chunk_id = Column(Integer, primary_key=True)
+    external_chunk_id = Column(String(512))
     section_id = Column(Integer, ForeignKey("sections.section_id", ondelete="CASCADE"), nullable=False)
     doc_id = Column(Integer, ForeignKey("documents.doc_id", ondelete="CASCADE"), nullable=False)
     company_id = Column(Integer, ForeignKey("companies.company_id", ondelete="CASCADE"), nullable=False)
     doc_type = Column(String(30))
+    section_instance_id = Column(String(100))
     section_code = Column(String(50))
+    source_id = Column(String(255))
+    source_version_id = Column(String(320))
+    chunk_type = Column(String(40))
+    short_section_action = Column(String(40))
+    short_section_reason = Column(String(120))
+    merged_section_ids = Column(Text)
     doc_quality_status = Column(String(40))
     rag_action = Column(String(50))
     quality_flags = Column(Text)
@@ -124,6 +134,8 @@ class Chunk(Base):
     page_start = Column(Integer)
     page_end = Column(Integer)
     citation_ready = Column(Boolean, default=False)
+    citation_validation_status = Column(String(40))
+    citation_validation_version = Column(String(50))
     chunk_index = Column(Integer, nullable=False)
     chunk_text = Column(Text, nullable=False)
     token_count = Column(Integer)

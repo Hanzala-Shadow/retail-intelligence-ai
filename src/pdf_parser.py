@@ -14,16 +14,50 @@ from pathlib import Path
 import pdfplumber
 
 try:
+    import pypdfium2 as pdfium
+except ImportError:
+    pdfium = None
+
+try:
     import psutil
 except ImportError:
     psutil = None
 
 from base_parser import ParsedDocument
+from esg_reading_order import reconstruct_column_order
 
 
 MIN_PAGE_CHARS = 20
 OCR_MIN_NONSPACE_CHARS = 500
+TEXT_FALLBACK_MIN_PAGES = 5
+TEXT_FALLBACK_MAX_CHARS_PER_PAGE = 250
+TEXT_FALLBACK_MIN_PAGE_COVERAGE = 0.50
+TEXT_FALLBACK_MIN_GAIN_RATIO = 1.50
+TEXT_FALLBACK_MIN_CHAR_GAIN = 2000
 DEFAULT_OCR_ROOT = None
+DEFAULT_PARSER_OVERRIDES = "data/00_reference/esg_parser_overrides.csv"
+DEFAULT_AUTO_LAYOUT_PDFIUM = False
+# v2 gates coordinate reconstruction on the complete table/grid signature and
+# merges PDFium text per page. v1 refused reconstruction on a raw vector-object
+# count and replaced whole documents, so v1 rows must be rebuilt, never resumed.
+AUTO_PDFPLUMBER_COLUMN_POLICY = "auto_pdfplumber_column_order_v2"
+AUTO_PDFPLUMBER_COLUMN_REASON = "deterministic_coordinate_reading_order_v2"
+AUTO_TEXT_LAYER_FALLBACK_POLICY = "auto_text_layer_fallback_v2"
+AUTO_LAYOUT_GRID_FALLBACK_POLICY = "auto_layout_grid_fallback_v2"
+LEGACY_TEXT_LAYER_FALLBACK_POLICY = "auto_text_layer_fallback"
+LEGACY_LAYOUT_GRID_FALLBACK_POLICY = "auto_layout_grid_fallback"
+LAYOUT_GRID_FALLBACK_POLICIES = frozenset(
+    {LEGACY_LAYOUT_GRID_FALLBACK_POLICY, AUTO_LAYOUT_GRID_FALLBACK_POLICY}
+)
+PAGE_REASON_COLUMN_ORDER = "coordinate_column_order"
+PAGE_REASON_PDFIUM_PAGE = "pdfium_text_page"
+PAGE_REASON_PDFIUM_FORCED = "cli_forced_pdfium_text"
+LAYOUT_GRID_MIN_WORDS = 80
+LAYOUT_GRID_MIN_SHORT_LINES = 12
+LAYOUT_GRID_MIN_COMMON_STARTS = 3
+LAYOUT_GRID_MIN_HUGE_GAP_LINES = 3
+LAYOUT_GRID_MIN_VISUAL_OBJECTS = 8
+LAYOUT_GRID_MIN_METRIC_LINES = 2
 PARSE_INDEX_FIELDS = [
     "ticker",
     "pdf_file",
@@ -36,6 +70,14 @@ PARSE_INDEX_FIELDS = [
     "parse_source_size_bytes",
     "parse_source_mtime_utc",
     "parse_source_sha256",
+    "parser_used",
+    "parser_policy",
+    "parser_reason",
+    "layout_risk_pages",
+    "reading_order_repaired_pages",
+    "reading_order_unresolved_pages",
+    "text_layer_fallback_pages",
+    "page_text_change_reasons",
     "parsed_text_file",
     "page_map_file",
     "status",
@@ -53,6 +95,7 @@ PARSE_INDEX_FIELDS = [
     "garbled_char_count",
 ]
 PAGE_MAP_FIELDS = ["page", "char_start", "char_end", "char_count"]
+PARSER_OVERRIDE_FIELDS = ["ticker", "pdf_file", "parser_mode", "reason", "active"]
 SOURCE_FINGERPRINT_FIELDS = [
     "source_size_bytes",
     "source_mtime_utc",
@@ -78,6 +121,17 @@ SEC_10K_ITEM_MARKERS = [
     r"\bItem\s+8\.?\s+Financial\s+Statements\b",
 ]
 GARBLED_SEQUENCES = ["ï¿½", "Ã¢â‚¬", "Ã‚", "ï¿½?", "�"]
+CID_ARTIFACT_RE = re.compile(r"\(cid:\d+\)")
+# A measured value with its unit. The trailing guard must be a negative lookahead
+# rather than ``\b``: ``\b`` after a literal ``%`` can never match at end of line
+# or before a space, because ``%`` is already a non-word character. With ``\b``
+# the percent branch was dead, so "45%" -- the commonest metric form in ESG
+# reporting -- never counted, and metric tables failed the grid signature.
+METRIC_VALUE_RE = re.compile(
+    r"\b\d+(?:[.,]\d+)?\s*(?:%|M\+?|K\+?|million|billion|tons?|metric tons|CO2e|gCO2e)"
+    r"(?![A-Za-z])",
+    flags=re.IGNORECASE,
+)
 
 
 def mem() -> float:
@@ -96,6 +150,10 @@ def display_path(path: str | Path) -> str:
 
 def count_garbled_chars(text: str) -> int:
     return sum(text.count(sequence) for sequence in GARBLED_SEQUENCES)
+
+
+def count_cid_artifacts(text: str) -> int:
+    return len(CID_ARTIFACT_RE.findall(text))
 
 
 def is_possible_10k(text: str) -> bool:
@@ -185,13 +243,317 @@ def build_raw_text_and_page_spans(pages: list[tuple[int, str]]) -> tuple[str, li
     return "".join(parts), spans
 
 
+def extracted_char_count(pages: list[tuple[int, str]]) -> int:
+    return sum(len(text.strip()) for _, text in pages)
+
+
+def page_coverage(pages: list[tuple[int, str]], page_count: int) -> float:
+    if page_count <= 0:
+        return 0.0
+    return len(pages) / page_count
+
+
+def should_try_text_layer_fallback(
+    pages: list[tuple[int, str]],
+    page_count: int,
+) -> bool:
+    if page_count < TEXT_FALLBACK_MIN_PAGES:
+        return False
+
+    chars_per_page = extracted_char_count(pages) / page_count
+    coverage = page_coverage(pages, page_count)
+    has_cid_artifacts = any(count_cid_artifacts(text) for _, text in pages)
+    return (
+        chars_per_page < TEXT_FALLBACK_MAX_CHARS_PER_PAGE
+        or coverage < TEXT_FALLBACK_MIN_PAGE_COVERAGE
+        or has_cid_artifacts
+    )
+
+
+def should_use_text_layer_fallback(
+    simple_pages: list[tuple[int, str]],
+    fallback_pages: list[tuple[int, str]],
+    page_count: int,
+) -> bool:
+    simple_chars = extracted_char_count(simple_pages)
+    fallback_chars = extracted_char_count(fallback_pages)
+    simple_cids = sum(count_cid_artifacts(text) for _, text in simple_pages)
+    fallback_cids = sum(count_cid_artifacts(text) for _, text in fallback_pages)
+    if fallback_chars <= simple_chars and fallback_cids >= simple_cids:
+        return False
+
+    if simple_cids > 0 and fallback_cids < simple_cids:
+        return True
+
+    char_gain = fallback_chars - simple_chars
+    gain_ratio = fallback_chars / max(simple_chars, 1)
+    fallback_chars_per_page = fallback_chars / page_count if page_count else 0.0
+    fallback_coverage = page_coverage(fallback_pages, page_count)
+
+    if (
+        fallback_chars_per_page >= TEXT_FALLBACK_MAX_CHARS_PER_PAGE
+        and fallback_coverage >= TEXT_FALLBACK_MIN_PAGE_COVERAGE
+    ):
+        return True
+
+    return (
+        char_gain >= TEXT_FALLBACK_MIN_CHAR_GAIN
+        and gain_ratio >= TEXT_FALLBACK_MIN_GAIN_RATIO
+    )
+
+
+def _line_groups(words: list[dict], y_tolerance: float = 3.0) -> list[list[dict]]:
+    groups: list[list[dict]] = []
+    tops: list[float] = []
+    for word in sorted(
+        words,
+        key=lambda item: (float(item.get("top", 0.0)), float(item.get("x0", 0.0))),
+    ):
+        top = float(word.get("top", 0.0))
+        if not groups or abs(top - tops[-1]) > y_tolerance:
+            groups.append([word])
+            tops.append(top)
+        else:
+            groups[-1].append(word)
+    return groups
+
+
+def _largest_horizontal_gap(words: list[dict]) -> float:
+    if len(words) < 2:
+        return 0.0
+
+    sorted_words = sorted(words, key=lambda item: float(item.get("x0", 0.0)))
+    return max(
+        float(sorted_words[index + 1].get("x0", 0.0))
+        - float(sorted_words[index].get("x1", 0.0))
+        for index in range(len(sorted_words) - 1)
+    )
+
+
+def layout_grid_risk_from_metrics(metrics: dict[str, int]) -> bool:
+    """Report pages that warrant targeted reading-order review.
+
+    This is intentionally a conservative diagnostic. A page must contain both
+    visual structure and metric-like text before it is considered a grid risk;
+    ordinary two-column prose must not qualify merely because it has short
+    lines and horizontal whitespace.
+    """
+    if metrics.get("word_count", 0) < LAYOUT_GRID_MIN_WORDS:
+        return False
+
+    common_start_count = metrics.get("common_start_count", 0)
+    huge_gap_lines = metrics.get("huge_gap_lines", 0)
+    short_lines = metrics.get("short_lines", 0)
+    metric_lines = metrics.get("metric_lines", 0)
+    visual_objects = metrics.get("visual_objects", 0)
+
+    return (
+        visual_objects >= LAYOUT_GRID_MIN_VISUAL_OBJECTS
+        and common_start_count >= LAYOUT_GRID_MIN_COMMON_STARTS
+        and short_lines >= LAYOUT_GRID_MIN_SHORT_LINES
+        and huge_gap_lines >= LAYOUT_GRID_MIN_HUGE_GAP_LINES
+        and metric_lines >= LAYOUT_GRID_MIN_METRIC_LINES
+    )
+
+
+def is_metric_row(line: str) -> bool:
+    """Report a line that states a measured value.
+
+    Deliberately inclusive: it cannot tell a stat card ("~151M pairs of shoes
+    sold worldwide") from prose citing a figure ("up to 95% less water"), which
+    are the same sentence in different layouts. Weighting by value density
+    separates those two but then lets real card grids through, so this counts
+    both and the page stays held. A false hold costs recall; a false pass ships
+    a table whose numbers have been detached from their labels.
+    """
+
+    return bool(METRIC_VALUE_RE.search(line))
+
+
+def page_layout_grid_metrics(
+    page,
+    text: str,
+    words: list[dict] | None = None,
+) -> dict[str, int]:
+    if words is None:
+        try:
+            words = page.extract_words(use_text_flow=False, keep_blank_chars=False) or []
+        except Exception:
+            words = []
+
+    lines = [line for line in text.splitlines() if line.strip()]
+    groups = _line_groups(words)
+    huge_gap_lines = sum(
+        1 for group in groups if len(group) >= 4 and _largest_horizontal_gap(group) >= 140
+    )
+
+    starts: list[int] = []
+    for group in groups:
+        if len(group) >= 2:
+            starts.append(round(min(float(word.get("x0", 0.0)) for word in group) / 25) * 25)
+    common_start_count = sum(1 for start in set(starts) if starts.count(start) >= 3)
+
+    return {
+        "word_count": len(words),
+        "line_count": len(lines),
+        "short_lines": sum(1 for line in lines if 3 <= len(line.strip()) <= 45),
+        "metric_lines": sum(1 for line in lines if is_metric_row(line)),
+        "huge_gap_lines": huge_gap_lines,
+        "common_start_count": common_start_count,
+        "visual_objects": len(getattr(page, "rects", []) or [])
+        + len(getattr(page, "images", []) or [])
+        + min(len(getattr(page, "curves", []) or []), 25),
+    }
+
+
+def layout_risk_page_numbers(page_metrics: list[tuple[int, dict[str, int]]]) -> list[int]:
+    """Report the pages carrying the complete table/grid signature.
+
+    A raw vector-object count is not part of this signal. Decorative ESG designs
+    and vector-encoded artwork routinely exceed any such count while remaining
+    ordinary prose, so counting them as grids quarantined readable pages and
+    refused defensible column repairs.
+    """
+
+    return [
+        page_number
+        for page_number, metrics in page_metrics
+        if layout_grid_risk_from_metrics(metrics)
+    ]
+
+
+def page_text_quality(text: str) -> int:
+    """Rank one page's extracted text; known extractor artifacts count against it."""
+
+    return max(
+        0,
+        len(text.strip()) - 8 * count_cid_artifacts(text) - 8 * count_garbled_chars(text),
+    )
+
+
+def page_text_is_defective(text: str) -> bool:
+    """Report a page whose own extraction failed, independent of its document."""
+
+    if len(text.strip()) <= MIN_PAGE_CHARS:
+        return True
+    return count_cid_artifacts(text) > 0 or count_garbled_chars(text) > 0
+
+
+def prefer_pdfium_page(native: str, fallback: str) -> bool:
+    """Decide whether PDFium reads one page better than pdfplumber did."""
+
+    if not fallback.strip():
+        return False
+    native_quality = page_text_quality(native)
+    fallback_quality = page_text_quality(fallback)
+    if fallback_quality <= native_quality:
+        return False
+    # A page whose own extraction failed is replaced as soon as PDFium reads it
+    # better at all.
+    if page_text_is_defective(native):
+        return True
+    # A healthy page is replaced only when PDFium recovers materially more of it,
+    # reusing the document-level gain ratio per page. PDFium is text-only and
+    # cannot prove column order, so a marginal gain is never worth discarding a
+    # verified coordinate repair.
+    return fallback_quality >= native_quality * TEXT_FALLBACK_MIN_GAIN_RATIO
+
+
+def pdfium_page_replacements(
+    page_texts: dict[int, str],
+    fallback_by_page: dict[int, str],
+) -> list[int]:
+    """Select the pages PDFium reads better, one page at a time.
+
+    A document is not a unit of extraction quality: one CID-damaged page among a
+    hundred healthy ones does not justify discarding the other ninety-nine. When
+    a text layer really is broken throughout, every page fails this test on its
+    own and the result is a whole-document replacement anyway -- without needing
+    a separate document-wide branch that a single bad page can trigger.
+    """
+
+    return [
+        page_number
+        for page_number, text in sorted(page_texts.items())
+        if prefer_pdfium_page(text, fallback_by_page.get(page_number, ""))
+    ]
+
+
+def _pages_with_text(page_texts: dict[int, str]) -> list[tuple[int, str]]:
+    return [
+        (page_number, text)
+        for page_number, text in sorted(page_texts.items())
+        if len(text.strip()) > MIN_PAGE_CHARS
+    ]
+
+
+def normalize_extracted_page_text(text: str) -> str:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.rstrip() for line in text.splitlines()]
+    return "\n".join(lines).strip()
+
+
+def extract_with_pdfium(file_path: Path, log_pages: bool = False, company: str | None = None) -> list[tuple[int, str]]:
+    if pdfium is None:
+        return []
+
+    pages_text: list[tuple[int, str]] = []
+    pdf = pdfium.PdfDocument(str(file_path))
+    try:
+        for page_index in range(len(pdf)):
+            page_number = page_index + 1
+            if log_pages:
+                print(f"[{company}] pypdfium page {page_number} RAM {mem():.2f}MB", flush=True)
+
+            page = None
+            text_page = None
+            try:
+                page = pdf[page_index]
+                text_page = page.get_textpage()
+                text = normalize_extracted_page_text(text_page.get_text_range() or "")
+                if len(text.strip()) > MIN_PAGE_CHARS:
+                    pages_text.append((page_number, text))
+            except Exception as error:
+                print(f"fail pypdfium page {page_number}: {error}", flush=True)
+            finally:
+                if text_page is not None and hasattr(text_page, "close"):
+                    text_page.close()
+                if page is not None and hasattr(page, "close"):
+                    page.close()
+
+            if page_number % 10 == 0:
+                gc.collect()
+    finally:
+        pdf.close()
+
+    return pages_text
+
+
 class PDFParser:
     name = "pdfplumber"
 
     def parse(self, file_path, company=None, **kwargs):
         file_path = Path(file_path)
         log_pages = kwargs.get("log_pages", False)
+        prefer_pdfium = bool(kwargs.get("prefer_pdfium", False))
+        prefer_pdfium_policy = str(kwargs.get("prefer_pdfium_policy") or "cli_forced_pdfium")
+        prefer_pdfium_reason = str(kwargs.get("prefer_pdfium_reason") or "cli_forced_pdfium")
+        pdfplumber_policy = str(
+            kwargs.get("pdfplumber_policy") or AUTO_PDFPLUMBER_COLUMN_POLICY
+        )
+        pdfplumber_reason = str(
+            kwargs.get("pdfplumber_reason") or AUTO_PDFPLUMBER_COLUMN_REASON
+        )
+        auto_layout_pdfium = bool(
+            kwargs.get("auto_layout_pdfium", DEFAULT_AUTO_LAYOUT_PDFIUM)
+        )
         pages_text: list[tuple[int, str]] = []
+        page_texts: dict[int, str] = {}
+        page_layout_metrics: list[tuple[int, dict[str, int]]] = []
+        reading_order_repaired_pages: list[int] = []
+        reading_order_unresolved_pages: list[int] = []
+        text_layer_fallback_pages: list[int] = []
+        page_change_reasons: dict[int, str] = {}
         page_count = 0
         table_count = 0
 
@@ -206,10 +568,40 @@ class PDFParser:
 
                 try:
                     page = pdf.pages[i]
-                    text = page.extract_text_simple() or ""
+                    text = normalize_extracted_page_text(page.extract_text_simple() or "")
+                    words = page.extract_words(
+                        use_text_flow=False,
+                        keep_blank_chars=False,
+                    ) or []
+                    native_layout_metrics = page_layout_grid_metrics(
+                        page,
+                        text,
+                        words,
+                    )
+                    reading_order = reconstruct_column_order(
+                        words,
+                        float(page.width),
+                        float(page.height),
+                        # Only the complete table/grid signature refuses a repair
+                        # here, matching layout QA exactly. Gating on a raw
+                        # vector-object count instead made the parser and the
+                        # audit disagree about the same page.
+                        structural_grid_risk=layout_grid_risk_from_metrics(
+                            native_layout_metrics
+                        ),
+                    )
+                    if reading_order.status == "reconstructed":
+                        text = normalize_extracted_page_text(reading_order.text)
+                        reading_order_repaired_pages.append(i + 1)
+                        page_change_reasons[i + 1] = PAGE_REASON_COLUMN_ORDER
+                    elif reading_order.status == "ambiguous":
+                        reading_order_unresolved_pages.append(i + 1)
 
-                    if len(text.strip()) > MIN_PAGE_CHARS:
-                        pages_text.append((i + 1, text))
+                    page_texts[i + 1] = text
+
+                    page_layout_metrics.append(
+                        (i + 1, native_layout_metrics)
+                    )
 
                     try:
                         table_count += len(page.find_tables() or [])
@@ -251,23 +643,129 @@ class PDFParser:
                     if (i + 1) % 10 == 0:
                         gc.collect()
 
+        pages_text = _pages_with_text(page_texts)
+        parser_used = self.name
+        parser_policy = pdfplumber_policy
+        parser_reason = pdfplumber_reason
+        # Keep layout-risk evidence in the parse index, but do not replace the
+        # document text unless a caller explicitly opts into a targeted pilot.
+        layout_risk_pages = layout_risk_page_numbers(page_layout_metrics)
+        if prefer_pdfium:
+            fallback_pages = extract_with_pdfium(file_path, log_pages=log_pages, company=company)
+            if not fallback_pages:
+                raise RuntimeError(
+                    "pypdfium extraction was requested but returned no extractable text"
+                )
+            pages_text = fallback_pages
+            parser_used = "pypdfium_text_forced"
+            parser_policy = prefer_pdfium_policy
+            parser_reason = prefer_pdfium_reason
+            reading_order_repaired_pages = []
+            text_layer_fallback_pages = [page for page, _ in fallback_pages]
+            page_change_reasons = {
+                page: PAGE_REASON_PDFIUM_FORCED for page, _ in fallback_pages
+            }
+        elif should_try_text_layer_fallback(pages_text, page_count) or (
+            auto_layout_pdfium and layout_risk_pages
+        ):
+            fallback_pages = extract_with_pdfium(file_path, log_pages=log_pages, company=company)
+            fallback_by_page = dict(fallback_pages)
+            prefers_text_layer = should_use_text_layer_fallback(
+                pages_text,
+                fallback_pages,
+                page_count,
+            )
+            prefers_layout_grid = bool(
+                auto_layout_pdfium and layout_risk_pages and fallback_pages
+            )
+            if prefers_text_layer or prefers_layout_grid:
+                text_layer_fallback_pages = pdfium_page_replacements(
+                    page_texts,
+                    fallback_by_page,
+                )
+
+            if text_layer_fallback_pages:
+                for page_number in text_layer_fallback_pages:
+                    page_texts[page_number] = fallback_by_page[page_number]
+                    page_change_reasons[page_number] = PAGE_REASON_PDFIUM_PAGE
+                replaced = set(text_layer_fallback_pages)
+                # A repaired page can only be replaced when its own pdfplumber
+                # glyphs were broken. Drop those repairs from the evidence rather
+                # than reporting a repair the emitted text does not contain.
+                reading_order_repaired_pages = [
+                    page for page in reading_order_repaired_pages if page not in replaced
+                ]
+                pages_text = _pages_with_text(page_texts)
+                parser_used = f"{self.name}+pypdfium_text_pages"
+                parser_policy = (
+                    AUTO_TEXT_LAYER_FALLBACK_POLICY
+                    if prefers_text_layer
+                    else AUTO_LAYOUT_GRID_FALLBACK_POLICY
+                )
+                parser_reason = (
+                    "low_text_or_cid_text_layer_risk"
+                    if prefers_text_layer
+                    else "layout_grid_risk"
+                )
+                parser_reason = (
+                    f"{parser_reason};pypdfium_text_pages={len(text_layer_fallback_pages)}"
+                )
+            elif prefers_text_layer:
+                # PDFium looked better across the document, but no individual
+                # page is actually improved by it. That is a healthy text layer
+                # whose document-level comparison was skewed by a handful of
+                # artifacts, so nothing is replaced.
+                parser_reason = f"{parser_reason};pypdfium_text_no_page_improved"
+            elif auto_layout_pdfium and layout_risk_pages and not fallback_pages:
+                parser_reason = "layout_grid_risk_pdfium_unavailable"
+
+        if layout_risk_pages and not auto_layout_pdfium:
+            parser_reason = f"{parser_reason};layout_grid_risk_reported"
+
+        if reading_order_repaired_pages:
+            parser_used = f"{parser_used}_column_order"
+            parser_reason = (
+                f"{parser_reason};coordinate_column_order_pages="
+                f"{len(reading_order_repaired_pages)}"
+            )
+
         raw_text, page_spans = build_raw_text_and_page_spans(pages_text)
         doc = ParsedDocument(
             source_file=str(file_path),
             company=company,
             doc_type="sustainability",
-            parser_used=self.name,
+            parser_used=parser_used,
             raw_text=raw_text,
         ).finalize()
         doc.page_count = page_count
         doc.table_count = table_count
         doc.page_spans = page_spans
+        doc.parser_policy = parser_policy
+        doc.parser_reason = parser_reason
+        doc.layout_risk_pages = ";".join(str(page) for page in layout_risk_pages)
+        doc.reading_order_repaired_pages = ";".join(
+            str(page) for page in reading_order_repaired_pages
+        )
+        doc.reading_order_unresolved_pages = ";".join(
+            str(page) for page in reading_order_unresolved_pages
+        )
+        doc.text_layer_fallback_pages = ";".join(
+            str(page) for page in text_layer_fallback_pages
+        )
+        doc.page_text_change_reasons = ";".join(
+            f"{page}:{page_change_reasons[page]}" for page in sorted(page_change_reasons)
+        )
         return doc
 
 
-def discover(root: str | Path, ticker: str | None = None) -> dict[str, list[Path]]:
+def discover(
+    root: str | Path,
+    ticker: str | None = None,
+    pdf_file: str | None = None,
+) -> dict[str, list[Path]]:
     root = Path(root)
     out: dict[str, list[Path]] = {}
+    selected_pdf = (pdf_file or "").strip()
 
     if not root.exists():
         return out
@@ -277,10 +775,100 @@ def discover(root: str | Path, ticker: str | None = None) -> dict[str, list[Path
         if not ticker_dir.exists() or not ticker_dir.is_dir():
             continue
         pdfs = sorted(ticker_dir.glob("*.pdf"))
+        if selected_pdf:
+            selected_stem = Path(selected_pdf).stem
+            pdfs = [
+                pdf
+                for pdf in pdfs
+                if pdf.name == selected_pdf or pdf.stem == selected_stem
+            ]
         if pdfs:
             out[ticker_dir.name.upper()] = pdfs
 
     return out
+
+
+def load_parser_overrides(path: str | Path | None) -> dict[tuple[str, str], dict]:
+    if path is None:
+        return {}
+
+    override_path = Path(path)
+    if not override_path.exists():
+        return {}
+
+    overrides: dict[tuple[str, str], dict] = {}
+    with override_path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            ticker = str(row.get("ticker", "")).strip().upper()
+            pdf_file = str(row.get("pdf_file", "")).strip()
+            mode = str(row.get("parser_mode", "")).strip().lower()
+            active = str(row.get("active", "true")).strip().lower()
+            if not ticker or not pdf_file or active in {"false", "0", "no", "n"}:
+                continue
+            if mode not in {"auto", "pdfplumber", "pypdfium"}:
+                raise ValueError(
+                    f"Unsupported parser_mode={mode!r} in {override_path} "
+                    f"for {ticker} {pdf_file}"
+                )
+
+            normalised = {
+                field: str(row.get(field, "")).strip()
+                for field in PARSER_OVERRIDE_FIELDS
+            }
+            normalised["ticker"] = ticker
+            normalised["parser_mode"] = mode
+            overrides[(ticker, pdf_file)] = normalised
+            overrides[(ticker, Path(pdf_file).stem)] = normalised
+
+    return overrides
+
+
+def parser_override_for(
+    overrides: dict[tuple[str, str], dict],
+    ticker: str,
+    pdf: Path,
+) -> dict | None:
+    ticker = ticker.upper()
+    return overrides.get((ticker, pdf.name)) or overrides.get((ticker, pdf.stem))
+
+
+def parser_request_for_pdf(
+    *,
+    ticker: str,
+    pdf: Path,
+    overrides: dict[tuple[str, str], dict],
+    prefer_pdfium: bool,
+) -> dict[str, str | bool]:
+    if prefer_pdfium:
+        return {
+            "prefer_pdfium": True,
+            "parser_policy": "cli_forced_pdfium",
+            "parser_reason": "cli_forced_pdfium",
+        }
+
+    override = parser_override_for(overrides, ticker, pdf)
+    if override and override.get("parser_mode") == "pypdfium":
+        reason = str(override.get("reason") or "parser_override")
+        return {
+            "prefer_pdfium": True,
+            "parser_policy": "override_pdfium",
+            "parser_reason": reason,
+        }
+
+    if override and override.get("parser_mode") == "pdfplumber":
+        reason = str(override.get("reason") or "parser_override_pdfplumber")
+        return {
+            "prefer_pdfium": False,
+            "parser_policy": "override_pdfplumber",
+            "parser_reason": reason,
+        }
+
+    return {
+        "prefer_pdfium": False,
+        "parser_policy": AUTO_PDFPLUMBER_COLUMN_POLICY,
+        "parser_reason": AUTO_PDFPLUMBER_COLUMN_REASON,
+    }
 
 
 def _set_memory_limit(max_mb=2048):
@@ -455,6 +1043,39 @@ def _outputs_exist(parsed_text_file: Path, page_map_file: Path) -> bool:
     return parsed_text_file.is_file() and page_map_file.is_file()
 
 
+def _parser_policy_matches_request(
+    row: dict,
+    expected_parser_policy: str,
+    auto_layout_pdfium: bool,
+) -> bool:
+    """Decide whether a completed row remains valid under the requested policy.
+
+    The layout fallback is now report-only by default. Rows produced by the
+    former automatic layout replacement must be rebuilt on the next resume so
+    the old text/page-map baseline cannot survive silently.
+    """
+    actual_policy = row.get("parser_policy", "").strip()
+    if expected_parser_policy == AUTO_PDFPLUMBER_COLUMN_POLICY:
+        # Only versioned text-layer rows may be resumed. Their unversioned
+        # predecessors replaced every page of a document with PDFium text as soon
+        # as one page tripped the document-level check, so they carry none of the
+        # coordinate repairs that do apply to the rest of the document. Treating
+        # them as current is what kept that stale text alive across resumes.
+        return actual_policy in {
+            AUTO_PDFPLUMBER_COLUMN_POLICY,
+            AUTO_TEXT_LAYER_FALLBACK_POLICY,
+        }
+    if expected_parser_policy:
+        return actual_policy == expected_parser_policy
+    if actual_policy in {
+        "override_pdfium",
+        "override_pdfplumber",
+        "cli_forced_pdfium",
+    }:
+        return False
+    return auto_layout_pdfium or actual_policy not in LAYOUT_GRID_FALLBACK_POLICIES
+
+
 def _is_complete_row(
     row: dict | None,
     source_pdf: Path,
@@ -464,6 +1085,9 @@ def _is_complete_row(
     parse_source_metadata: dict[str, str | int],
     parsed_text_file: Path,
     page_map_file: Path,
+    prefer_pdfium: bool = False,
+    expected_parser_policy: str = "",
+    auto_layout_pdfium: bool = DEFAULT_AUTO_LAYOUT_PDFIUM,
 ) -> bool:
     if row is None:
         return False
@@ -475,6 +1099,15 @@ def _is_complete_row(
         and row.get("parse_source_pdf", "") == display_path(parse_source_pdf)
         and row.get("parsed_text_file", "") == display_path(parsed_text_file)
         and row.get("page_map_file", "") == display_path(page_map_file)
+        and (
+            not prefer_pdfium
+            or "pypdfium" in row.get("parser_used", "").strip()
+        )
+        and _parser_policy_matches_request(
+            row,
+            expected_parser_policy,
+            auto_layout_pdfium,
+        )
         and _source_fingerprints_match(row, source_metadata)
         and _parse_source_fingerprints_match(row, parse_source_metadata)
         and _outputs_exist(parsed_text_file, page_map_file)
@@ -511,6 +1144,14 @@ def _failed_row(
         "page_count": 0,
         "char_count": 0,
         "table_count": 0,
+        "parser_used": "",
+        "parser_policy": "",
+        "parser_reason": "",
+        "layout_risk_pages": "",
+        "reading_order_repaired_pages": "",
+        "reading_order_unresolved_pages": "",
+        "text_layer_fallback_pages": "",
+        "page_text_change_reasons": "",
         "content_hash": "",
         "parsed_at": "",
         "quality_flags": "",
@@ -533,6 +1174,10 @@ def _parse_one(args):
         log_pages,
         source_metadata,
         parse_source_metadata,
+        prefer_pdfium,
+        parser_policy,
+        parser_reason,
+        auto_layout_pdfium,
     ) = args
     file_path = Path(file_path)
     parse_source_pdf = Path(parse_source_pdf)
@@ -541,7 +1186,17 @@ def _parse_one(args):
     parser = PDFParser()
 
     try:
-        doc = parser.parse(parse_source_pdf, company=ticker, log_pages=log_pages)
+        doc = parser.parse(
+            parse_source_pdf,
+            company=ticker,
+            log_pages=log_pages,
+            prefer_pdfium=prefer_pdfium,
+            prefer_pdfium_policy=parser_policy if prefer_pdfium else None,
+            prefer_pdfium_reason=parser_reason if prefer_pdfium else None,
+            pdfplumber_policy=parser_policy if not prefer_pdfium else None,
+            pdfplumber_reason=parser_reason if not prefer_pdfium else None,
+            auto_layout_pdfium=auto_layout_pdfium,
+        )
         nonspace_chars = len("".join(doc.raw_text.split()))
         status = "parsed" if nonspace_chars >= OCR_MIN_NONSPACE_CHARS else "ocr_required"
 
@@ -570,6 +1225,18 @@ def _parse_one(args):
             "page_count": getattr(doc, "page_count", 0),
             "char_count": doc.char_count,
             "table_count": doc.table_count,
+            "parser_used": getattr(doc, "parser_used", ""),
+            "parser_policy": getattr(doc, "parser_policy", ""),
+            "parser_reason": getattr(doc, "parser_reason", ""),
+            "layout_risk_pages": getattr(doc, "layout_risk_pages", ""),
+            "reading_order_repaired_pages": getattr(
+                doc, "reading_order_repaired_pages", ""
+            ),
+            "reading_order_unresolved_pages": getattr(
+                doc, "reading_order_unresolved_pages", ""
+            ),
+            "text_layer_fallback_pages": getattr(doc, "text_layer_fallback_pages", ""),
+            "page_text_change_reasons": getattr(doc, "page_text_change_reasons", ""),
             "content_hash": doc.content_hash
             or hashlib.sha256(doc.raw_text.encode("utf-8", "ignore")).hexdigest(),
             "parsed_at": doc.parsed_at,
@@ -659,12 +1326,16 @@ def run(
     force: bool = False,
     checkpoint_every: int = 1,
     ocr_root: str | Path | None = DEFAULT_OCR_ROOT,
+    pdf_file: str | None = None,
+    prefer_pdfium: bool = False,
+    parser_overrides: str | Path | None = DEFAULT_PARSER_OVERRIDES,
+    auto_layout_pdfium: bool = DEFAULT_AUTO_LAYOUT_PDFIUM,
 ) -> list[dict]:
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
 
     ticker = ticker.upper() if ticker else None
-    data = discover(root, ticker=ticker)
+    data = discover(root, ticker=ticker, pdf_file=pdf_file)
     if num_companies is not None and ticker is None:
         data = dict(list(sorted(data.items()))[:num_companies])
 
@@ -677,16 +1348,19 @@ def run(
 
     index_path = Path(index)
     rows_by_key = _index_rows_by_key(read_existing_index(index_path))
+    parser_override_rows = load_parser_overrides(parser_overrides)
     results: list[dict] = []
     jobs: list[tuple] = []
     summary = {
         "found": len(discovered),
         "ocr_sources_selected": 0,
+        "parser_overrides_selected": 0,
         "skipped_complete": 0,
         "processed": 0,
         "failed": 0,
         "ocr_required": 0,
         "reprocessed_stale": 0,
+        "reprocessed_parser_policy": 0,
     }
     completed_since_checkpoint = 0
 
@@ -718,6 +1392,22 @@ def run(
 
     for pdf, ticker_name in discovered:
         out_file, page_map_file = _output_paths(out, ticker_name, pdf)
+        parser_request = parser_request_for_pdf(
+            ticker=ticker_name,
+            pdf=pdf,
+            overrides=parser_override_rows,
+            prefer_pdfium=prefer_pdfium,
+        )
+        job_prefer_pdfium = bool(parser_request["prefer_pdfium"])
+        job_parser_policy = str(parser_request["parser_policy"])
+        job_parser_reason = str(parser_request["parser_reason"])
+        job_auto_layout_pdfium = (
+            auto_layout_pdfium and job_parser_policy != "override_pdfplumber"
+        )
+        expected_parser_policy = job_parser_policy
+        if job_parser_policy.startswith("override_"):
+            summary["parser_overrides_selected"] += 1
+
         parse_source_pdf, parse_source_kind = _select_parse_source(
             pdf,
             ticker_name,
@@ -774,6 +1464,9 @@ def run(
             parse_source_metadata,
             out_file,
             page_map_file,
+            prefer_pdfium=job_prefer_pdfium,
+            expected_parser_policy=expected_parser_policy,
+            auto_layout_pdfium=job_auto_layout_pdfium,
         ):
             summary["skipped_complete"] += 1
             continue
@@ -785,7 +1478,14 @@ def run(
             and existing_row.get("status", "").strip().lower()
             in {"parsed", "ocr_required"}
         ):
-            summary["reprocessed_stale"] += 1
+            if not _parser_policy_matches_request(
+                existing_row,
+                expected_parser_policy,
+                job_auto_layout_pdfium,
+            ):
+                summary["reprocessed_parser_policy"] += 1
+            else:
+                summary["reprocessed_stale"] += 1
 
         jobs.append(
             (
@@ -797,6 +1497,10 @@ def run(
                 log_pages,
                 source_metadata,
                 parse_source_metadata,
+                job_prefer_pdfium,
+                job_parser_policy,
+                job_parser_reason,
+                job_auto_layout_pdfium,
             )
         )
 
@@ -833,11 +1537,13 @@ def run(
     for field in (
         "found",
         "ocr_sources_selected",
+        "parser_overrides_selected",
         "skipped_complete",
         "processed",
         "failed",
         "ocr_required",
         "reprocessed_stale",
+        "reprocessed_parser_policy",
     ):
         print(f"{field}: {summary[field]}")
     return results
@@ -859,6 +1565,48 @@ def main():
         ),
     )
     ap.add_argument("--ticker", default=None, help="Process one ticker folder, e.g. GAP")
+    ap.add_argument(
+        "--pdf-file",
+        default=None,
+        help=(
+            "Process one PDF filename or stem within the selected root/ticker, "
+            "for example AMZN-Amazon-2022.pdf."
+        ),
+    )
+    ap.add_argument(
+        "--prefer-pdfium",
+        action="store_true",
+        help=(
+            "Force pypdfium text extraction for the selected PDFs. Use for "
+            "targeted layout-order repairs after confirming pdfplumber "
+            "linearized a visual grid or multi-column page incorrectly."
+        ),
+    )
+    ap.add_argument(
+        "--parser-overrides",
+        default=DEFAULT_PARSER_OVERRIDES,
+        help=(
+            "CSV of per-PDF parser overrides with columns "
+            "ticker,pdf_file,parser_mode,reason,active."
+        ),
+    )
+    layout_mode = ap.add_mutually_exclusive_group()
+    layout_mode.add_argument(
+        "--auto-layout-pdfium",
+        dest="auto_layout_pdfium",
+        action="store_true",
+        default=DEFAULT_AUTO_LAYOUT_PDFIUM,
+        help=(
+            "Opt into automatic pypdfium replacement for detected grid/tile "
+            "layouts. Use only for a scoped, reviewed parser calibration."
+        ),
+    )
+    layout_mode.add_argument(
+        "--no-auto-layout-pdfium",
+        dest="auto_layout_pdfium",
+        action="store_false",
+        help="Keep detected grid/tile pages as report-only layout risks (default).",
+    )
     ap.add_argument(
         "--num-companies",
         type=int,
@@ -918,6 +1666,10 @@ def main():
         force=args.force,
         checkpoint_every=args.checkpoint_every,
         ocr_root=args.ocr_root,
+        pdf_file=args.pdf_file,
+        prefer_pdfium=args.prefer_pdfium,
+        parser_overrides=args.parser_overrides,
+        auto_layout_pdfium=args.auto_layout_pdfium,
     )
 
 

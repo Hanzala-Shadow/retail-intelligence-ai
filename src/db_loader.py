@@ -293,6 +293,9 @@ def load_sections(triple_to_doc_id, sections_dir=SECTIONS_DIR, batch_size=500):
 
                 mappings.append({
                     "doc_id": doc_id,
+                    # 10-K section filenames already identify one contiguous
+                    # section, so their legacy code is also a safe instance ID.
+                    "section_instance_id": section,
                     "section_code": section,
                     "section_title": section.replace("_", " ").title(),
                     "section_text": text,
@@ -306,17 +309,28 @@ def load_sections(triple_to_doc_id, sections_dir=SECTIONS_DIR, batch_size=500):
             if not mappings:
                 continue
 
-            inserted = insert_ignore(session, Section, mappings, ["doc_id", "section_code"])
+            inserted = insert_ignore(
+                session,
+                Section,
+                mappings,
+                ["doc_id", "section_instance_id"],
+            )
             total_inserted += inserted
 
             rows = (
-                session.query(Section.section_id, Section.doc_id, Section.section_code)
-                .filter(tuple_(Section.doc_id, Section.section_code).in_(wanted_pairs))
+                session.query(
+                    Section.section_id,
+                    Section.doc_id,
+                    Section.section_instance_id,
+                )
+                .filter(
+                    tuple_(Section.doc_id, Section.section_instance_id).in_(wanted_pairs)
+                )
                 .all()
             )
 
-            for section_id, doc_id, section_code in rows:
-                pair = (doc_id, section_code)
+            for section_id, doc_id, section_instance_id in rows:
+                pair = (doc_id, section_instance_id)
                 stem = pair_to_stem.get(pair)
 
                 if stem:

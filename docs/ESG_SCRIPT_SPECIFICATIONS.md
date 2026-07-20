@@ -4,7 +4,7 @@ Owner role: ESG Document Intelligence and QA Lead.
 
 Purpose: finish the ESG/sustainability-report side of the Retail Intelligence Pipeline. The 10-K pipeline is already ahead on `Master_Phase_2`; the missing work is converting downloaded ESG PDFs into parsed text, ESG sections, chunks, PostgreSQL-ready records, and QA evidence.
 
-Use this file as a handoff prompt for another Codex/chat session. The session should inspect the current repo first, then implement these specs without changing unrelated 10-K behavior.
+Use this file as an implementation handoff specification. Inspect the current repo first, then implement these specs without changing unrelated 10-K behavior.
 
 ## Current Repo Facts
 
@@ -83,7 +83,7 @@ data/02_interim/esg_text/{ticker}/{pdf_stem}.txt
 New ESG section files should be saved here:
 
 ```text
-data/03_sections/esg/{ticker}/{pdf_stem}__{section_code}.txt
+data/03_sections/esg/{ticker}/{pdf_stem}__{section_instance_id}.txt
 ```
 
 ### ESG Chunk Location
@@ -91,7 +91,7 @@ data/03_sections/esg/{ticker}/{pdf_stem}__{section_code}.txt
 New ESG chunk files should be saved here:
 
 ```text
-data/04_chunks/esg/{ticker}/{pdf_stem}__{section_code}__chunk_{0000}.txt
+data/04_chunks/esg/{ticker}/{pdf_stem}__{section_instance_id}__chunk_{0000}.txt
 ```
 
 ### ESG Index Files
@@ -103,6 +103,7 @@ data/00_reference/esg_parse_index.csv
 data/00_reference/esg_sections_index.csv
 data/00_reference/esg_chunks_index.csv
 data/00_reference/esg_pipeline_qa.csv
+data/00_reference/esg_source_registry.csv
 ```
 
 Do not overwrite the 10-K index files unless explicitly requested. Existing 10-K files include `chunks_index.csv`, `sections_index.csv`, `chunk_qa_report.csv`, etc.
@@ -120,8 +121,8 @@ Tables relevant to ESG:
 ```sql
 sustainability_reports(report_id, company_id, year, report_url, format, download_status)
 documents(doc_id, company_id, doc_type, filepath, parse_status)
-sections(section_id, doc_id, section_code, section_title, section_text, char_count)
-chunks(chunk_id, section_id, doc_id, company_id, chunk_index, chunk_text, token_count)
+sections(section_id, doc_id, section_instance_id, section_code, section_title, section_text, char_count)
+chunks(chunk_id, external_chunk_id, section_id, doc_id, company_id, section_instance_id, section_code, source_id, source_version_id, chunk_index, chunk_text, token_count)
 ```
 
 Required ESG values:
@@ -213,14 +214,14 @@ data/02_interim/esg_text/{ticker}/{pdf_stem}.txt
 Output:
 
 ```text
-data/03_sections/esg/{ticker}/{pdf_stem}__{section_code}.txt
+data/03_sections/esg/{ticker}/{pdf_stem}__{section_instance_id}.txt
 data/00_reference/esg_sections_index.csv
 ```
 
 Required `esg_sections_index.csv` columns:
 
 ```text
-ticker,pdf_stem,section_code,section_title,section_file,char_count,word_count,split_method,confidence
+ticker,pdf_stem,section_instance_id,section_code,section_title,section_file,source_start_char,source_end_char,provenance_version,page_start,page_end,char_count,word_count,split_method,confidence,source_size_bytes,source_mtime_utc,source_sha256
 ```
 
 Required canonical section codes:
@@ -265,6 +266,10 @@ Heading detection requirements:
   - Ignore lines ending with only a page number unless repeated later with body text.
 - If no reliable sections are found, create one `full_document` section.
 - Skip sections below 300 characters unless they are merged into adjacent `other`/parent section.
+- Preserve each section as one exact contiguous source slice. Merge repeated
+  `section_code` values only when they are adjacent with a whitespace-only gap.
+- Assign repeated topics distinct instance IDs such as `community__0001` and
+  `community__0002`.
 
 Confidence:
 
@@ -286,7 +291,7 @@ python src/section_splitter_esg.py --ticker GAP --input data/02_interim/esg_text
   - No section file is empty.
   - At least 80 percent of parsed ESG PDFs produce more than one section, unless reports are very short.
   - `section_code` values are only from the canonical list.
-  - No duplicate `(ticker, pdf_stem, section_code, section_file)` rows.
+  - No duplicate `(ticker, pdf_stem, section_instance_id)` rows.
 
 ## Script 3: Create `src/esg_chunker.py`
 
@@ -306,19 +311,25 @@ Chunking rules:
 - Overlap: 50 tokens.
 - Minimum output chunk: 100 tokens for ESG.
 - Maximum output chunk: 600 tokens.
-- Skip section files below 100 tokens and record them as skipped in summary output.
+- Preserve meaningful section files below 100 tokens as
+  `chunk_type=short_evidence` when `25 <= token_count < 100`.
+- Skip only obvious table-of-contents/navigation short sections and record them
+  as excluded in summary output.
 - Do not delete or overwrite `data/04_chunks/10k`.
 
 Required `esg_chunks_index.csv` columns:
 
 ```text
-chunk_id,ticker,doc_type,pdf_stem,section_code,chunk_index,token_count,char_count,chunk_file,source_section_file
+chunk_id,source_id,source_version_id,ticker,doc_type,source_type,pdf_stem,section_instance_id,section_code,chunk_index,chunk_type,short_section_action,short_section_reason,merged_section_ids,token_count,char_count,chunk_file,source_section_file,source_start_char,source_end_char,page_start,page_end,citation_ready,citation_validation_status,citation_validation_version
 ```
 
 Required values:
 
-- `doc_type = sustainability`
-- `chunk_id = {ticker}__sustainability__{pdf_stem}__{section_code}__chunk_{0000}`
+- `doc_type` is governed source metadata such as `sustainability` or
+  `annual_report_with_esg`.
+- `chunk_id = {source_id}__{section_instance_id}__chunk_{0000}`
+- `citation_ready=true` only for `semantic_v1` with status
+  `verified_exact` or `verified_whitespace_normalized`.
 
 QA for `esg_chunker.py`:
 
@@ -331,8 +342,9 @@ python src/esg_chunker.py --ticker GAP --input data/03_sections/esg --out data/0
 - Pass criteria:
   - `esg_chunks_index.csv` exists.
   - Every indexed `chunk_file` exists.
-  - Every chunk has `doc_type = sustainability`.
-  - Every chunk has `100 <= token_count <= 600`.
+  - Every chunk has a governed `doc_type` and stable `source_id`.
+  - Every normal chunk has `100 <= token_count <= 600`.
+  - Every `short_evidence` chunk has `25 <= token_count < 100`.
   - No duplicate `chunk_id`.
   - 10-K chunk files and indexes are untouched.
 
@@ -385,7 +397,8 @@ Idempotency approach:
 
 - If schema lacks uniqueness constraints, query existing rows before inserting.
 - A document can be matched by `(company_id, doc_type, filepath)`.
-- A section can be matched by `(doc_id, section_code, char_count)` or by exact section file path if a path field is added later.
+- A section is matched by `(doc_id, section_instance_id)`; `section_code` remains
+  a reusable taxonomy label and is not a physical-section key.
 - A chunk can be matched by `(doc_id, section_id, chunk_index)`.
 
 QA for `drive_to_db.py`:
@@ -430,7 +443,10 @@ SELECT ch.chunk_id, ch.token_count
 FROM chunks ch
 JOIN documents d ON d.doc_id = ch.doc_id
 WHERE d.doc_type = 'sustainability'
-  AND (ch.token_count < 100 OR ch.token_count > 600);
+  AND NOT (
+    (COALESCE(ch.chunk_type, 'normal') = 'normal' AND ch.token_count BETWEEN 100 AND 600)
+    OR (ch.chunk_type = 'short_evidence' AND ch.token_count BETWEEN 25 AND 99)
+  );
 ```
 
 ## Script 5: Create `src/esg_pipeline_qa.py`

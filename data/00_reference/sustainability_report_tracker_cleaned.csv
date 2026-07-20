@@ -42,7 +42,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 15,PTRN,PATTERN GROUP INC,2022,PDF,https://drive.google.com/file/d/1Zy1q9rYUm2wkF3TLO1KXhFJd4XWQf3Fs/view,downloaded,
 15,PTRN,PATTERN GROUP INC,2023,PDF,https://drive.google.com/file/d/185sLZvlyA3i43NkB_9dOFJMqEWQyxV3p/view,downloaded,
 15,PTRN,PATTERN GROUP INC,2024,PDF,https://drive.google.com/file/d/1G_ABvrai4tnDyw_jnp0xkNSz4QFvPEDn/view,downloaded,
-16,ETSY,ETSY INC,2021,PDF,https://drive.google.com/file/d/1LtoPJqKS53OTxcQ5UA1lN0XqzlsWrdKT/view,downloaded,
+16,ETSY,ETSY INC,2021,PDF,https://drive.google.com/file/d/1Aemw18XrXUMy1_o7Kprs0cc5JBghuYKe/view,downloaded,
 16,ETSY,ETSY INC,2022,PDF,https://drive.google.com/file/d/15nlrCz5FbnnxlfmY1nmy_1sNSnExyaAs/view,downloaded,
 16,ETSY,ETSY INC,2023,PDF,https://drive.google.com/file/d/14xn21QvUZXK3D9MjxwXY9aeMad8Rh3h8/view,downloaded,
 16,ETSY,ETSY INC,2024,PDF,https://drive.google.com/file/d/14dxUVBxUctREOnA4EgtQefPrnUB_PvR_/view,downloaded,
@@ -58,7 +58,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 20,SONO,SONOS INC,2024,PDF,https://drive.google.com/file/d/150KQxM7poRYa8WVP0BQw4rB-X4R4pe3d/view,downloaded,
 21,RIME,ALGORHYTHM HOLDINGS INC,,,,not_found,"There is no published ""Sustainability Report""."
 22,LOVE,LOVESAC CO (THE),2021,PDF,https://drive.google.com/file/d/1Gx387Han6jJN__15-OyNBH3Jyg1CC5RB/view,downloaded,
-22,LOVE,LOVESAC CO (THE),2022,PDF,https://drive.google.com/file/d/1lUiDUPv3fmYMUyg6g1PkB7n9TFW6Jq0E/view,downloaded,
+22,LOVE,LOVESAC CO (THE),2022,PDF,https://drive.google.com/file/d/1rxFnmQNGoFAjA4Hdoei74vfY90Lmyhg6/view,downloaded,
 22,LOVE,LOVESAC CO (THE),2023,PDF,https://drive.google.com/file/d/1YUgDJFk1979G5acFfwHhrIDyS_7xH74g/view,downloaded,
 22,LOVE,LOVESAC CO (THE),2024,PDF,https://drive.google.com/file/d/1hyjGoKFtK3BJ2rnCqaUu0Z15mpXiC_ZH/view,downloaded,
 23,ETD,ETHAN ALLEN INTERIORS INC,,,,not_found,"There is no published ""Sustainability Report""."
@@ -154,7 +154,9 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 60,VSXY,VICTORIAS SECRET AND CO,2026,PDF,https://drive.google.com/file/d/1-SErEZJINdEH85w8-iVF1INHXygmmvSa/view,downloaded,
 61,AKA,A.K.A. BRAND HOLD CORP,,,,not_found,"There is no published ""Sustainability Report""."
 62,LVLU,LULU'S FASHION LOUN HOLD INC,,,,not_found,"There is no published ""Sustainability Report""."
-63,ANF,ABERCROMBIE & FITCH  -CL A,,,,not_found,"There is no published ""Sustainability Report"", but can find some informatio from https://corporate.abercrombie.com/sustainability/"
+63,ANF,ABERCROMBIE & FITCH  -CL A,2021,PDF,https://drive.google.com/file/d/1JqHUNQJzxayDdEru28fFf97qcqX-kfDE/view,downloaded,
+63,ANF,ABERCROMBIE & FITCH  -CL A,2022,PDF,https://drive.google.com/file/d/1gr-7cTd-f8138EzShA2WuEnGW7LyGA_m/view,downloaded,
+63,ANF,ABERCROMBIE & FITCH  -CL A,2023,PDF,https://drive.google.com/file/d/1sXHFAM-agFnSYF61ttHVqiqHXr115vc2/view,downloaded,
 64,PLCE,CHILDRENS PLACE INC,2021,PDF,https://drive.google.com/file/d/1R9tb61DVTERP3f8HI8sMPy_3nwjXqn2t/view,downloaded,
 64,PLCE,CHILDRENS PLACE INC,2022,PDF,https://drive.google.com/file/d/1ajCdZ1KKJj7Wo2qu42Za4k675JM3OzaU/view,downloaded,
 64,PLCE,CHILDRENS PLACE INC,2023,PDF,https://drive.google.com/file/d/1GChSrTLap59yEB1FpkxX41653nE3IB1e/view,downloaded,
@@ -229,7 +231,9 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 93,WRBY,WARBY PARKER INC,2023,PDF,https://drive.google.com/file/d/17oQlfFaUOSDAv_gzOPrQlSAABGy-baQ_/view,downloaded,
 93,WRBY,WARBY PARKER INC,2024,PDF,https://drive.google.com/file/d/1N6DPfRJGbYCsg5UanVioyaOEVqn_0XyR/view,downloaded,
 93,WRBY,WARBY PARKER INC,2025,PDF,https://drive.google.com/file/d/1P9jzveXnG0fVo4m968FXqQB860Rt-1p6/view,downloaded,
-94,BRLT,BRILLIANT EARTH GP INC,,,,not_found,"There is no published ""Sustainability Report"". But can find some information through https://www.brilliantearth.com/about/mission/"
+94,BRLT,BRILLIANT EARTH GP INC,2021,PDF,https://drive.google.com/file/d/1t-TVPvAD-NxVcz3gj2mp_TU651RS5f1Z/view,downloaded,
+94,BRLT,BRILLIANT EARTH GP INC,2022,PDF,https://drive.google.com/file/d/1le1K3a0dc4yxkL4_CdwQf5LGE-tKzV3L/view,downloaded,
+94,BRLT,BRILLIANT EARTH GP INC,2023,PDF,https://drive.google.com/file/d/17ui6hdCyKjSRvfooOdQ6d2L1ndAlqE3u/view,downloaded,
 95,SPWH,SPORTSMANS WAREHOUSE HLDGS,,,,not_found,No sustainability PDF found in Drive corpus as of 2026-07-09.
 96,ASO,ACADEMY SPO AND OU INC,2021,PDF,https://drive.google.com/file/d/1QKf-LFFsaFWpX5KigjyZu2RT91GUxRAx/view,downloaded,
 97,DKS,DICKS SPORTING GOODS INC,2022,PDF,https://drive.google.com/file/d/1QJI4P4wlKaPbEvP6wVFCrhbDO6HHxZN-/view,downloaded,
@@ -266,7 +270,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 111,AN,AUTONATION INC,2023,PDF,https://drive.google.com/file/d/1FBmpdjy6uxwJMStDjfbR0opDhJ5RipSW/view,downloaded,
 111,AN,AUTONATION INC,2024,PDF,https://drive.google.com/file/d/13HiEdwFOvz1frdC-JKQIeWxno_p7kJS5/view,downloaded,
 111,AN,AUTONATION INC,2025,PDF,https://drive.google.com/file/d/1MR1jO4ksIizTjhwcZOs8CV7KCSO6AcU_/view,downloaded,
-112,PAG,PENSKE AUTOMOTIVE GROUP INC,,,https://drive.google.com/drive/folders/19CV9DPOroN3hj0GmmVJsoPHcs4P87MgZ,not_found,No sustainability PDF found in Drive corpus as of 2026-07-09.
+112,PAG,PENSKE AUTOMOTIVE GROUP INC,2021-2022-2023,PDF,https://www.responsibilityreports.com/HostedData/ResponsibilityReports/PDF/NYSE_PAG_2023.pdf;https://www.responsibilityreports.com/HostedData/ResponsibilityReportArchive/p/NYSE_PAG_2022.pdf;https://www.responsibilityreports.com/HostedData/ResponsibilityReportArchive/p/NYSE_PAG_2021.pdf,downloaded,Promoted local public ESG report archive PDFs from ResponsibilityReports on 2026-07-15; official 2024 PAG report seen but command-line download blocked by Cloudflare.
 113,LAD,LITHIA MOTORS INC  -CL A,2021,PDF,https://drive.google.com/file/d/10OQV38Oia6U2Mb6UW93NkjF-4am51rca/view,downloaded,
 113,LAD,LITHIA MOTORS INC  -CL A,2022,PDF,https://drive.google.com/file/d/16Sj5HukFBLN8v0UwfnIe5IWzq2WN7QSn/view,downloaded,
 113,LAD,LITHIA MOTORS INC  -CL A,2023,PDF,https://drive.google.com/file/d/1dIvPfUjYAtYFy7XgEXX2HK94s6BvJ9uH/view,downloaded,
@@ -330,7 +334,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 134,ARHS,ARHAUS INC,,,,not_found,No sustainability PDF found in Drive corpus as of 2026-07-09.
 135,BOBS,BOBS DISCOUNT FURNITURE INC,,,,not_found,No sustainability PDF found in Drive corpus as of 2026-07-09.
 136,RH,RH,,,,not_found,They have esg page in their website
-137,BBBY,BED BATH & BEYOND INC,,,,not_found,ERROR: An appropriate representation of the requested resource could not be found on this server.
+137,BBBY,BED BATH & BEYOND INC,2021,PDF,https://drive.google.com/file/d/1JuWR5v--62clbPt-No1yAJ1HKhOPHVHw/view,downloaded,
 138,W,WAYFAIR INC,2021,PDF,https://drive.google.com/file/d/1v11zoc3w_MNEWp1lkYlW4vZiYRW1igvm/view,downloaded,
 138,W,WAYFAIR INC,2022,PDF,https://drive.google.com/file/d/19-QyGeqo5WDh8MYJfg_Eidob8bq4mtJK/view,downloaded,
 138,W,WAYFAIR INC,2023,PDF,https://drive.google.com/file/d/1WLn8h1qNeL4F2JQ_nI-sN3mEfLQ52rro/view,downloaded,

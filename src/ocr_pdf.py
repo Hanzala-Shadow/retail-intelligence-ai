@@ -16,9 +16,11 @@ from PIL import ImageEnhance, ImageOps
 
 from pdf_parser import (
     OCR_MIN_NONSPACE_CHARS,
+    _parse_source_metadata,
     _write_page_map,
     _write_text,
     display_path,
+    source_fingerprint,
     text_quality_metrics,
     upsert_index_rows,
 )
@@ -247,22 +249,75 @@ def write_searchable_pdf(
             tmp_path.unlink()
 
 
+def write_image_based_searchable_pdf(
+    input_pdf: Path,
+    output_pdf: Path,
+    page_results: list[OCRPageResult],
+    text_mode: str,
+    scale: float,
+) -> None:
+    """Write a searchable PDF after discarding the source PDF text layer.
+
+    This mode is useful for PDFs whose embedded text is corrupted, for example
+    heavy ``(cid:...)`` extraction artifacts. It renders each source page to an
+    image-only PDF, then adds the OCR text layer to that clean base.
+    """
+    image_pdf = output_pdf.with_name(f"{output_pdf.stem}.image_base.tmp.pdf")
+    pdf = pdfium.PdfDocument(str(input_pdf))
+    images = []
+    try:
+        for page_index in range(len(pdf)):
+            page = pdf[page_index]
+            bitmap = page.render(scale=scale)
+            image = bitmap.to_pil()
+            try:
+                images.append(image.convert("RGB"))
+            finally:
+                image.close()
+                bitmap.close()
+                page.close()
+
+        if not images:
+            raise RuntimeError("cannot build image-based PDF from a zero-page document")
+
+        images[0].save(
+            image_pdf,
+            "PDF",
+            save_all=True,
+            append_images=images[1:],
+            resolution=72.0 * scale,
+        )
+        write_searchable_pdf(image_pdf, output_pdf, page_results, text_mode)
+    finally:
+        pdf.close()
+        for image in images:
+            image.close()
+        if image_pdf.exists():
+            image_pdf.unlink()
+
+
 def update_parse_index(
     parse_index: Path,
     input_pdf: Path,
     output_text: Path,
     page_map_file: Path,
     result: OCRResult,
+    output_pdf: Path | None = None,
 ) -> None:
     ticker = output_text.parent.name.upper()
     char_count = len(result.full_text)
     nonspace_chars = len("".join(result.full_text.split()))
     status = "parsed" if nonspace_chars >= OCR_MIN_NONSPACE_CHARS else "ocr_required"
     quality = text_quality_metrics(result.full_text, result.page_count, char_count)
+    source_metadata = source_fingerprint(input_pdf)
+    parse_source_pdf = output_pdf if output_pdf is not None else input_pdf
+    parse_source_metadata = source_fingerprint(parse_source_pdf)
     row = {
         "ticker": ticker,
         "pdf_file": input_pdf.name,
         "source_pdf": display_path(input_pdf),
+        **source_metadata,
+        **_parse_source_metadata(parse_source_pdf, "ocr", parse_source_metadata),
         "parsed_text_file": display_path(output_text),
         "page_map_file": display_path(page_map_file),
         "status": status,
@@ -506,9 +561,12 @@ def ocr_pdf(
     raw_text: bool,
     output_pdf: Path | None = None,
     pdf_text_mode: str = "ordered",
+    pdf_base: str = "original",
 ) -> OCRResult:
     if not input_pdf.is_file():
         raise FileNotFoundError(f"Input PDF not found: {input_pdf}")
+    if pdf_base not in {"original", "image"}:
+        raise ValueError("pdf_base must be 'original' or 'image'")
 
     output_text.parent.mkdir(parents=True, exist_ok=True)
     if output_pdf is not None:
@@ -528,6 +586,7 @@ def ocr_pdf(
     if output_pdf is not None:
         print(f"Output searchable PDF: {output_pdf}")
         print(f"Searchable PDF text mode: {pdf_text_mode}")
+        print(f"Searchable PDF base: {pdf_base}")
 
     try:
         for page_index in range(page_count):
@@ -577,7 +636,16 @@ def ocr_pdf(
     _write_text(output_text, full_text)
 
     if output_pdf is not None:
-        write_searchable_pdf(input_pdf, output_pdf, page_results, pdf_text_mode)
+        if pdf_base == "image":
+            write_image_based_searchable_pdf(
+                input_pdf,
+                output_pdf,
+                page_results,
+                pdf_text_mode,
+                scale,
+            )
+        else:
+            write_searchable_pdf(input_pdf, output_pdf, page_results, pdf_text_mode)
 
     print(f"Finished: wrote {len(full_text):,} characters")
     return OCRResult(
@@ -621,6 +689,16 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--pdf-base",
+        choices=("original", "image"),
+        default="original",
+        help=(
+            "Use 'original' to preserve the source PDF and add OCR text. "
+            "Use 'image' to render pages to an image-only PDF first, which "
+            "removes corrupted embedded text layers such as CID artifacts."
+        ),
+    )
+    parser.add_argument(
         "--parse-index",
         type=Path,
         default=None,
@@ -659,6 +737,7 @@ def main() -> int:
             args.raw_text,
             args.output_pdf,
             args.pdf_text_mode,
+            args.pdf_base,
         )
         page_map_file = args.output_text.with_suffix(".pages.csv")
         write_page_map(page_map_file, result.page_spans)
@@ -670,6 +749,7 @@ def main() -> int:
                 args.output_text,
                 page_map_file,
                 result,
+                args.output_pdf,
             )
             print(f"Updated parse index: {args.parse_index}")
     except Exception as error:

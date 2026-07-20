@@ -5,7 +5,7 @@ import csv
 import hashlib
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,11 +35,13 @@ CANONICAL_SECTION_CODES = {
 SECTION_INDEX_FIELDS = [
     "ticker",
     "pdf_stem",
+    "section_instance_id",
     "section_code",
     "section_title",
     "section_file",
     "source_start_char",
     "source_end_char",
+    "provenance_version",
     "page_start",
     "page_end",
     "char_count",
@@ -50,6 +52,8 @@ SECTION_INDEX_FIELDS = [
     "source_mtime_utc",
     "source_sha256",
 ]
+
+PROVENANCE_VERSION = "contiguous_v1"
 
 MIN_SECTION_CHARS = 300
 BODY_SENTENCE_RE = re.compile(
@@ -62,18 +66,62 @@ BODY_SENTENCE_RE = re.compile(
     re.IGNORECASE,
 )
 
+LONG_PROSE_PREDICATE_RE = re.compile(
+    r"\b(?:is|are|was|were|has|have|had|powered|drives?|redesigned|addressed|"
+    r"serves?|speaks?|summarizes?|implements?|implementing|leads?|called|filed|"
+    r"represents?|estimates?|calculates?|developed|issued|reported|proceeds|"
+    r"strives?|encourages?|recognizes?|depends?|suffers?|remains?|played|"
+    r"initiated|mobilized|deployed|conducted|piloted|purchased|participated|"
+    r"conserves?|keeps?|investigates?|requires?|makes?|works?|working)\b|"
+    r"\b(?:we|they|it|apple|nike|deckers|target|tjx)['\u2019]?(?:ve|re|s|d)\b",
+    re.IGNORECASE,
+)
+
 OPEN_ENDED_LAST_WORDS = {
+    "a",
+    "an",
     "about",
+    "among",
     "and",
+    "at",
+    "by",
+    "can",
     "for",
     "from",
     "in",
+    "including",
     "of",
     "on",
+    "or",
+    "other",
     "our",
+    "pushing",
     "the",
     "to",
     "with",
+}
+
+PAGE_CHROME_MAX_OFFSET = 500
+PAGE_CHROME_MIN_PAGES = 2
+PAGE_CHROME_MAX_PAGE_GAP = 2
+NAVIGATION_CHROME_MIN_OCCURRENCES = 3
+
+NAVIGATION_CHROME_TERMS = {
+    "appendix",
+    "approach",
+    "communities",
+    "contents",
+    "environment",
+    "environmental",
+    "glossary",
+    "governance",
+    "indexes",
+    "initiatives",
+    "introduction",
+    "overview",
+    "social",
+    "targets",
+    "workplace",
 }
 
 
@@ -114,6 +162,9 @@ class SectionSegment:
     text: str
     split_method: str
     confidence: str
+    source_start_char: int | None = None
+    source_end_char: int | None = None
+    section_instance_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -172,11 +223,65 @@ def line_looks_structural(line: str) -> bool:
         return False
     lower = stripped.lower()
     lower = re.sub(r"\s+", " ", lower).strip()
+    if re.search(r"\bintroduction\s+environmental\s+social\s+governance\s+indexes?\s+and\s+glossary\b", lower):
+        return False
+    if re.search(r"^(.{2,50}?)(?:\s+\1){2,}$", lower):
+        return False
+    if re.search(r"^(?:fy\d{2}\s+){2}", lower):
+        return False
+    if re.search(r"^(?:gri\s+)?\d{3}(?:-\d+)?\s*:", lower):
+        return False
+    if re.search(r"^\d{1,3}-\d{1,3}\b", lower):
+        return False
+    if re.search(r"^\d+\s+.*\bindex$", lower):
+        return False
+    if re.search(r"^no\.\s*\d+\b", lower):
+        return False
+    if re.search(r"\bpackaging\s+no\.\s*\d+\b", lower):
+        return False
+    if lower == "manufacturing factory":
+        return False
+    if lower.startswith("development") and "wbcsd" in lower:
+        return False
+    if re.search(r"^black\s+communities,\s+indigenous\s+communities\s+and\s+other\s+communities$", lower):
+        return False
+    alpha_tokens = re.findall(r"[a-z]+", lower)
+    for phrase_length in range(2, min(6, len(alpha_tokens) // 2 + 1)):
+        if alpha_tokens[:phrase_length] == alpha_tokens[phrase_length : phrase_length * 2]:
+            return False
+    if lower.count("vendor scorecard") >= 2:
+        return False
+    if re.search(r"\btarget\s+achieved\b", lower):
+        return False
+    if re.search(r"\bconversion\s+factor\b", lower):
+        return False
+    if re.search(r"^ghg\s+emissions\s*\(with\s+carbon\s+uptake\)$", lower):
+        return False
+    if re.search(r"^(?:\(raw\s+material\)|end\s+of\s+life)\s+impact\s+total$", lower):
+        return False
     if words:
         last_word = words[-1].lower()
         if lower != "about" and last_word in OPEN_ENDED_LAST_WORDS:
             return False
     if re.search(r"^(read|learn)\s+more\b", lower):
+        return False
+    if re.search(r"^see\s+(?:chapter|chapters|section|sections)\b", lower):
+        return False
+    if re.search(r"^(?:for\s+instance|in\s+comparison|approximately)\b", lower):
+        return False
+    if re.search(r"^(?:disclose|describe|explain|indicate|report|provide)\b", lower) and len(words) > 4:
+        return False
+    if re.search(r"^positively\s+impact\b", lower):
+        return False
+    if re.match(r"^[\u2022\u00bb\u25aa\u25ba\u00ab?]", stripped):
+        return False
+    if re.search(r"^in\s+addition\s+to\b", lower):
+        return False
+    if len(words) >= 7 and re.search(r"\bwhere\b", lower):
+        return False
+    if re.search(r"^(?:in|during)\s+fy\d{2,4}\b", lower):
+        return False
+    if re.search(r"^as\s+of\b", lower) and len(words) > 4:
         return False
     if re.search(r"^(you|we|this|these|those|they|it)\b", lower) and len(words) > 3:
         return False
@@ -189,7 +294,100 @@ def line_looks_structural(line: str) -> bool:
         return False
     if len(words) > 3 and BODY_SENTENCE_RE.search(stripped):
         return False
+    if len(words) >= 4 and re.search(r"\b(?:has|have|had|requires?|makes?)\b", lower):
+        return False
+    if len(words) > 5 and re.search(r"\b(?:is|are|was|were)\s+(?:inspired|required|used|measured|calculated|verified)\b", lower):
+        return False
+    if (
+        len(words) >= 7
+        and not re.search(r"^(?:how|why)\b", lower)
+        and LONG_PROSE_PREDICATE_RE.search(lower)
+    ):
+        return False
+    if len(words) >= 7 and re.search(r"^for\s+[a-z0-9&.'-]+\s+to\b", lower):
+        return False
+    if len(words) >= 7 and re.search(r"\bto\s+(?:align|deliver)\b", lower):
+        return False
+    if len(words) >= 8 and re.search(r"\bto\s+create\b", lower) and not lower.startswith("how "):
+        return False
+    if re.search(r"^\([^)]{2,12}\)\s+to\b", lower):
+        return False
+    if re.search(r"^(?:contributed|detracted)\b", lower):
+        return False
+    if re.search(r"^open\s+discussions\s+with\b", lower):
+        return False
+    if re.search(r"\bprogram\s+where\b", lower):
+        return False
+    if re.search(r",\s+(?:achieving|including|using|supporting|resulting)\b", lower):
+        return False
+    if re.search(r"^program,\s+", lower) and len(words) > 4:
+        return False
+    if re.search(r"^international\s+nonprofit\b", lower):
+        return False
+    if len(words) > 4 and stripped.endswith((",", ";")):
+        return False
+    if len(words) >= 7 and ";" in stripped:
+        return False
+    if len(words) > 5 and stripped.count("(") > stripped.count(")"):
+        return False
+    if len(words) > 5 and stripped.count("(") != stripped.count(")"):
+        return False
+    if len(words) >= 7 and stripped.startswith("("):
+        return False
+    if len(words) >= 7 and re.search(r"[\u2022\u00bb\u25aa\u25ba\u00ab]", stripped):
+        return False
+    if len(words) > 5 and re.search(r"\.\s+[A-Z]", stripped):
+        return False
+    if re.search(r"\b(?:p\.?|pages?)\s*\d+(?:\s*[\u002d\u2013]\s*\d+)?\s*$", lower):
+        return False
+    if lower.endswith(" p."):
+        return False
+    if re.search(r"\bpg\.\s*\d+\b", lower):
+        return False
+    if re.search(r"\.\s*\(\d{4}\)\s*$", stripped):
+        return False
     if stripped.endswith(".") and len(stripped.split()) > 5:
+        return False
+    numeric_values = re.findall(r"(?<![A-Za-z])[-+]?\d+(?:[.,]\d+)?%?", stripped)
+    if len(numeric_values) >= 3 and not (
+        len(numeric_values) == 3
+        and not any("%" in value for value in numeric_values)
+        and re.search(r"\bscope\s+[123]\b", lower)
+    ):
+        return False
+    standards = re.findall(r"\b(?:gri|sasb|tcfd|ungprf)\b", lower)
+    if len(standards) >= 2 and len(words) >= 6 and "index" not in lower:
+        return False
+    if stripped.count(",") >= 2 and len(words) >= 8 and ":" not in stripped:
+        return False
+    if len(re.findall(r"\([A-Z]{2,8}\)", stripped)) >= 2 and len(words) >= 7:
+        return False
+    if len(words) >= 7 and alpha_tokens.count("member") >= 2:
+        return False
+    if len(words) >= 7 and lower.endswith("factories"):
+        return False
+    if stripped.isupper() and lower.count("total") >= 2:
+        return False
+    if re.search(r"^co2\b.*\bper\s+pair\b", lower):
+        return False
+    if re.search(r"\b(?:packaging\s+breakdown|packaging\s+substrates)\b", lower):
+        return False
+    if len(re.findall(r"\b\d{1,3},\d{3}\b", stripped)) >= 2:
+        return False
+    if re.search(
+        r"^(?:energy\s+saved|greenhouse\s+gas\s+emissions\s+saved|water\s+saved|"
+        r"water\s+use|energy\s+use|ghg\s+emissions?)\s*\([^)]*(?:mj|mwh|kwh|liters?|lbs|kg|co2)[^)]*\)$",
+        lower,
+    ):
+        return False
+    if re.search(r"^total\s+(?:estimated\s+)?emissions?\b", lower) and numeric_values:
+        return False
+    if re.search(r"\s-\s(?:director|chief|manager|officer|president)\b", lower):
+        return False
+    if stripped.count(",") >= 1 and len(words) > 5 and re.search(
+        r"\b(?:alliance|center|council|institute|university)\b",
+        lower,
+    ):
         return False
     digit_count = sum(ch.isdigit() for ch in stripped)
     if digit_count and digit_count / max(len(stripped), 1) > 0.45:
@@ -216,6 +414,8 @@ def code_allowed_for_heading(code: str, normalized: str) -> bool:
         )
         if not allowed_index and not re.search(r"\b(appendix|appendices|annex|assurance|verification)\b", normalized):
             return False
+    if code == "appendix" and re.search(r"\bchief\s+assurance\s+officer\b", normalized):
+        return False
 
     if code == "environmental":
         if re.search(r"\b(educational|training|cash|incident|breach|handler|handling)\s+materials?\b", normalized):
@@ -235,6 +435,9 @@ def code_allowed_for_heading(code: str, normalized: str) -> bool:
 
 
 def map_heading_to_code(line: str) -> str | None:
+    raw = line.strip()
+    if len(re.findall(r"[A-Za-z][A-Za-z-]*", raw)) > 4 and raw.endswith(("-", "\u2013")):
+        return None
     title = normalize_heading_text(line)
     if not line_looks_structural(title):
         return None
@@ -263,15 +466,216 @@ def has_page_reference(line: str) -> bool:
     )
 
 
-def collect_heading_candidates(text: str) -> list[HeadingCandidate]:
-    lines = text.splitlines()
+def _nearest_nonempty_line(lines: list[str], start: int, step: int) -> str:
+    index = start + step
+    while 0 <= index < len(lines):
+        if lines[index].strip():
+            return lines[index].strip()
+        index += step
+    return ""
+
+
+def _looks_like_table_or_index_candidate(
+    candidate: HeadingCandidate,
+    lines: list[str],
+) -> bool:
+    """Reject topic words used as table cells or disclosure-index row labels."""
+    previous = _nearest_nonempty_line(lines, candidate.line_index, -1)
+    following = _nearest_nonempty_line(lines, candidate.line_index, 1)
+    surrounding = f"{previous} {following}"
+    title_words = re.findall(r"[A-Za-z][A-Za-z-]*", candidate.title)
+
+    index_signal = re.search(
+        r"\b(?:gri|sasb|tcfd|ungprf)\b.*(?:\b\d{3}(?:-\d+)?\b|\b[A-Z]{2}-[A-Z]{2}-\d)|"
+        r"\b(?:p\.|pages)\s*\d+|\b[A-Z]{2}-[A-Z]{2}-\d",
+        surrounding,
+        flags=re.IGNORECASE,
+    )
+    if len(title_words) <= 6 and index_signal:
+        return True
+
+    previous_numbers = re.findall(r"\d+(?:[.,]\d+)?%?", previous)
+    following_numbers = re.findall(r"\d+(?:[.,]\d+)?%?", following)
+    if len(title_words) <= 3:
+        both_sides_are_data = (
+            (len(previous_numbers) >= 2 or "%" in previous)
+            and (len(following_numbers) >= 2 or "%" in following)
+        )
+        numeric_row_continuation = previous_numbers and "%" in following and previous.rstrip().endswith(previous_numbers[-1])
+        if both_sides_are_data or numeric_row_continuation:
+            return True
+
+    if len(title_words) <= 4 and re.fullmatch(r"[\d\s.,%+\-]+", previous):
+        next_words = re.findall(r"[A-Za-z]+", following)
+        if next_words and len(next_words) <= 3 and following.upper() == following:
+            return True
+
+    table_terms = {
+        "end of life impact total",
+        "ghg emissions",
+        "impact total",
+        "kg co2",
+        "raw material",
+        "water use",
+    }
+    surrounding_lower = f"{candidate.title} {surrounding}".lower()
+    if len(title_words) <= 6 and sum(term in surrounding_lower for term in table_terms) >= 2:
+        return True
+
+    normalized_title = _title_key(candidate.title)
+    if normalized_title == "material" and len(following_numbers) >= 4:
+        return True
+    if "sustainable development goals" in previous.lower() and normalized_title in previous.lower():
+        return True
+    if "gri standard number" in surrounding_lower or "gri disclosure location" in surrounding_lower:
+        return True
+    if "(continued)" in previous.lower() and "gri topic standards" in following.lower():
+        return True
+    toc_signals = sum(has_page_reference(line) for line in (candidate.title, previous, following))
+    if toc_signals >= 2:
+        return True
+    if "table" in normalized_title and (
+        has_page_reference(previous) or "index" in following.lower()
+    ):
+        return True
+    return False
+
+
+def _title_key(title: str) -> str:
+    normalized = re.sub(r"\s+", " ", title).strip().casefold()
+    return re.sub(
+        r"^((?:fy\d{2}|\d{4})\b.*\b(?:impact|environmental|sustainability|esg)\b.*\breport)\s+\d+$",
+        r"\1",
+        normalized,
+    )
+
+
+def _is_navigation_or_report_chrome(title: str) -> bool:
+    normalized = _title_key(title)
+    if normalized == "appendix":
+        return True
+    words = set(re.findall(r"[a-z]+", normalized))
+    navigation_hits = len(words & NAVIGATION_CHROME_TERMS)
+    if normalized.startswith("contents ") and navigation_hits >= 2:
+        return True
+    if normalized.startswith("introduction ") and navigation_hits >= 3:
+        return True
+    if navigation_hits >= 2 and len(words) <= 3 and words & {"initiatives", "overview"}:
+        return True
+    if navigation_hits >= 4:
+        return True
+    return bool(re.match(r"^(?:fy\d{2}|\d{4})\b.*\b(?:impact|environmental|sustainability|esg)\b.*\breport$", normalized))
+
+
+def _candidate_page_positions(
+    candidates: list[HeadingCandidate],
+    page_spans: list[dict],
+) -> dict[int, tuple[int, int]]:
+    """Map candidate indexes to ``(page number, offset within page)``."""
+    valid_spans: list[tuple[int, int, int]] = []
+    for row in page_spans:
+        page = parse_int(row.get("page"))
+        start = parse_int(row.get("char_start"))
+        end = parse_int(row.get("char_end"))
+        if page is None or start is None or end is None or end < start:
+            continue
+        valid_spans.append((start, end, page))
+    valid_spans.sort()
+
+    positions: dict[int, tuple[int, int]] = {}
+    span_index = 0
+    for candidate_index, candidate in enumerate(candidates):
+        while span_index < len(valid_spans) and candidate.char_offset > valid_spans[span_index][1]:
+            span_index += 1
+        if span_index >= len(valid_spans):
+            break
+        start, end, page = valid_spans[span_index]
+        if start <= candidate.char_offset <= end:
+            positions[candidate_index] = (page, candidate.char_offset - start)
+    return positions
+
+
+def _running_page_chrome_indexes(
+    candidates: list[HeadingCandidate],
+    page_spans: list[dict],
+    total_chars: int,
+) -> set[int]:
+    """Find repeated page chrome while retaining one real heading per chapter run."""
+    if not page_spans:
+        return set()
+
+    page_positions = _candidate_page_positions(candidates, page_spans)
+    indexes_by_title: dict[str, list[int]] = {}
+    for candidate_index, candidate in enumerate(candidates):
+        indexes_by_title.setdefault(_title_key(candidate.title), []).append(candidate_index)
+
+    rejected: set[int] = set()
+    for indexes in indexes_by_title.values():
+        if len(indexes) < PAGE_CHROME_MIN_PAGES:
+            continue
+
+        title = candidates[indexes[0]].title
+        if (
+            len(indexes) >= NAVIGATION_CHROME_MIN_OCCURRENCES
+            and _is_navigation_or_report_chrome(title)
+        ):
+            rejected.update(indexes)
+            continue
+
+        paged_indexes = [index for index in indexes if index in page_positions]
+        top_indexes = [
+            index
+            for index in paged_indexes
+            if page_positions[index][1] <= PAGE_CHROME_MAX_OFFSET
+        ]
+        distinct_pages = sorted({page_positions[index][0] for index in paged_indexes})
+        if len(distinct_pages) < PAGE_CHROME_MIN_PAGES:
+            continue
+
+        page_runs: list[list[int]] = []
+        for page in distinct_pages:
+            if page_runs and page - page_runs[-1][-1] <= PAGE_CHROME_MAX_PAGE_GAP:
+                page_runs[-1].append(page)
+            else:
+                page_runs.append([page])
+
+        qualifying_runs = [run for run in page_runs if len(run) >= PAGE_CHROME_MIN_PAGES]
+        if not qualifying_runs:
+            continue
+
+        pages_in_runs = {page for run in qualifying_runs for page in run}
+        for run in qualifying_runs:
+            run_indexes = [index for index in indexes if page_positions.get(index, (None, None))[0] in run]
+            canonical = min(run_indexes, key=lambda index: candidates[index].char_offset)
+            rejected.update(index for index in run_indexes if index != canonical)
+
+        first_run_offset = min(
+            candidates[index].char_offset
+            for index in indexes
+            if page_positions.get(index, (None, None))[0] in pages_in_runs
+        )
+        rejected.update(
+            index
+            for index in top_indexes
+            if candidates[index].char_offset < first_run_offset
+            and candidates[index].char_offset < total_chars * 0.10
+        )
+
+    return rejected
+
+
+def collect_heading_candidates(
+    text: str,
+    page_spans: list[dict] | None = None,
+) -> list[HeadingCandidate]:
+    lines_with_endings = text.splitlines(keepends=True)
+    lines = [line.rstrip("\r\n") for line in lines_with_endings]
     total_chars = max(len(text), 1)
-    offsets: list[int] = []
     offset = 0
     raw_candidates: list[HeadingCandidate] = []
 
-    for i, line in enumerate(lines):
-        offsets.append(offset)
+    for i, line_with_ending in enumerate(lines_with_endings):
+        line = line_with_ending.rstrip("\r\n")
         code = map_heading_to_code(line)
         if code:
             raw_candidates.append(
@@ -283,17 +687,26 @@ def collect_heading_candidates(text: str) -> list[HeadingCandidate]:
                     toc_like=has_page_reference(line),
                 )
             )
-        offset += len(line) + 1
+        offset += len(line_with_ending)
 
     early_candidates = [c for c in raw_candidates if c.char_offset < total_chars * 0.10]
     toc_heavy = (
         len(early_candidates) >= 5
         and sum(1 for c in early_candidates if c.toc_like) / len(early_candidates) >= 0.5
     )
+    repeated_chrome = _running_page_chrome_indexes(
+        raw_candidates,
+        page_spans or [],
+        total_chars,
+    )
 
     filtered: list[HeadingCandidate] = []
     seen_positions: set[tuple[int, str]] = set()
-    for candidate in raw_candidates:
+    for candidate_index, candidate in enumerate(raw_candidates):
+        if candidate_index in repeated_chrome:
+            continue
+        if _looks_like_table_or_index_candidate(candidate, lines):
+            continue
         if toc_heavy and candidate.char_offset < total_chars * 0.10 and candidate.toc_like:
             continue
         key = (candidate.line_index, candidate.section_code)
@@ -318,169 +731,257 @@ def confidence_for(code: str, text: str, fallback: bool = False) -> str:
     return "low"
 
 
+def _trimmed_source_span(source_text: str, start: int, end: int) -> tuple[str, int, int]:
+    """Return an exact, non-whitespace-bounded slice and its adjusted offsets."""
+    if not 0 <= start <= end <= len(source_text):
+        raise ValueError(f"Invalid source span: {start}:{end} for {len(source_text)} characters")
+
+    while start < end and source_text[start].isspace():
+        start += 1
+    while end > start and source_text[end - 1].isspace():
+        end -= 1
+    return source_text[start:end], start, end
+
+
+def _segment_from_source(
+    source_text: str,
+    start: int,
+    end: int,
+    section_code: str,
+    title: str,
+    split_method: str,
+    *,
+    fallback: bool = False,
+) -> SectionSegment:
+    body, source_start, source_end = _trimmed_source_span(source_text, start, end)
+    return SectionSegment(
+        section_code,
+        title,
+        body,
+        split_method,
+        confidence_for(section_code, body, fallback=fallback),
+        source_start,
+        source_end,
+    )
+
+
 def build_segments(text: str, candidates: list[HeadingCandidate]) -> list[SectionSegment]:
     if not candidates:
         return [
-            SectionSegment(
+            _segment_from_source(
+                text,
+                0,
+                len(text),
                 "full_document",
                 "Full Document",
-                text.strip(),
                 "full_document_fallback",
-                "low",
+                fallback=True,
             )
         ]
 
-    lines = text.splitlines()
     segments: list[SectionSegment] = []
 
-    first_line = candidates[0].line_index
-    preamble = "\n".join(lines[:first_line]).strip()
+    preamble, _, _ = _trimmed_source_span(text, 0, candidates[0].char_offset)
     if len(preamble) >= MIN_SECTION_CHARS:
         segments.append(
-            SectionSegment(
+            _segment_from_source(
+                text,
+                0,
+                candidates[0].char_offset,
                 "other",
                 "Preamble",
-                preamble,
                 "heading_regex",
-                confidence_for("other", preamble),
             )
         )
 
     for index, candidate in enumerate(candidates):
-        next_line = candidates[index + 1].line_index if index + 1 < len(candidates) else len(lines)
-        body = "\n".join(lines[candidate.line_index:next_line]).strip()
-        if not body:
-            continue
-        segments.append(
-            SectionSegment(
-                candidate.section_code,
-                candidate.title or candidate.section_code.replace("_", " ").title(),
-                body,
-                "heading_regex",
-                confidence_for(candidate.section_code, body),
-            )
+        next_offset = candidates[index + 1].char_offset if index + 1 < len(candidates) else len(text)
+        segment = _segment_from_source(
+            text,
+            candidate.char_offset,
+            next_offset,
+            candidate.section_code,
+            candidate.title or candidate.section_code.replace("_", " ").title(),
+            "heading_regex",
         )
+        if segment.text:
+            segments.append(segment)
 
     if not segments:
         return [
-            SectionSegment(
+            _segment_from_source(
+                text,
+                0,
+                len(text),
                 "full_document",
                 "Full Document",
-                text.strip(),
                 "full_document_fallback",
-                "low",
+                fallback=True,
             )
         ]
 
-    return merge_short_segments(segments)
+    return merge_short_segments(segments, text)
 
 
-def merge_short_segments(segments: list[SectionSegment]) -> list[SectionSegment]:
+def _merge_contiguous_segments(
+    left: SectionSegment,
+    right: SectionSegment,
+    source_text: str | None,
+    *,
+    keep: SectionSegment,
+) -> SectionSegment:
+    source_start: int | None = None
+    source_end: int | None = None
+    combined_text = f"{left.text}\n\n{right.text}".strip()
+
+    if (
+        source_text is not None
+        and left.source_start_char is not None
+        and left.source_end_char is not None
+        and right.source_start_char is not None
+        and right.source_end_char is not None
+        and left.source_start_char <= right.source_start_char
+        and left.source_end_char <= right.source_end_char
+    ):
+        combined_text, source_start, source_end = _trimmed_source_span(
+            source_text,
+            left.source_start_char,
+            right.source_end_char,
+        )
+
+    return SectionSegment(
+        keep.section_code,
+        keep.title,
+        combined_text,
+        keep.split_method,
+        confidence_for(keep.section_code, combined_text),
+        source_start,
+        source_end,
+    )
+
+
+def merge_short_segments(
+    segments: list[SectionSegment],
+    source_text: str | None = None,
+) -> list[SectionSegment]:
+    """Merge only adjacent short spans, preserving one contiguous source range."""
     if len(segments) <= 1:
         return segments
 
     merged: list[SectionSegment] = []
-    carry_prefix = ""
+    carry_prefix: SectionSegment | None = None
 
     for segment in segments:
         current = segment
-        if carry_prefix:
-            current = SectionSegment(
-                current.section_code,
-                current.title,
-                f"{carry_prefix}\n\n{current.text}".strip(),
-                current.split_method,
-                confidence_for(current.section_code, f"{carry_prefix}\n\n{current.text}"),
+        if carry_prefix is not None:
+            current = _merge_contiguous_segments(
+                carry_prefix,
+                current,
+                source_text,
+                keep=current,
             )
-            carry_prefix = ""
+            carry_prefix = None
 
         if len(current.text.strip()) < MIN_SECTION_CHARS:
             if merged:
-                previous = merged[-1]
-                merged[-1] = SectionSegment(
-                    previous.section_code,
-                    previous.title,
-                    f"{previous.text}\n\n{current.text}".strip(),
-                    previous.split_method,
-                    confidence_for(previous.section_code, f"{previous.text}\n\n{current.text}"),
+                merged[-1] = _merge_contiguous_segments(
+                    merged[-1],
+                    current,
+                    source_text,
+                    keep=merged[-1],
                 )
             else:
-                carry_prefix = current.text
+                carry_prefix = current
             continue
 
         merged.append(current)
 
-    if carry_prefix:
+    if carry_prefix is not None:
         if merged:
-            previous = merged[-1]
-            merged[-1] = SectionSegment(
-                previous.section_code,
-                previous.title,
-                f"{previous.text}\n\n{carry_prefix}".strip(),
-                previous.split_method,
-                confidence_for(previous.section_code, f"{previous.text}\n\n{carry_prefix}"),
+            merged[-1] = _merge_contiguous_segments(
+                merged[-1],
+                carry_prefix,
+                source_text,
+                keep=merged[-1],
             )
         else:
             merged.append(
-                SectionSegment(
-                    "full_document",
-                    "Full Document",
-                    carry_prefix.strip(),
-                    "full_document_fallback",
-                    "low",
+                replace(
+                    carry_prefix,
+                    section_code="full_document",
+                    title="Full Document",
+                    split_method="full_document_fallback",
+                    confidence="low",
                 )
             )
 
     return merged
 
 
-def aggregate_by_code(segments: list[SectionSegment]) -> list[SectionSegment]:
-    ordered_codes: list[str] = []
-    by_code: dict[str, SectionSegment] = {}
+def normalize_section_codes(segments: list[SectionSegment]) -> list[SectionSegment]:
+    """Normalize unknown codes without coalescing separate occurrences."""
+    return [
+        segment
+        if segment.section_code in CANONICAL_SECTION_CODES
+        else replace(segment, section_code="other", confidence="low")
+        for segment in segments
+    ]
 
+
+def coalesce_adjacent_same_code_segments(
+    segments: list[SectionSegment],
+    source_text: str,
+) -> list[SectionSegment]:
+    """Coalesce only neighboring equal-code spans separated by whitespace."""
+    coalesced: list[SectionSegment] = []
     for segment in segments:
-        if segment.section_code not in CANONICAL_SECTION_CODES:
-            segment = SectionSegment(
-                "other",
-                segment.title,
-                segment.text,
-                segment.split_method,
-                "low",
-            )
-
-        existing = by_code.get(segment.section_code)
-        if existing is None:
-            ordered_codes.append(segment.section_code)
-            by_code[segment.section_code] = segment
+        if not coalesced:
+            coalesced.append(segment)
             continue
 
-        combined_text = f"{existing.text}\n\n{segment.text}".strip()
-        by_code[segment.section_code] = SectionSegment(
-            existing.section_code,
-            existing.title,
-            combined_text,
-            existing.split_method,
-            confidence_for(existing.section_code, combined_text),
+        previous = coalesced[-1]
+        can_coalesce = (
+            previous.section_code == segment.section_code
+            and previous.source_start_char is not None
+            and previous.source_end_char is not None
+            and segment.source_start_char is not None
+            and segment.source_end_char is not None
+            and previous.source_end_char <= segment.source_start_char
+            and not source_text[previous.source_end_char : segment.source_start_char].strip()
         )
+        if can_coalesce:
+            coalesced[-1] = _merge_contiguous_segments(
+                previous,
+                segment,
+                source_text,
+                keep=previous,
+            )
+        else:
+            coalesced.append(segment)
+    return coalesced
 
-    return [by_code[code] for code in ordered_codes]
 
-
-def split_esg_sections(text: str) -> list[SectionSegment]:
-    candidates = collect_heading_candidates(text)
+def split_esg_sections(
+    text: str,
+    page_spans: list[dict] | None = None,
+) -> list[SectionSegment]:
+    candidates = collect_heading_candidates(text, page_spans=page_spans)
 
     if len(candidates) == 1 and candidates[0].char_offset > len(text) * 0.75:
         return [
-            SectionSegment(
+            _segment_from_source(
+                text,
+                0,
+                len(text),
                 "full_document",
                 "Full Document",
-                text.strip(),
                 "full_document_fallback",
-                "low",
+                fallback=True,
             )
         ]
 
-    return aggregate_by_code(build_segments(text, candidates))
+    normalized_segments = normalize_section_codes(build_segments(text, candidates))
+    return coalesce_adjacent_same_code_segments(normalized_segments, text)
 
 
 def word_count(text: str) -> int:
@@ -644,21 +1145,53 @@ def clear_existing_sections(
         stale_file.unlink()
 
 
-def _output_sections(text: str) -> list[SectionSegment]:
-    sections = [section for section in split_esg_sections(text) if section.text.strip()]
+def _output_sections(
+    text: str,
+    page_spans: list[dict] | None = None,
+) -> list[SectionSegment]:
+    sections = [
+        section
+        for section in split_esg_sections(text, page_spans=page_spans)
+        if section.text.strip()
+    ]
     if not sections:
         raise ValueError("Parsed text produced no non-empty ESG sections")
 
-    seen_codes: set[str] = set()
+    counts_by_code: dict[str, int] = {}
+    output_sections: list[SectionSegment] = []
     for section in sections:
-        if section.section_code in seen_codes:
-            raise ValueError(f"Duplicate generated section code: {section.section_code}")
-        seen_codes.add(section.section_code)
-    return sections
+        counts_by_code[section.section_code] = counts_by_code.get(section.section_code, 0) + 1
+        section_instance_id = f"{section.section_code}__{counts_by_code[section.section_code]:04d}"
+        output_section = replace(section, section_instance_id=section_instance_id)
+        if output_section.source_start_char is None or output_section.source_end_char is None:
+            raise ValueError(f"Section has no contiguous source span: {section_instance_id}")
+        if text[output_section.source_start_char : output_section.source_end_char] != output_section.text:
+            raise ValueError(f"Section source span is not exact: {section_instance_id}")
+        output_sections.append(output_section)
+    return output_sections
 
 
-def _section_output_path(output_root: Path, ticker: str, pdf_stem: str, section_code: str) -> Path:
-    return output_root / ticker / f"{pdf_stem}__{section_code}.txt"
+def _assign_section_instance_ids(sections: list[SectionSegment]) -> list[SectionSegment]:
+    counts_by_code: dict[str, int] = {}
+    assigned: list[SectionSegment] = []
+    for section in sections:
+        counts_by_code[section.section_code] = counts_by_code.get(section.section_code, 0) + 1
+        assigned.append(
+            replace(
+                section,
+                section_instance_id=f"{section.section_code}__{counts_by_code[section.section_code]:04d}",
+            )
+        )
+    return assigned
+
+
+def _section_output_path(
+    output_root: Path,
+    ticker: str,
+    pdf_stem: str,
+    section_instance_id: str,
+) -> Path:
+    return output_root / ticker / f"{pdf_stem}__{section_instance_id}.txt"
 
 
 def process_text_file(
@@ -674,41 +1207,69 @@ def process_text_file(
     pdf_stem = txt_file.stem
     text = text if text is not None else txt_file.read_text(encoding="utf-8", errors="replace")
     source_fingerprint = source_fingerprint or fingerprint_source_file(txt_file)
-    sections = sections if sections is not None else _output_sections(text)
+    page_spans = read_page_map(txt_file)
+    sections = (
+        _assign_section_instance_ids(sections)
+        if sections is not None
+        else _output_sections(text, page_spans=page_spans)
+    )
     if not sections:
         raise ValueError("Parsed text produced no non-empty ESG sections")
 
-    page_spans = read_page_map(txt_file)
     ticker_out = output_root / ticker
     ticker_out.mkdir(parents=True, exist_ok=True)
     rows: list[dict] = []
     output_plan: list[tuple[Path, str]] = []
 
     search_pos = 0
-    seen_codes: set[str] = set()
+    seen_instances: set[str] = set()
     for section in sections:
         section_text = section.text.strip()
         if not section_text:
             continue
-        if section.section_code in seen_codes:
-            raise ValueError(f"Duplicate generated section code: {section.section_code}")
-        seen_codes.add(section.section_code)
+        if section.section_instance_id in seen_instances:
+            raise ValueError(f"Duplicate generated section instance: {section.section_instance_id}")
+        seen_instances.add(section.section_instance_id)
 
-        source_start, source_end = locate_text_span(text, section_text, search_pos)
-        if source_start is not None and source_end is not None:
-            search_pos = max(search_pos, source_start + 1)
+        if (section.source_start_char is None) != (section.source_end_char is None):
+            raise ValueError(f"Incomplete source span: {section.section_instance_id}")
+        if section.source_start_char is not None and section.source_end_char is not None:
+            source_start, source_end = section.source_start_char, section.source_end_char
+        else:
+            source_start = text.find(section_text, search_pos)
+            if source_start < 0:
+                source_start = text.find(section_text)
+            source_end = source_start + len(section_text) if source_start >= 0 else None
+            if source_start < 0:
+                source_start = None
+
+        if (
+            source_start is None
+            or source_end is None
+            or not 0 <= source_start <= source_end <= len(text)
+            or text[source_start:source_end] != section_text
+        ):
+            raise ValueError(f"Section is not an exact contiguous source slice: {section.section_instance_id}")
+        search_pos = max(search_pos, source_end)
         page_start, page_end = pages_for_span(page_spans, source_start, source_end)
-        section_file = _section_output_path(output_root, ticker, pdf_stem, section.section_code)
+        section_file = _section_output_path(
+            output_root,
+            ticker,
+            pdf_stem,
+            section.section_instance_id,
+        )
         output_plan.append((section_file, section_text))
         rows.append(
             {
                 "ticker": ticker,
                 "pdf_stem": pdf_stem,
+                "section_instance_id": section.section_instance_id,
                 "section_code": section.section_code,
                 "section_title": section.title,
                 "section_file": display_path(section_file),
                 "source_start_char": source_start if source_start is not None else "",
                 "source_end_char": source_end if source_end is not None else "",
+                "provenance_version": PROVENANCE_VERSION,
                 "page_start": page_start,
                 "page_end": page_end,
                 "char_count": len(section_text),
@@ -731,12 +1292,20 @@ def process_text_file(
     return rows
 
 
-def discover_text_files(input_root: Path, ticker: str | None = None) -> list[Path]:
+def discover_text_files(
+    input_root: Path,
+    ticker: str | None = None,
+    pdf_stem: str | None = None,
+) -> list[Path]:
     if not input_root.exists():
         return []
     if ticker:
-        return sorted((input_root / ticker.upper()).glob("*.txt"))
-    return sorted(input_root.glob("*/*.txt"))
+        text_files = sorted((input_root / ticker.upper()).glob("*.txt"))
+    else:
+        text_files = sorted(input_root.glob("*/*.txt"))
+    if pdf_stem:
+        text_files = [path for path in text_files if path.stem == pdf_stem]
+    return text_files
 
 
 def _normalize_index_row(row: dict) -> dict:
@@ -747,16 +1316,22 @@ def _normalize_index_row(row: dict) -> dict:
     normalized["ticker"] = normalized["ticker"].strip().upper()
     normalized["pdf_stem"] = normalized["pdf_stem"].strip()
     normalized["section_code"] = normalized["section_code"].strip().lower()
+    normalized["section_instance_id"] = normalized["section_instance_id"].strip().lower()
+    if not normalized["section_instance_id"] and normalized["section_code"]:
+        # Preserve pre-contiguous-v1 rows during a scoped checkpoint/upsert. The
+        # legacy splitter emitted at most one row per canonical section code.
+        normalized["section_instance_id"] = f"{normalized['section_code']}__0001"
+    normalized["provenance_version"] = normalized["provenance_version"].strip()
     return normalized
 
 
 def _index_key(row: dict) -> tuple[str, str, str] | None:
     ticker = str(row.get("ticker", "")).strip().upper()
     pdf_stem = str(row.get("pdf_stem", "")).strip()
-    section_code = str(row.get("section_code", "")).strip().lower()
-    if not ticker or not pdf_stem or not section_code:
+    section_instance_id = str(row.get("section_instance_id", "")).strip().lower()
+    if not ticker or not pdf_stem or not section_instance_id:
         return None
-    return ticker, pdf_stem, section_code
+    return ticker, pdf_stem, section_instance_id
 
 
 def _index_rows_by_key(rows: list[dict]) -> tuple[dict[tuple[str, str, str], dict], set[tuple[str, str, str]]]:
@@ -804,10 +1379,14 @@ def validate_completed_text_file(
     """Validate rows, files, and fingerprints before a resume run skips a PDF."""
     ticker = txt_file.parent.name.upper()
     pdf_stem = txt_file.stem
-    expected_by_code = {section.section_code: section.text.strip() for section in sections if section.text.strip()}
+    expected_by_instance = {
+        section.section_instance_id: section
+        for section in sections
+        if section.text.strip()
+    }
     reasons: set[str] = set()
 
-    if not expected_by_code:
+    if not expected_by_instance:
         reasons.add("no_expected_sections")
 
     matching_rows = {
@@ -820,7 +1399,7 @@ def validate_completed_text_file(
         if _has_section_files_for_pdf(output_root, ticker, pdf_stem):
             reasons.add("unindexed_section_files")
 
-    if set(matching_rows) != set(expected_by_code):
+    if set(matching_rows) != set(expected_by_instance):
         reasons.add("section_rows_do_not_match_expected")
     if duplicate_keys and any(
         key[0] == ticker and key[1] == pdf_stem for key in duplicate_keys
@@ -830,13 +1409,19 @@ def validate_completed_text_file(
         not _fingerprint_matches(row, source_fingerprint) for row in matching_rows.values()
     ):
         reasons.add("source_fingerprint_mismatch")
+    if matching_rows and any(
+        row.get("provenance_version", "") != PROVENANCE_VERSION
+        for row in matching_rows.values()
+    ):
+        reasons.add("provenance_version_mismatch")
 
-    for section_code, expected_text in expected_by_code.items():
-        row = matching_rows.get(section_code)
+    for section_instance_id, section in expected_by_instance.items():
+        expected_text = section.text.strip()
+        row = matching_rows.get(section_instance_id)
         if row is None:
             continue
 
-        expected_path = _section_output_path(output_root, ticker, pdf_stem, section_code)
+        expected_path = _section_output_path(output_root, ticker, pdf_stem, section_instance_id)
         if not expected_path.is_file() or expected_path.stat().st_size == 0:
             reasons.add("section_file_missing_or_empty")
             continue
@@ -854,6 +1439,14 @@ def validate_completed_text_file(
             reasons.add("char_count_mismatch")
         if str(row.get("word_count", "")) != str(word_count(expected_text)):
             reasons.add("word_count_mismatch")
+        if row.get("section_code", "") != section.section_code:
+            reasons.add("section_code_mismatch")
+        expected_start = "" if section.source_start_char is None else str(section.source_start_char)
+        expected_end = "" if section.source_end_char is None else str(section.source_end_char)
+        if str(row.get("source_start_char", "")) != expected_start:
+            reasons.add("source_start_char_mismatch")
+        if str(row.get("source_end_char", "")) != expected_end:
+            reasons.add("source_end_char_mismatch")
 
     return CompletionValidation(complete=not reasons, reasons=tuple(sorted(reasons)))
 
@@ -872,7 +1465,7 @@ def write_index(index_path: Path, rows: list[dict]) -> None:
     index_rows, _ = _index_rows_by_key(rows)
     normalized_rows = sorted(
         index_rows.values(),
-        key=lambda row: (row["ticker"], row["pdf_stem"], row["section_code"]),
+        key=lambda row: (row["ticker"], row["pdf_stem"], row["section_instance_id"]),
     )
     tmp_path = index_path.with_name(f"{index_path.name}.tmp")
     try:
@@ -939,6 +1532,7 @@ def run(
     out: str | Path,
     index: str | Path,
     ticker: str | None = None,
+    pdf_stem: str | None = None,
     resume: bool = True,
     force: bool = False,
     checkpoint_every: int = 1,
@@ -951,7 +1545,7 @@ def run(
     output_root = Path(out)
     index_path = Path(index)
 
-    txt_files = discover_text_files(input_root, ticker=ticker)
+    txt_files = discover_text_files(input_root, ticker=ticker, pdf_stem=pdf_stem)
     print(f"Found {len(txt_files)} parsed ESG text file(s) under {input_root}")
 
     existing_rows = read_existing_index(index_path)
@@ -971,7 +1565,8 @@ def run(
         try:
             source_fingerprint = fingerprint_source_file(txt_file)
             text = txt_file.read_text(encoding="utf-8", errors="replace")
-            sections = _output_sections(text)
+            page_spans = read_page_map(txt_file)
+            sections = _output_sections(text, page_spans=page_spans)
             validation = validate_completed_text_file(
                 txt_file,
                 output_root,
@@ -1036,6 +1631,11 @@ def main():
     parser.add_argument("--out", default="data/03_sections/esg")
     parser.add_argument("--index", default="data/00_reference/esg_sections_index.csv")
     parser.add_argument("--ticker", default=None)
+    parser.add_argument(
+        "--pdf-stem",
+        default=None,
+        help="Process only the parsed-text file whose filename stem exactly matches this value.",
+    )
     resume_group = parser.add_mutually_exclusive_group()
     resume_group.add_argument(
         "--resume",
@@ -1065,6 +1665,7 @@ def main():
         out=args.out,
         index=args.index,
         ticker=args.ticker.upper() if args.ticker else None,
+        pdf_stem=args.pdf_stem,
         resume=args.resume,
         force=args.force,
         checkpoint_every=args.checkpoint_every,

@@ -7,6 +7,7 @@ Apply them in order:
 1. `V1__Schema.sql`
 2. `V2__Chunking_DB_Fixes.sql`
 3. `V3__RAG_Metadata.sql`
+4. `V4__ESG_Provenance.sql`
 
 ## companies
 
@@ -90,6 +91,7 @@ One row per extracted document section.
 
 - `section_id`
 - `doc_id`
+- `section_instance_id`
 - `section_code`
 - `section_title`
 - `section_text`
@@ -103,18 +105,30 @@ One row per extracted document section.
 
 Unique constraint:
 
-- `(doc_id, section_code)`
+- `(doc_id, section_instance_id)`
+
+`section_code` is a reusable topic category. `section_instance_id` identifies
+one contiguous occurrence, so a document may validly contain both
+`community__0001` and `community__0002`.
 
 ## chunks
 
 One row per retrieval chunk.
 
 - `chunk_id`
+- `external_chunk_id`
 - `section_id`
 - `doc_id`
 - `company_id`
 - `doc_type`
+- `section_instance_id`
 - `section_code`
+- `source_id`
+- `source_version_id`
+- `chunk_type`
+- `short_section_action`
+- `short_section_reason`
+- `merged_section_ids`
 - `doc_quality_status`
 - `rag_action`
 - `quality_flags`
@@ -123,6 +137,8 @@ One row per retrieval chunk.
 - `page_start`
 - `page_end`
 - `citation_ready`
+- `citation_validation_status`
+- `citation_validation_version`
 - `chunk_index`
 - `chunk_text`
 - `token_count`
@@ -132,17 +148,30 @@ One row per retrieval chunk.
 Unique constraint:
 
 - `(section_id, chunk_index)`
+- `external_chunk_id`
 
 ## RAG Query Filter
 
 For ESG-only retrieval, use only chunks where:
 
 ```sql
-doc_type = 'sustainability'
-AND doc_quality_status = 'ok'
+doc_quality_status = 'ok'
 AND rag_action = 'index_as_esg'
 AND citation_ready = TRUE
+AND citation_validation_version = 'semantic_v1'
+AND citation_validation_status IN (
+    'verified_exact',
+    'verified_whitespace_normalized'
+)
+AND (
+    (COALESCE(chunk_type, 'normal') = 'normal' AND token_count BETWEEN 100 AND 600)
+    OR (chunk_type = 'short_evidence' AND token_count BETWEEN 25 AND 99)
+)
 ```
+
+The `rag_action` gate can allow a governed annual-report ESG excerpt while
+still excluding unrelated annual filings. `doc_type` remains available as a
+filter and should be shown in citations, but it is not the chunk identity.
 
 Do not use chunks where:
 
