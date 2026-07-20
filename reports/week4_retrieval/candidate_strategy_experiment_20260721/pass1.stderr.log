@@ -1,0 +1,27 @@
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3585.60it/s]
+The Transformer `cache_dir` argument is deprecated. Please pass `cache_dir` via `model_kwargs`, `processor_kwargs`, and/or `config_kwargs` instead.
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 4968.83it/s]
+[1/24] 10K-V2-I1-001 routes=1
+[2/24] 10K-V2-I1-002 routes=1
+[3/24] 10K-V2-I1-003 routes=1
+[4/24] 10K-V2-I1-004 routes=1
+[5/24] 10K-V2-I1A-001 routes=1
+[6/24] 10K-V2-I1A-002 routes=1
+[7/24] 10K-V2-I1A-003 routes=1
+[8/24] 10K-V2-I1A-004 routes=1
+[9/24] 10K-V2-I7-001 routes=1
+[10/24] 10K-V2-I7-002 routes=1
+[11/24] 10K-V2-I7-003 routes=1
+[12/24] 10K-V2-I7-004 routes=1
+[13/24] 10K-V2-I8-001 routes=1
+[14/24] 10K-V2-I8-002 routes=1
+[15/24] 10K-V2-I8-003 routes=1
+[16/24] 10K-V2-I8-004 routes=1
+[17/24] 10K-V2-XC-001 routes=2
+[18/24] 10K-V2-XC-002 routes=2
+[19/24] 10K-V2-XC-003 routes=2
+[20/24] 10K-V2-XC-004 routes=2
+[21/24] 10K-V2-TC-001 routes=1
+[22/24] 10K-V2-TC-002 routes=1
+[23/24] 10K-V2-TC-003 routes=2
+[24/24] 10K-V2-TC-004 routes=2

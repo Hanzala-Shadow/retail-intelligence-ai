@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "experiment_id": "candidate_depth_lexical_hybrid_v1",
+  "in_sample": true,
+  "final_evidence_count": 5,
+  "rrf_k": 60,
+  "strategies": [
+    {
+      "method_id": "semantic_depth20_control",
+      "candidate_policy": "semantic",
+      "semantic_depth": 20,
+      "lexical_depth": 0,
+      "pool_limit": 20
+    },
+    {
+      "method_id": "semantic_depth40",
+      "candidate_policy": "semantic",
+      "semantic_depth": 40,
+      "lexical_depth": 0,
+      "pool_limit": 40
+    },
+    {
+      "method_id": "semantic_depth50",
+      "candidate_policy": "semantic",
+      "semantic_depth": 50,
+      "lexical_depth": 0,
+      "pool_limit": 50
+    },
+    {
+      "method_id": "semantic20_lexical20_union",
+      "candidate_policy": "union",
+      "semantic_depth": 20,
+      "lexical_depth": 20,
+      "pool_limit": 40
+    },
+    {
+      "method_id": "semantic20_lexical20_rrf_pool20",
+      "candidate_policy": "rrf_pool",
+      "semantic_depth": 20,
+      "lexical_depth": 20,
+      "pool_limit": 20
+    }
+  ]
+}

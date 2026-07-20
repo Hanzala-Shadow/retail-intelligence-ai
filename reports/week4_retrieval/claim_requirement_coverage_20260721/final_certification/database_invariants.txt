@@ -1,0 +1,3 @@
+PGOPTIONS=-c default_transaction_read_only=on
+eligible_chunks|bge_base_rows|bge_large_pilot_rows
+89335|89335|6006

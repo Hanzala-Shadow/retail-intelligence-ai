@@ -1,0 +1,19 @@
+{
+  "csv_path": "reports/week4_retrieval/seven_miss_candidate_funnel_20260721/candidate_funnel_pass1.csv",
+  "csv_sha256": "5027e09032e2320845ed455f80629128fe8268e447c7fa3302579ced7e9d9c5c",
+  "database_writes": false,
+  "diagnostic_only": true,
+  "elapsed_seconds": 40.05019253699993,
+  "finished_at": "2026-07-20T20:15:40.377165+00:00",
+  "git_head": "1266d7edddab78f0efef77eb178669d89411c1e3",
+  "gold_chunk_count": 10,
+  "in_sample": true,
+  "output_path": "reports/week4_retrieval/seven_miss_candidate_funnel_20260721/candidate_funnel_pass1.json",
+  "output_sha256": "9704480619078f5cbcaa738fc9e2ca3108bd51d162159ce7cb1a6756c25e5b65",
+  "peak_rss_kib": 1036680,
+  "question_count": 7,
+  "questions_path": "data/00_reference/rag_eval_questions.csv",
+  "questions_sha256": "08a1dba54410356432a6bc775f26e85821887730b9a1ac22e2da20a24c5eddc7",
+  "script_sha256": "1db6caba5f569c8ef5c7a404c7195559a0d7a6dfdae3a9f7336946e816d7d49f",
+  "started_at": "2026-07-20T20:15:00.326978+00:00"
+}
