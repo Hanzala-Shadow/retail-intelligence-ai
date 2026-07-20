@@ -1,0 +1,1264 @@
+{
+  "approved_corpus_metadata_inputs": [
+    "eligible ticker",
+    "unambiguous company-name aliases",
+    "eligible filing year",
+    "document type",
+    "accession number"
+  ],
+  "audit_version": "1.0.0",
+  "database_access": "read_only_corpus_metadata_only",
+  "decomposition_contract_version": "1.0.0",
+  "detector_input_fields": [
+    "question"
+  ],
+  "expected_answers_used_for_detection": false,
+  "gold_chunk_ids_used_for_detection": false,
+  "gold_passages_used_for_detection": false,
+  "hashes": {
+    "corpus_metadata_sha256": "fa0c64ced5647024e10fb439e7da6c3dc4c25a56d695bbd56ec6cb0713eab1af",
+    "detector_coverage_audit_sha256": "3a358db454384bf443bd22d1e123dacbb3e642e284d3be4bc2c4676cbc02e3cf",
+    "query_decomposition_sha256": "cebfd92a78c7aade31feaa3d352569b657dcad013da201a75918bee2aca84214",
+    "questions_sha256": "08a1dba54410356432a6bc775f26e85821887730b9a1ac22e2da20a24c5eddc7"
+  },
+  "in_sample": true,
+  "mode": "question_only_detector_coverage",
+  "no_model": true,
+  "post_detection_scoring_fields": [
+    "expected_tickers",
+    "expected_years",
+    "required_doc_type",
+    "required_sections",
+    "supporting_accession_numbers"
+  ],
+  "prohibited_gold_fields": [
+    "expected_answer",
+    "supporting_chunk_ids",
+    "supporting_passages",
+    "supporting_chunk_indexes",
+    "supporting_source_files",
+    "supporting_file_sha256",
+    "supporting_token_counts"
+  ],
+  "questions": [
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001817358-24-000042",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1",
+          "ticker": "ASO"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "ASO"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How does Academy Sports and Outdoors, Inc.'s distribution network support stores and online orders?",
+      "question_group": "Item_1",
+      "question_id": "10K-V2-I1-001",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001397187-24-000010",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1",
+          "ticker": "LULU"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "DBGI",
+          "LULU"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How does lululemon athletica inc. use stores, distribution centers, and digital channels to fulfill customer demand?",
+      "question_group": "Item_1",
+      "question_id": "10K-V2-I1-002",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001531152-26-000007",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1",
+          "ticker": "BJ"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "BJ",
+          "DBGI"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What services and digital options strengthen BJ's Wholesale Club Holdings, Inc.'s member value proposition?",
+      "question_group": "Item_1",
+      "question_id": "10K-V2-I1-003",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001573221-26-000010",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1",
+          "ticker": "REAL"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "REAL"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What is The RealReal's resale marketplace model, and why does the company believe it can drive growth?",
+      "question_group": "Item_1",
+      "question_id": "10K-V2-I1-004",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001628280-26-018794",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1A",
+          "ticker": "BRLT"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "BRLT",
+          "GPI"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How exposed is Brilliant Earth Group to Russian diamond restrictions and diamond price volatility?",
+      "question_group": "Item_1A",
+      "question_id": "10K-V2-I1A-001",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001437749-24-028591",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1A",
+          "ticker": "FLWS"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "DBGI"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What digital, generative-AI, and payment risks could disrupt 1-800-FLOWERS.COM's customer experience or margins?",
+      "question_group": "Item_1A",
+      "question_id": "10K-V2-I1A-002",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001596961-24-000021",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1A",
+          "ticker": "RDNW"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "GPI",
+          "RDNW"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What privacy and data-security risks could affect RideNow Group, Inc.'s reputation and operating results?",
+      "question_group": "Item_1A",
+      "question_id": "10K-V2-I1A-003",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001334036-26-000006",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1A",
+          "ticker": "CROX"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "business"
+        ],
+        "entities": [
+          "CROX"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What business risks does Crocs, Inc. face from relying on third-party manufacturers for compliance and product safety?",
+      "question_group": "Item_1A",
+      "question_id": "10K-V2-I1A-004",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001628280-25-015891",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_7",
+          "ticker": "CURV"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "CURV"
+        ],
+        "error_code": "SECTION_UNRESOLVED",
+        "error_message": "No supported claim or section was resolved",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": [
+          2024
+        ]
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "Why did Torrid Holdings Inc.'s fiscal 2024 sales fall, and why did gross profit still improve?",
+      "question_group": "Item_7",
+      "question_id": "10K-V2-I7-001",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "content_year_filing_year_mismatch"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000827187-25-000018",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_7",
+          "ticker": "SNBR"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "gross margin"
+        ],
+        "entities": [
+          "SNBR"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What explains Sleep Number Corporation's sales decline, and what happened to gross margin?",
+      "question_group": "Item_7",
+      "question_id": "10K-V2-I7-002",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000814453-25-000008",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_7",
+          "ticker": "NWL"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "NWL"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How did credit-rating downgrades and debt repayment affect Newell Brands Inc.'s financing costs?",
+      "question_group": "Item_7",
+      "question_id": "10K-V2-I7-003",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000719955-26-000059",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_7",
+          "ticker": "WSM"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "WSM"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What could move Williams-Sonoma, Inc.'s tax rate, and how did its recent tax rates compare?",
+      "question_group": "Item_7",
+      "question_id": "10K-V2-I7-004",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001628280-26-019436",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_8",
+          "ticker": "HD"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "HD"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How does The Home Depot, Inc. value merchandise inventory, and what costs are included?",
+      "question_group": "Item_8",
+      "question_id": "10K-V2-I8-001",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000060667-25-000049",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_8",
+          "ticker": "LOW"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "LOW"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What future purchase or service commitments has Lowe's Companies, Inc. made that could affect cash obligations?",
+      "question_group": "Item_8",
+      "question_id": "10K-V2-I8-002",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001144980-26-000051",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_8",
+          "ticker": "ABG"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "risk"
+        ],
+        "entities": [
+          "ABG",
+          "GPI"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "Did Asbury Automotive Group, Inc. find any goodwill write-down risk, and what evidence supported its conclusion?",
+      "question_group": "Item_8",
+      "question_id": "10K-V2-I8-003",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001193125-25-323811",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_8",
+          "ticker": "LESL"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "LESL"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What store closures and related costs did Leslie's, Inc. commit to after year-end?",
+      "question_group": "Item_8",
+      "question_id": "10K-V2-I8-004",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001089063-25-000012",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_1A",
+          "ticker": "DKS"
+        },
+        {
+          "accession_number": "0001193125-26-115982",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1A",
+          "ticker": "KSS"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "DBGI",
+          "KSS"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How do Dick's Sporting Goods, Inc. and Kohl's Corporation differ in the execution risks tied to loyalty, digital, and strategic initiatives?",
+      "question_group": "cross_company",
+      "question_id": "10K-V2-XC-001",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000950170-24-041066",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1A",
+          "ticker": "LE"
+        },
+        {
+          "accession_number": "0000027419-24-000032",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1A",
+          "ticker": "TGT"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "LE",
+          "TGT"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How do Lands' End, Inc. and Target Corporation compare in their exposure to supply-chain or fulfillment disruptions?",
+      "question_group": "cross_company",
+      "question_id": "10K-V2-XC-002",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001437749-25-008025",
+          "doc_type": "10-K",
+          "filing_year": 2025,
+          "section_code": "Item_1A",
+          "ticker": "RCKY"
+        },
+        {
+          "accession_number": "0001628280-26-019015",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1A",
+          "ticker": "BOBS"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "RCKY"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How do Rocky Brands, Inc. and Bob's Discount Furniture Inc compare in their exposure to cyber-security and data-privacy risks?",
+      "question_group": "cross_company",
+      "question_id": "10K-V2-XC-003",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001628280-24-010996",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_7",
+          "ticker": "GRWG"
+        },
+        {
+          "accession_number": "0001437749-24-008398",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_8",
+          "ticker": "ATER"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "risk"
+        ],
+        "entities": [
+          "ATER"
+        ],
+        "error_code": "YEAR_UNRESOLVED",
+        "error_message": "No filing year was stated",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": []
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How do Grow Generation Corp and Aterian, Inc. disclose goodwill and intangible asset impairment risk?",
+      "question_group": "cross_company",
+      "question_id": "10K-V2-XC-004",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "filing_year_omitted"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001493152-26-016664",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_7",
+          "ticker": "ORBS"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "revenue"
+        ],
+        "entities": [
+          "ORBS"
+        ],
+        "error_code": null,
+        "error_message": null,
+        "explicit_sections": [],
+        "query_type": "temporal_comparison",
+        "resolution_status": "resolved",
+        "subqueries": [
+          {
+            "accession_number": "0001493152-24-012608",
+            "claim_key": "revenue",
+            "doc_type": "10-K",
+            "filing_year": 2024,
+            "section_code": "Item_8",
+            "subquery_id": "10K-V2-TC-001-sq-1",
+            "ticker": "ORBS"
+          },
+          {
+            "accession_number": "0001641172-25-004802",
+            "claim_key": "revenue",
+            "doc_type": "10-K",
+            "filing_year": 2025,
+            "section_code": "Item_8",
+            "subquery_id": "10K-V2-TC-001-sq-2",
+            "ticker": "ORBS"
+          }
+        ],
+        "years": [
+          2024,
+          2025
+        ]
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What changed in Eightco Holdings Inc.'s customer mix, revenue, and gross profit from 2024 to 2025?",
+      "question_group": "time_change",
+      "question_id": "10K-V2-TC-001",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": false,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "content_year_filing_year_mismatch"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000103379-24-000008",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_7",
+          "ticker": "VFC"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "revenue"
+        ],
+        "entities": [
+          "TBHC",
+          "VFC"
+        ],
+        "error_code": null,
+        "error_message": null,
+        "explicit_sections": [],
+        "query_type": "cross_company_comparison",
+        "resolution_status": "resolved",
+        "subqueries": [
+          {
+            "accession_number": "0000950170-24-038513",
+            "claim_key": "revenue",
+            "doc_type": "10-K",
+            "filing_year": 2024,
+            "section_code": "Item_8",
+            "subquery_id": "10K-V2-TC-002-sq-1",
+            "ticker": "TBHC"
+          },
+          {
+            "accession_number": "0000103379-24-000008",
+            "claim_key": "revenue",
+            "doc_type": "10-K",
+            "filing_year": 2024,
+            "section_code": "Item_8",
+            "subquery_id": "10K-V2-TC-002-sq-2",
+            "ticker": "VFC"
+          }
+        ],
+        "years": [
+          2024
+        ]
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "How did VF Corporation's fiscal 2024 revenue performance vary by region and by the Timberland brand?",
+      "question_group": "time_change",
+      "question_id": "10K-V2-TC-002",
+      "scoring": {
+        "entity_exact": false,
+        "raw_year_set_exact": true,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "matches_declared_filing_year"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0001065088-24-000036",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_1A",
+          "ticker": "EBAY"
+        },
+        {
+          "accession_number": "0001065088-26-000027",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_1A",
+          "ticker": "EBAY"
+        }
+      ],
+      "detected": {
+        "claims": [
+          "risk"
+        ],
+        "entities": [
+          "EBAY"
+        ],
+        "error_code": null,
+        "error_message": null,
+        "explicit_sections": [],
+        "query_type": "temporal_comparison",
+        "resolution_status": "resolved",
+        "subqueries": [
+          {
+            "accession_number": "0001065088-24-000036",
+            "claim_key": "risk",
+            "doc_type": "10-K",
+            "filing_year": 2024,
+            "section_code": "Item_1A",
+            "subquery_id": "10K-V2-TC-003-sq-1",
+            "ticker": "EBAY"
+          },
+          {
+            "accession_number": "0001065088-26-000027",
+            "claim_key": "risk",
+            "doc_type": "10-K",
+            "filing_year": 2026,
+            "section_code": "Item_1A",
+            "subquery_id": "10K-V2-TC-003-sq-2",
+            "ticker": "EBAY"
+          }
+        ],
+        "years": [
+          2024,
+          2026
+        ]
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What changed in eBay Inc.'s marketplace risk profile between its 2024 and 2026 filings?",
+      "question_group": "time_change",
+      "question_id": "10K-V2-TC-003",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": true,
+        "route_section_exact": true,
+        "route_ticker_exact": true,
+        "route_year_exact": true,
+        "routing_exact": true,
+        "year_interpretation": "matches_declared_filing_year"
+      }
+    },
+    {
+      "declared_route_for_post_detection_scoring": [
+        {
+          "accession_number": "0000950170-24-040516",
+          "doc_type": "10-K",
+          "filing_year": 2024,
+          "section_code": "Item_8",
+          "ticker": "WOOF"
+        },
+        {
+          "accession_number": "0001193125-26-106114",
+          "doc_type": "10-K",
+          "filing_year": 2026,
+          "section_code": "Item_8",
+          "ticker": "WOOF"
+        }
+      ],
+      "detected": {
+        "claims": [],
+        "entities": [
+          "WOOF"
+        ],
+        "error_code": "SECTION_UNRESOLVED",
+        "error_message": "No supported claim or section was resolved",
+        "explicit_sections": [],
+        "query_type": null,
+        "resolution_status": "unresolved",
+        "subqueries": [],
+        "years": [
+          2024,
+          2026
+        ]
+      },
+      "detector_input_fields": [
+        "question"
+      ],
+      "question": "What changed in Petco Health and Wellness Company, Inc.'s explanation of asset impairment between 2024 and 2026?",
+      "question_group": "time_change",
+      "question_id": "10K-V2-TC-004",
+      "scoring": {
+        "entity_exact": true,
+        "raw_year_set_exact": true,
+        "route_section_exact": false,
+        "route_ticker_exact": false,
+        "route_year_exact": false,
+        "routing_exact": false,
+        "year_interpretation": "matches_declared_filing_year"
+      }
+    }
+  ],
+  "refusals_excluded": 5,
+  "summary": {
+    "by_group": {
+      "Item_1": {
+        "entity_exact": 2,
+        "error_codes": {
+          "YEAR_UNRESOLVED": 4
+        },
+        "questions": 4,
+        "raw_year_set_exact": 0,
+        "resolved": 0,
+        "route_section_exact": 0,
+        "route_ticker_exact": 0,
+        "route_year_exact": 0,
+        "routing_exact": 0,
+        "year_interpretations": {
+          "filing_year_omitted": 4
+        }
+      },
+      "Item_1A": {
+        "entity_exact": 1,
+        "error_codes": {
+          "YEAR_UNRESOLVED": 4
+        },
+        "questions": 4,
+        "raw_year_set_exact": 0,
+        "resolved": 0,
+        "route_section_exact": 0,
+        "route_ticker_exact": 0,
+        "route_year_exact": 0,
+        "routing_exact": 0,
+        "year_interpretations": {
+          "filing_year_omitted": 4
+        }
+      },
+      "Item_7": {
+        "entity_exact": 4,
+        "error_codes": {
+          "SECTION_UNRESOLVED": 1,
+          "YEAR_UNRESOLVED": 3
+        },
+        "questions": 4,
+        "raw_year_set_exact": 0,
+        "resolved": 0,
+        "route_section_exact": 0,
+        "route_ticker_exact": 0,
+        "route_year_exact": 0,
+        "routing_exact": 0,
+        "year_interpretations": {
+          "content_year_filing_year_mismatch": 1,
+          "filing_year_omitted": 3
+        }
+      },
+      "Item_8": {
+        "entity_exact": 3,
+        "error_codes": {
+          "YEAR_UNRESOLVED": 4
+        },
+        "questions": 4,
+        "raw_year_set_exact": 0,
+        "resolved": 0,
+        "route_section_exact": 0,
+        "route_ticker_exact": 0,
+        "route_year_exact": 0,
+        "routing_exact": 0,
+        "year_interpretations": {
+          "filing_year_omitted": 4
+        }
+      },
+      "cross_company": {
+        "entity_exact": 1,
+        "error_codes": {
+          "YEAR_UNRESOLVED": 4
+        },
+        "questions": 4,
+        "raw_year_set_exact": 0,
+        "resolved": 0,
+        "route_section_exact": 0,
+        "route_ticker_exact": 0,
+        "route_year_exact": 0,
+        "routing_exact": 0,
+        "year_interpretations": {
+          "filing_year_omitted": 4
+        }
+      },
+      "time_change": {
+        "entity_exact": 3,
+        "error_codes": {
+          "SECTION_UNRESOLVED": 1
+        },
+        "questions": 4,
+        "raw_year_set_exact": 3,
+        "resolved": 3,
+        "route_section_exact": 1,
+        "route_ticker_exact": 1,
+        "route_year_exact": 1,
+        "routing_exact": 1,
+        "year_interpretations": {
+          "content_year_filing_year_mismatch": 1,
+          "matches_declared_filing_year": 3
+        }
+      }
+    },
+    "overall": {
+      "entity_exact": 14,
+      "error_codes": {
+        "SECTION_UNRESOLVED": 2,
+        "YEAR_UNRESOLVED": 19
+      },
+      "questions": 24,
+      "raw_year_set_exact": 3,
+      "resolved": 3,
+      "route_section_exact": 1,
+      "route_ticker_exact": 1,
+      "route_year_exact": 1,
+      "routing_exact": 1,
+      "year_interpretations": {
+        "content_year_filing_year_mismatch": 2,
+        "filing_year_omitted": 19,
+        "matches_declared_filing_year": 3
+      }
+    },
+    "questions_requiring_metadata_or_clarification": [
+      "10K-V2-I1-001",
+      "10K-V2-I1-002",
+      "10K-V2-I1-003",
+      "10K-V2-I1-004",
+      "10K-V2-I1A-001",
+      "10K-V2-I1A-002",
+      "10K-V2-I1A-003",
+      "10K-V2-I1A-004",
+      "10K-V2-I7-001",
+      "10K-V2-I7-002",
+      "10K-V2-I7-003",
+      "10K-V2-I7-004",
+      "10K-V2-I8-001",
+      "10K-V2-I8-002",
+      "10K-V2-I8-003",
+      "10K-V2-I8-004",
+      "10K-V2-XC-001",
+      "10K-V2-XC-002",
+      "10K-V2-XC-003",
+      "10K-V2-XC-004",
+      "10K-V2-TC-001",
+      "10K-V2-TC-002",
+      "10K-V2-TC-004"
+    ]
+  },
+  "supported_questions": 24
+}
