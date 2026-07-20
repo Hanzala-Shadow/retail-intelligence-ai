@@ -1,0 +1,2 @@
+question_id,answer_model,claim_id,citation_index,chunk_id,ticker/company,filing_year,source_document,accession_number,section_code,page_start,page_end,page_unavailable_reason,claim_supported,metadata_correct,verifier_notes
+TC-003,GPT-4.1,C1,1,chunk_14522,AAPL,2024,Apple 2024 Form 10-K,0000320193-24-000123,Item 7,42,43,,Yes,Yes,Worked example only. Replace with actual evaluation data.

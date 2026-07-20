@@ -1,0 +1,1 @@
+run_id,question_id,answer_model,response_time_seconds,answer_quality,citation_quality,claim_supported,metadata_correct,failure_type,reviewer_notes
