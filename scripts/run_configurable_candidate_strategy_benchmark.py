@@ -45,8 +45,6 @@ from src.query_api import (  # noqa: E402
 
 DEFAULT_QUESTIONS = Path("data/00_reference/rag_eval_questions.csv")
 DEFAULT_CONFIG = Path("config/retrieval_candidate_strategies_v1.json")
-SUPPORTED_QUESTIONS = 24
-REFUSAL_QUESTIONS = 5
 LEXICAL_CONFIG = "english"
 POLICIES = {"semantic", "union", "rrf_pool"}
 
@@ -167,16 +165,27 @@ def _approved_view(row: dict[str, str]) -> dict[str, str]:
     return {field: row[field] for field in ROUTING_FIELDS}
 
 
-def load_questions(path: Path) -> list[dict[str, str]]:
+def load_questions(
+    path: Path,
+    *,
+    expected_supported: int | None = None,
+    expected_refusals: int | None = None,
+) -> tuple[list[dict[str, str]], int]:
     with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     supported = [row for row in rows if row["question_group"] != "refusal"]
     refusals = [row for row in rows if row["question_group"] == "refusal"]
-    if len(supported) != SUPPORTED_QUESTIONS or len(refusals) != REFUSAL_QUESTIONS:
+    if not supported:
+        raise RuntimeError("question set contains no supported questions")
+    if expected_supported is not None and len(supported) != expected_supported:
         raise RuntimeError(
-            f"frozen shape mismatch: supported={len(supported)}, refusals={len(refusals)}"
+            f"expected {expected_supported} supported questions, found {len(supported)}"
         )
-    return [_approved_view(row) for row in supported]
+    if expected_refusals is not None and len(refusals) != expected_refusals:
+        raise RuntimeError(
+            f"expected {expected_refusals} refusal questions, found {len(refusals)}"
+        )
+    return [_approved_view(row) for row in supported], len(refusals)
 
 
 def _deduplicate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -334,9 +343,14 @@ class CandidateEngine:
 
 
 def run_benchmark(
-    questions_path: Path, config: ExperimentConfig, engine: CandidateEngine
+    questions_path: Path, config: ExperimentConfig, engine: CandidateEngine,
+    *, expected_supported: int | None = None, expected_refusals: int | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
-    questions = load_questions(questions_path)
+    questions, refusal_count = load_questions(
+        questions_path,
+        expected_supported=expected_supported,
+        expected_refusals=expected_refusals,
+    )
     max_semantic = max(item.semantic_depth for item in config.strategies)
     max_lexical = max(item.lexical_depth for item in config.strategies)
     csv_rows = {item.method_id: [] for item in config.strategies}
@@ -347,6 +361,8 @@ def run_benchmark(
         "prohibited_fields": list(PROHIBITED_FIELDS),
         "strategies": [asdict(item) for item in config.strategies],
         "questions": [],
+        "supported_questions": len(questions),
+        "refusals_excluded": refusal_count,
     }
 
     for question_number, row in enumerate(questions, 1):
@@ -435,7 +451,7 @@ def run_benchmark(
             file=sys.stderr,
             flush=True,
         )
-    expected = SUPPORTED_QUESTIONS * config.final_evidence_count
+    expected = len(questions) * config.final_evidence_count
     for method_id, rows in csv_rows.items():
         if len(rows) != expected:
             raise RuntimeError(f"{method_id}: expected {expected} CSV rows, found {len(rows)}")
@@ -472,6 +488,8 @@ def main() -> int:
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--expected-supported", type=int)
+    parser.add_argument("--expected-refusals", type=int)
     args = parser.parse_args()
     if args.output_dir.exists():
         raise FileExistsError(f"refusing existing output directory: {args.output_dir}")
@@ -482,7 +500,9 @@ def main() -> int:
     with ProductionRetriever() as retriever:
         retriever._load_models()
         rows_by_method, details = run_benchmark(
-            args.questions, config, CandidateEngine(retriever)
+            args.questions, config, CandidateEngine(retriever),
+            expected_supported=args.expected_supported,
+            expected_refusals=args.expected_refusals,
         )
     output_hashes = _write_outputs(args.output_dir, config, rows_by_method, details)
     manifest = {
@@ -499,8 +519,8 @@ def main() -> int:
         "experiment_id": config.experiment_id,
         "in_sample": True,
         "database_writes": False,
-        "question_count": SUPPORTED_QUESTIONS,
-        "refusals_excluded": REFUSAL_QUESTIONS,
+        "question_count": details["supported_questions"],
+        "refusals_excluded": details["refusals_excluded"],
         "method_count": len(config.strategies),
         "cross_encoder": CROSS_ENCODER_REPO,
         "cross_encoder_revision": CROSS_ENCODER_REVISION,

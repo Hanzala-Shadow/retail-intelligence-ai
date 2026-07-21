@@ -277,6 +277,8 @@ class RoutedDecompositionTests(unittest.TestCase):
                 runner.run_benchmark(
                     questions,
                     FakeRetriever(),
+                    expected_supported=24,
+                    expected_refusals=5,
                 )
 
     def test_overwrite_protection_checks_all_outputs(self):

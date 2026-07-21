@@ -12,17 +12,16 @@ from typing import Any, Iterable
 
 from src.query_decomposition import (
     CONTRACT_VERSION,
-    YEAR_RE,
     ContractError,
     SourceResolver,
     build_subqueries,
     detect_claims,
     detect_entities,
+    detect_filing_years,
     detect_sections,
 )
 
 AUDIT_VERSION = "1.0.0"
-SUPPORTED_QUESTION_COUNT = 24
 ALLOWED_QUESTION_FIELDS = (
     "question_id",
     "question_group",
@@ -137,7 +136,7 @@ def audit_question(
 
     # Question-only detection happens before expected routing is parsed.
     entities = detect_entities(question, known_tickers, aliases)
-    years = tuple(sorted({int(value) for value in YEAR_RE.findall(question)}))
+    years = detect_filing_years(question)
     claims = detect_claims(question)
     explicit_sections = detect_sections(question)
 
@@ -295,11 +294,15 @@ def run_audit(
     detector_code_sha256: str,
     audit_code_sha256: str,
     corpus_metadata_sha256: str,
+    expected_supported: int | None = None,
+    refusals_excluded: int = 0,
 ) -> dict[str, Any]:
     rows = list(question_rows)
-    if len(rows) != SUPPORTED_QUESTION_COUNT:
+    if not rows:
+        raise RuntimeError("question set contains no supported questions")
+    if expected_supported is not None and len(rows) != expected_supported:
         raise RuntimeError(
-            f"expected {SUPPORTED_QUESTION_COUNT} supported questions, "
+            f"expected {expected_supported} supported questions, "
             f"found {len(rows)}"
         )
     audited = [
@@ -308,12 +311,12 @@ def run_audit(
     return {
         "audit_version": AUDIT_VERSION,
         "decomposition_contract_version": CONTRACT_VERSION,
-        "in_sample": True,
+        "in_sample": None,
         "mode": "question_only_detector_coverage",
         "no_model": True,
         "database_access": "read_only_corpus_metadata_only",
         "supported_questions": len(audited),
-        "refusals_excluded": 5,
+        "refusals_excluded": refusals_excluded,
         "detector_input_fields": ["question"],
         "approved_corpus_metadata_inputs": [
             "eligible ticker",

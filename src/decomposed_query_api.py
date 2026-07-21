@@ -7,7 +7,7 @@ from typing import Any
 from src.query_api import ProductionRetriever, SourceSpec
 from src.query_decomposition import (
     CONTRACT_VERSION, ContractError, ProductionRetrieverAdapter, SourceResolver,
-    aggregate, build_subqueries,
+    aggregate, build_subqueries, normalize_for_matching,
 )
 
 
@@ -23,18 +23,32 @@ def _aliases_from_connection(conn: Any) -> tuple[set[str], dict[str, str]]:
         rows = [(str(a), str(b)) for a, b in cursor.fetchall()]
     tickers = {ticker for ticker, _ in rows}
     candidates: dict[str, set[str]] = {}
-    suffixes = re.compile(r"\b(incorporated|corporation|corp|company|co|plc|ltd|limited|holdings?)\.?\b", re.I)
+    suffixes = re.compile(r"\b(incorporated|inc|corporation|corp|company|co|plc|ltd|limited|holdings?|hldgs|industries|inds)\b", re.I)
+    unsafe_single_words = {
+        "brand", "digital", "group", "international", "retail", "stores",
+        "worldwide", "advance", "american", "national", "superior", "global",
+        "academy", "designer", "destination", "grocery", "natural", "village",
+    }
     for ticker, name in rows:
-        normalized = " ".join(re.findall(r"[a-z0-9]+", name.lower()))
-        variants = {normalized, suffixes.sub("", normalized).strip()}
+        normalized = normalize_for_matching(name)
+        stripped = " ".join(suffixes.sub(" ", normalized).split())
+        variants = {normalized, stripped}
         words = normalized.split()
         if words and words[0] == "the":
             variants.add(" ".join(words[1:]))
-            words = words[1:]
-        if words and len(words[0]) >= 4:
-            variants.add(words[0])
+        # Natural questions commonly use a distinctive leading brand word
+        # while corpus metadata stores the full legal name.  Add that word
+        # only when it is non-generic; the collision pass below still requires
+        # it to identify exactly one eligible ticker.
+        brand_words = stripped.split()
+        if (
+            brand_words
+            and len(brand_words[0]) >= 6
+            and brand_words[0] not in unsafe_single_words
+        ):
+            variants.add(brand_words[0])
         for variant in variants:
-            if variant:
+            if variant and not (len(variant.split()) == 1 and variant in unsafe_single_words):
                 candidates.setdefault(variant, set()).add(ticker)
     aliases = {alias: next(iter(values)) for alias, values in candidates.items() if len(values) == 1}
     return tickers, aliases
@@ -64,11 +78,13 @@ def run_query(question: str, filters: dict[str, Any] | None = None, *, retriever
         resolver = SourceResolver.from_connection(active_conn)
         tickers, aliases = _aliases_from_connection(active_conn)
         query_type, subqueries = build_subqueries(request_id, question, tickers, aliases, resolver)
-        if query_type.value == "single_source":
-            sq = subqueries[0]
-            source = SourceSpec(sq.ticker, sq.filing_year, sq.accession_number, sq.section_code, sq.doc_type)
-            return _simple_response(retriever.retrieve(question, [source]))
-        response = aggregate(subqueries, ProductionRetrieverAdapter(retriever, SourceSpec))
+        response = aggregate(
+            subqueries,
+            ProductionRetrieverAdapter(
+                retriever, SourceSpec, original_question=question,
+            ),
+            evidence_limit=5,
+        )
         return {**response, "is_decomposed": True, "query_type": query_type.value, "original_question": question, "subqueries": [sq.__dict__ for sq in subqueries]}
     except ContractError as exc:
         ambiguous = {"ENTITY_UNRESOLVED", "YEAR_UNRESOLVED", "SECTION_UNRESOLVED", "AMBIGUOUS_COMPANY_YEAR_PAIRING", "AMBIGUOUS_CLAIM_SECTION_PAIRING"}

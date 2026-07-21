@@ -41,8 +41,6 @@ from src.query_decomposition import (  # noqa: E402
 
 DEFAULT_QUESTIONS = Path("data/00_reference/rag_eval_questions.csv")
 MODEL_ID = "bge_base_en_v1_5_routed_decomposition"
-SUPPORTED_QUESTION_COUNT = 24
-REFUSAL_QUESTION_COUNT = 5
 EXPERIMENT_MODE = "approved_metadata_routed_decomposition"
 
 ROUTING_FIELDS = (
@@ -235,6 +233,9 @@ def _single_source_result(
 def run_benchmark(
     questions_path: Path,
     retriever: Any,
+    *,
+    expected_supported: int | None = None,
+    expected_refusals: int | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     with questions_path.open(encoding="utf-8", newline="") as handle:
         question_rows = list(csv.DictReader(handle))
@@ -247,14 +248,16 @@ def run_benchmark(
         row for row in question_rows
         if row.get("question_group") == "refusal"
     ]
-    if len(supported) != SUPPORTED_QUESTION_COUNT:
+    if not supported:
+        raise RuntimeError("question set contains no supported questions")
+    if expected_supported is not None and len(supported) != expected_supported:
         raise RuntimeError(
-            f"expected {SUPPORTED_QUESTION_COUNT} supported questions; "
+            f"expected {expected_supported} supported questions; "
             f"found {len(supported)}"
         )
-    if len(refusals) != REFUSAL_QUESTION_COUNT:
+    if expected_refusals is not None and len(refusals) != expected_refusals:
         raise RuntimeError(
-            f"expected {REFUSAL_QUESTION_COUNT} refusal questions; "
+            f"expected {expected_refusals} refusal questions; "
             f"found {len(refusals)}"
         )
 
@@ -326,7 +329,7 @@ def run_benchmark(
             flush=True,
         )
 
-    expected_rows = SUPPORTED_QUESTION_COUNT * FINAL_EVIDENCE_COUNT
+    expected_rows = len(supported) * FINAL_EVIDENCE_COUNT
     if len(retrieval_rows) != expected_rows:
         raise RuntimeError(
             f"expected {expected_rows} retrieval rows; "
@@ -336,11 +339,11 @@ def run_benchmark(
     details = {
         "contract_version": CONTRACT_VERSION,
         "experiment_mode": EXPERIMENT_MODE,
-        "in_sample": True,
+        "in_sample": None,
         "model_id": MODEL_ID,
         "multi_source_subquery_text_policy": "original_question_unchanged",
-        "supported_questions": SUPPORTED_QUESTION_COUNT,
-        "refusals_excluded": REFUSAL_QUESTION_COUNT,
+        "supported_questions": len(supported),
+        "refusals_excluded": len(refusals),
         "retrieval_rows": len(retrieval_rows),
         "questions": question_details,
     }
@@ -361,6 +364,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--details", type=Path)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--expected-supported", type=int)
+    parser.add_argument("--expected-refusals", type=int)
     args = parser.parse_args()
 
     details_path = args.details or args.output.with_suffix(".details.json")
@@ -374,6 +379,8 @@ def main() -> int:
         retrieval_rows, details = run_benchmark(
             args.questions,
             retriever,
+            expected_supported=args.expected_supported,
+            expected_refusals=args.expected_refusals,
         )
 
     elapsed_seconds = time.monotonic() - started
@@ -396,10 +403,10 @@ def main() -> int:
         "finished_at": _utcnow(),
         "elapsed_seconds": elapsed_seconds,
         "peak_rss_kib": peak_rss_kib,
-        "in_sample": True,
+        "in_sample": None,
         "experiment_mode": EXPERIMENT_MODE,
-        "supported_questions": SUPPORTED_QUESTION_COUNT,
-        "refusals_excluded": REFUSAL_QUESTION_COUNT,
+        "supported_questions": details["supported_questions"],
+        "refusals_excluded": details["refusals_excluded"],
         "retrieval_rows": len(retrieval_rows),
         "routing_fields_used": list(ROUTING_FIELDS),
         "supporting_accession_numbers_role": "approved_routing_metadata",

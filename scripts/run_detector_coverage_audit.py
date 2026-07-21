@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the frozen-24 question-only detector coverage audit without models."""
+"""Run a variable-size question-only detector coverage audit without models."""
 from __future__ import annotations
 
 import argparse
@@ -42,10 +42,12 @@ def _canonical_sha256(value: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _load_supported(path: Path) -> list[dict[str, str]]:
+def _load_questions(path: Path) -> tuple[list[dict[str, str]], int]:
     with path.open(encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
-    return [row for row in rows if row["question_group"] != "refusal"]
+    supported = [row for row in rows if row["question_group"] != "refusal"]
+    refusals = [row for row in rows if row["question_group"] == "refusal"]
+    return supported, len(refusals)
 
 
 def _corpus_fingerprint(
@@ -73,12 +75,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--expected-supported", type=int,
+        help="optional fail-closed supported-question count; omitted means auto-detect",
+    )
+    parser.add_argument(
+        "--expected-refusals", type=int,
+        help="optional fail-closed refusal count; omitted means auto-detect",
+    )
     args = parser.parse_args()
 
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite: {args.output}")
 
-    rows = _load_supported(args.questions)
+    rows, refusal_count = _load_questions(args.questions)
+    if args.expected_refusals is not None and refusal_count != args.expected_refusals:
+        raise RuntimeError(
+            f"expected {args.expected_refusals} refusal questions, found {refusal_count}"
+        )
     conn = _connect()
     try:
         conn.set_session(readonly=True, autocommit=True)
@@ -96,6 +110,8 @@ def main() -> int:
         detector_code_sha256=_sha256(REPO_ROOT / DETECTOR_PATH),
         audit_code_sha256=_sha256(REPO_ROOT / AUDIT_PATH),
         corpus_metadata_sha256=_corpus_fingerprint(resolver, aliases),
+        expected_supported=args.expected_supported,
+        refusals_excluded=refusal_count,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

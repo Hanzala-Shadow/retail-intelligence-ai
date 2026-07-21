@@ -1,17 +1,20 @@
-"""Deterministic query decomposition and evidence aggregation (contract 1.0.0).
+"""Deterministic query decomposition and evidence aggregation (contract 1.3.0).
 
 This module never selects candidates itself.  It wraps the locked
 ``query_api.ProductionRetriever`` through a strict adapter.
 """
 from __future__ import annotations
 
+import hashlib
+import itertools
 import re
+import unicodedata
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Iterable, Protocol
 
-CONTRACT_VERSION = "1.0.0"
-SECTION_POLICY_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.3.0"
+SECTION_POLICY_VERSION = "1.3.0"
 
 
 class QueryType(str, Enum):
@@ -90,6 +93,27 @@ class EvidenceItem:
 
 
 CLAIM_SECTION_TABLE = {
+    # Item 1: business description and operating footprint.
+    "customers and membership": "Item_1", "digital commerce": "Item_1",
+    "distribution network": "Item_1", "store network": "Item_1",
+    "sourcing and suppliers": "Item_1", "merchandising and products": "Item_1",
+    "business expansion and strategic progress": "Item_1",
+    # Item 1A: risk-factor families.
+    "technology and artificial intelligence risk": "Item_1A",
+    "cybersecurity and data privacy risk": "Item_1A",
+    "supply chain disruption risk": "Item_1A",
+    "regulatory and legal risk": "Item_1A",
+    "fraud and payment risk": "Item_1A", "macroeconomic risk": "Item_1A",
+    "competition risk": "Item_1A",
+    # Item 7: performance, drivers, liquidity and operating analysis.
+    "revenue and sales performance": "Item_7", "gross margin performance": "Item_7",
+    "inventory performance": "Item_7", "liquidity and cash flow": "Item_7",
+    "operating expenses": "Item_7", "segment performance": "Item_7",
+    # Item 8: financial-statement policies, notes and contingencies.
+    "commitments and contingencies": "Item_8", "revenue recognition policy": "Item_8",
+    "goodwill and impairment": "Item_8", "income tax accounting": "Item_8",
+    "inventory accounting": "Item_8", "lease accounting": "Item_8",
+    "debt and borrowings": "Item_8",
     "financial statements": "Item_8", "supply chain risk": "Item_1A",
     "gross margin": "Item_7", "operating margin": "Item_7",
     "net income": "Item_8", "risk factors": "Item_1A",
@@ -104,32 +128,124 @@ CLAIM_PROMPTS = {
     "revenue": "revenue performance and sales drivers",
     "liquidity": "liquidity, capital resources, and cash flows",
     "supply chain risk": "supply-chain disruptions and related risks",
+    "business expansion and strategic progress": (
+        "business expansion, service launches, and strategic progress"
+    ),
+    "operating expenses": "operating expenses, SG&A changes, and cost drivers",
+    "lease accounting": "lease liabilities, payments, and maturity schedules",
+    "debt and borrowings": (
+        "debt, commercial paper, borrowings, and credit facilities"
+    ),
 }
 VALID_SECTIONS = {f"Item_{n}" for n in range(1, 17)} | {
     "Item_1A", "Item_1B", "Item_1C", "Item_7A", "Item_9A", "Item_9B"
 }
 YEAR_RE = re.compile(r"\b(20\d{2}|19\d{2})\b")
 SECTION_RE = re.compile(r"\bitem\s*(\d{1,2}[a-c]?)\b", re.I)
+FILING_YEAR_BEFORE_10K_RE = re.compile(
+    r"\b((?:19|20)\d{2})(?:\s*(?:,|and|or|through|to|-)\s*"
+    r"((?:19|20)\d{2}))?\s+(?:fiscal[- ]year\s+)?10-k\b",
+    re.I,
+)
+FILING_YEAR_AFTER_10K_RE = re.compile(
+    r"\b10-k(?:\s+filings?)?\s+(?:for|from|filed\s+in)\s+((?:19|20)\d{2})\b",
+    re.I,
+)
+CLAIM_PATTERNS = (
+    (
+        "business expansion and strategic progress",
+        re.compile(
+            r"\b(?:progress|launch(?:ed|es|ing)?|open(?:ed|ing)?|"
+            r"expan(?:d|ded|ding|sion)|roll(?:ed|ing)?\s+out)\b.*\b"
+            r"(?:business|service|clinic|market|product|store|platform|care)\b"
+            r"|\b(?:business|service|clinic|market|product|store|platform|care)\b.*\b"
+            r"(?:progress|launch(?:ed|es|ing)?|open(?:ed|ing)?|"
+            r"expan(?:d|ded|ding|sion)|roll(?:ed|ing)?\s+out)\b",
+            re.I,
+        ),
+    ),
+    (
+        "operating expenses",
+        re.compile(
+            r"\b(?:sg\s*&?\s*a|sga|selling general and administrative|"
+            r"operating expenses?|deleverage|overhead|wage investments?)\b",
+            re.I,
+        ),
+    ),
+    (
+        "lease accounting",
+        re.compile(
+            r"\b(?:operating|finance)?\s*leases?\b|\blease\s+"
+            r"(?:liabilit(?:y|ies)|payments?|maturit(?:y|ies)|obligations?)\b",
+            re.I,
+        ),
+    ),
+    (
+        "debt and borrowings",
+        re.compile(
+            r"\b(?:commercial paper|short[- ]term borrowings?|long[- ]term debt|"
+            r"credit facilit(?:y|ies)|debt maturit(?:y|ies)|senior notes?)\b",
+            re.I,
+        ),
+    ),
+    (
+        "risk factors",
+        re.compile(r"\b(?:risks|risk exposures?)\b", re.I),
+    ),
+)
 
 
 def _phrase_present(text: str, phrase: str) -> bool:
     return bool(re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", text, re.I))
 
 
+def normalize_for_matching(value: str) -> str:
+    """Return a punctuation-insensitive, Unicode-stable matching form."""
+    value = unicodedata.normalize("NFKD", value).casefold()
+    return " ".join(re.findall(r"[a-z0-9]+", value))
+
+
 def detect_entities(question: str, known_tickers: set[str], aliases: dict[str, str]) -> tuple[str, ...]:
     found = {token for token in re.findall(r"\b[A-Z]{2,6}\b", question) if token in known_tickers}
+    normalized_question = normalize_for_matching(question)
     for alias, ticker in aliases.items():
-        if ticker in known_tickers and _phrase_present(question, alias):
+        normalized_alias = normalize_for_matching(alias)
+        if ticker in known_tickers and normalized_alias and _phrase_present(normalized_question, normalized_alias):
             found.add(ticker)
     return tuple(sorted(found))
 
 
 def detect_claims(question: str) -> tuple[str, ...]:
+    normalized_question = normalize_for_matching(question)
     found: list[str] = []
     for claim in sorted(CLAIM_SECTION_TABLE, key=len, reverse=True):
-        if _phrase_present(question, claim) and not any(claim in prior for prior in found):
+        if _phrase_present(normalized_question, claim) and not any(claim in prior for prior in found):
+            found.append(claim)
+    for claim, pattern in CLAIM_PATTERNS:
+        if pattern.search(normalized_question) and claim not in found:
             found.append(claim)
     return tuple(found)
+
+
+def detect_filing_years(question: str) -> tuple[int, ...]:
+    """Prefer years explicitly scoped to a 10-K over fiscal content years.
+
+    A question may name a filing (the 2025 10-K) and separately discuss the
+    fiscal period reported inside it (fiscal 2024).  When at least one year is
+    syntactically attached to ``10-K``, only those filing years are routed.
+    Otherwise all stated years retain the legacy comparison behavior.
+    """
+    explicit: set[int] = set()
+    for match in FILING_YEAR_BEFORE_10K_RE.finditer(question):
+        explicit.add(int(match.group(1)))
+        if match.group(2):
+            explicit.add(int(match.group(2)))
+    explicit.update(
+        int(match.group(1)) for match in FILING_YEAR_AFTER_10K_RE.finditer(question)
+    )
+    if explicit:
+        return tuple(sorted(explicit))
+    return tuple(sorted({int(value) for value in YEAR_RE.findall(question)}))
 
 
 def detect_sections(question: str) -> tuple[str, ...]:
@@ -171,26 +287,39 @@ def _pair_entities_years(question: str, entities: tuple[str, ...], years: tuple[
         return tuple((entities[0], year) for year in years)
     if len(years) == 1:
         return tuple((ticker, years[0]) for ticker in entities)
-    names: dict[str, set[str]] = {ticker: {ticker} for ticker in entities}
+    normalized_question = normalize_for_matching(question)
+    names: dict[str, set[str]] = {ticker: {ticker.casefold()} for ticker in entities}
     for alias, ticker in aliases.items():
         if ticker in names:
-            names[ticker].add(alias)
-    pairs: set[tuple[str, int]] = set()
+            names[ticker].add(normalize_for_matching(alias))
+    entity_positions: dict[str, int] = {}
     for ticker, variants in names.items():
-        for variant in variants:
-            for year in years:
-                forward = rf"(?<!\w){re.escape(variant)}(?!\w)(?:\W+|\w+){{0,4}}?\b{year}\b"
-                reverse = rf"\b{year}\b(?:\W+|\w+){{0,4}}?(?<!\w){re.escape(variant)}(?!\w)"
-                if re.search(forward, question, re.I) or re.search(reverse, question, re.I):
-                    pairs.add((ticker, year))
-    if not pairs or {p[0] for p in pairs} != set(entities) or {p[1] for p in pairs} != set(years):
+        positions = [m.start() for variant in variants if variant
+                     for m in re.finditer(rf"(?<!\w){re.escape(variant)}(?!\w)", normalized_question)]
+        if positions:
+            entity_positions[ticker] = min(positions)
+    year_positions = {year: normalized_question.find(str(year)) for year in years}
+    if len(entity_positions) != len(entities) or any(position < 0 for position in year_positions.values()):
         raise ContractError("AMBIGUOUS_COMPANY_YEAR_PAIRING", "Multi-axis comparison requires explicit company-year pairing")
-    return tuple(sorted(pairs))
+    entity_pos = list(entity_positions.values())
+    year_pos = list(year_positions.values())
+    # Lists such as "A and B ... 2023 and 2024" state both axes but no pairing.
+    if max(entity_pos) < min(year_pos) or max(year_pos) < min(entity_pos):
+        raise ContractError("AMBIGUOUS_COMPANY_YEAR_PAIRING", "Multi-axis comparison requires explicit company-year pairing")
+    ordered_entities = tuple(sorted(entities, key=entity_positions.get))
+    scored: list[tuple[int, tuple[int, ...]]] = []
+    for year_order in itertools.permutations(years):
+        score = sum(abs(entity_positions[ticker] - year_positions[year]) for ticker, year in zip(ordered_entities, year_order))
+        scored.append((score, year_order))
+    scored.sort(key=lambda item: item[0])
+    if len(scored) > 1 and scored[0][0] == scored[1][0]:
+        raise ContractError("AMBIGUOUS_COMPANY_YEAR_PAIRING", "Multi-axis comparison requires explicit company-year pairing")
+    return tuple(sorted(zip(ordered_entities, scored[0][1])))
 
 
 def build_subqueries(request_id: str, question: str, known_tickers: set[str], aliases: dict[str, str], resolver: SourceResolver) -> tuple[QueryType, tuple[SubQuery, ...]]:
     entities = detect_entities(question, known_tickers, aliases)
-    years = tuple(sorted({int(x) for x in YEAR_RE.findall(question)}))
+    years = detect_filing_years(question)
     claims = detect_claims(question)
     explicit_sections = detect_sections(question)
     if not entities:
@@ -223,11 +352,12 @@ def build_subqueries(request_id: str, question: str, known_tickers: set[str], al
     for ticker, year in pairs:
         source = resolver.resolve(ticker, year)
         for claim, section in requirements:
-            idx = len(output) + 1
             description = CLAIM_PROMPTS.get(claim, claim)
             side = f"{ticker}-{year}-{section}-{re.sub(r'[^a-z0-9]+', '-', claim.lower()).strip('-')}"
+            identity = "|".join((ticker, str(year), source.accession_number, section, claim))
+            stable_id = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:16]
             output.append(SubQuery(
-                subquery_id=f"{request_id}-sq-{idx}",
+                subquery_id=f"sq-{stable_id}",
                 question=f"In the {year} 10-K filing for {ticker}, Section {section}, what are the key disclosures regarding {description}?",
                 claim_key=claim, comparison_side_id=side, ticker=ticker,
                 filing_year=year, doc_type="10-K",
@@ -244,9 +374,15 @@ class ProductionRetrieverAdapter:
     """Strict adapter for query_api.ProductionRetriever.retrieve(question, sources)."""
     REQUIRED = {"chunk_id", "semantic_rank", "cross_encoder_rank_within_source", "cross_encoder_score", "ticker", "filing_year", "doc_type", "accession_number", "section_code", "chunk_text"}
 
-    def __init__(self, retriever: Any, source_spec_class: Any):
+    def __init__(
+        self,
+        retriever: Any,
+        source_spec_class: Any,
+        original_question: str | None = None,
+    ):
         self.retriever = retriever
         self.source_spec_class = source_spec_class
+        self.original_question = original_question
 
     def retrieve(self, subquery: SubQuery) -> list[RetrievedChunk]:
         source = self.source_spec_class(
@@ -254,7 +390,11 @@ class ProductionRetrieverAdapter:
             accession_number=subquery.accession_number,
             section_code=subquery.section_code, doc_type=subquery.doc_type,
         )
-        response = self.retriever.retrieve(subquery.question, [source])
+        adaptive = getattr(self.retriever, "retrieve_requirement", None)
+        if callable(adaptive) and self.original_question:
+            response = adaptive(subquery, original_question=self.original_question)
+        else:
+            response = self.retriever.retrieve(subquery.question, [source])
         if not isinstance(response, dict) or not isinstance(response.get("evidence"), list):
             raise ContractError("ADAPTER_CONTRACT_FAILED", "Production retriever response lacks an evidence list")
         adapted: list[RetrievedChunk] = []
@@ -313,7 +453,8 @@ def aggregate(subqueries: tuple[SubQuery, ...], retriever: RetrieverLike, eviden
             ))
         if not bucket:
             return {"status": "insufficient_evidence", "error_code": "MISSING_COMPARISON_SIDE", "answer": None, "missing_sides": [sq.comparison_side_id], "evidence": [], "contract_version": CONTRACT_VERSION}
-        bucket.sort(key=lambda x: (-x.cross_encoder_score, x.semantic_rank, x.chunk_id))
+        # Preserve the retriever's deterministic policy order. For the adaptive
+        # implementation this may be RRF rather than cross-encoder order.
         buckets[sq.comparison_side_id] = bucket
     limit = evidence_limit if evidence_limit is not None else max(5, 2 * len(subqueries))
     if limit < len(subqueries):
@@ -321,7 +462,9 @@ def aggregate(subqueries: tuple[SubQuery, ...], retriever: RetrieverLike, eviden
     merged: list[EvidenceItem] = []
     seen: dict[int, EvidenceItem] = {}
     for depth in range(max(map(len, buckets.values()))):
-        for side in sorted(buckets):
+        # Preserve deterministic decomposer requirement order. This is the
+        # validated 3/2 allocation when five results cover two requirements.
+        for side in required:
             if len(merged) >= limit or depth >= len(buckets[side]):
                 continue
             item = buckets[side][depth]

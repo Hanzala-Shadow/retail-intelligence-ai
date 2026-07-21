@@ -30,6 +30,15 @@ LIVE_VIEW = "rag_eligible_10k_chunks"
 CANDIDATES_PER_SOURCE = 20
 FINAL_EVIDENCE_COUNT = 5
 CROSS_ENCODER_BATCH_SIZE = 8
+MULTIVIEW_RRF_K = 60
+SECTION_ADAPTIVE_POLICY_VERSION = "1.0.0"
+SECTION_PROFILES = {
+    "Item_1": "business operations products services customers channels stores distribution sourcing suppliers competition",
+    "Item_1A": "risk factors exposure uncertainty adverse impact mitigation regulation cybersecurity supply chain macroeconomic",
+    "Item_7": "management discussion analysis results operations trends drivers changes year over year revenue margin expenses inventory liquidity cash flows",
+    "Item_8": "financial statements notes accounting policy recognition measurement estimates commitments contingencies impairment taxes leases",
+}
+NARRATIVE_RRF_SECTIONS = {"Item_1", "Item_1A", "Item_7"}
 
 
 @dataclass(frozen=True)
@@ -238,6 +247,152 @@ class ProductionRetriever:
             },
             "sources": [asdict(source) for source in source_list],
             "candidate_counts_by_source": [len(rows) for rows in candidates],
+            "evidence": evidence,
+        }
+
+    def retrieve_requirement(
+        self,
+        subquery: Any,
+        *,
+        original_question: str,
+    ) -> dict[str, Any]:
+        """Retrieve one decomposed requirement using the frozen adaptive policy.
+
+        Models remain pinned. Candidate diversity comes from three deterministic
+        query views; final ordering is selected only by SEC section family.
+        """
+        original_question = str(original_question or "").strip()
+        focused_question = str(subquery.question or "").strip()
+        claim_key = str(subquery.claim_key or "").strip()
+        if not original_question or not focused_question or not claim_key:
+            raise ValueError("adaptive requirement retrieval needs original, focused, and claim text")
+        source = SourceSpec(
+            ticker=subquery.ticker,
+            filing_year=subquery.filing_year,
+            accession_number=subquery.accession_number,
+            section_code=subquery.section_code,
+            doc_type=subquery.doc_type,
+        )
+        profile = SECTION_PROFILES.get(
+            source.section_code,
+            "annual report disclosure description factors changes impacts",
+        )
+        raw_views = {
+            "original": original_question,
+            "focused": focused_question,
+            "profile": f"{claim_key}. {profile}",
+        }
+        views: dict[str, str] = {}
+        seen_queries: set[str] = set()
+        for name, query in raw_views.items():
+            normalized = " ".join(query.casefold().split())
+            if normalized not in seen_queries:
+                views[name] = query
+                seen_queries.add(normalized)
+
+        self._load_models()
+        candidates_by_view: dict[str, list[dict[str, Any]]] = {}
+        for name, query in views.items():
+            vector = self.bi_encoder.encode(
+                [QUERY_PREFIX + query],
+                normalize_embeddings=True,
+                convert_to_numpy=True,
+                show_progress_bar=False,
+            )[0]
+            candidates_by_view[name] = self._fetch_candidates(
+                query, source, _vector_literal(vector)
+            )
+
+        by_chunk: dict[int, dict[str, Any]] = {}
+        for name, rows in candidates_by_view.items():
+            for rank, row in enumerate(rows, start=1):
+                chunk_id = int(row["chunk_id"])
+                pooled = by_chunk.setdefault(chunk_id, dict(row))
+                pooled.setdefault("view_ranks", {})[name] = rank
+                pooled["candidate_rrf_score"] = float(
+                    pooled.get("candidate_rrf_score", 0.0)
+                ) + 1.0 / (MULTIVIEW_RRF_K + rank)
+        pool = list(by_chunk.values())
+        if not pool:
+            raise LookupError(f"authorized source produced no candidates: {source}")
+        for row in pool:
+            row["semantic_rank"] = min(row["view_ranks"].values())
+
+        pairs = [(focused_question, row.get("embedding_text") or "") for row in pool]
+        scores = self.cross_encoder.predict(
+            pairs,
+            batch_size=CROSS_ENCODER_BATCH_SIZE,
+            show_progress_bar=False,
+            convert_to_numpy=True,
+        )
+        for row, score in zip(pool, scores, strict=True):
+            row["cross_encoder_score"] = float(score)
+        ce_order = sorted(
+            pool,
+            key=lambda row: (-row["cross_encoder_score"], int(row["chunk_id"])),
+        )
+        for rank, row in enumerate(ce_order, start=1):
+            row["cross_encoder_rank_within_source"] = rank
+        rrf_order = sorted(
+            pool,
+            key=lambda row: (-row["candidate_rrf_score"], int(row["chunk_id"])),
+        )
+        for rank, row in enumerate(rrf_order, start=1):
+            row["multiview_rrf_rank"] = rank
+
+        if source.section_code == "Item_8":
+            ordered = ce_order
+            selection_policy = "cross_encoder_financial_notes"
+        elif source.section_code in NARRATIVE_RRF_SECTIONS:
+            ordered = rrf_order
+            selection_policy = "multiview_rrf_narrative"
+        else:
+            for row in pool:
+                row["adaptive_hybrid_score"] = (
+                    0.5 / row["cross_encoder_rank_within_source"]
+                    + 0.5 / row["multiview_rrf_rank"]
+                )
+            ordered = sorted(
+                pool,
+                key=lambda row: (
+                    -row["adaptive_hybrid_score"],
+                    row["cross_encoder_rank_within_source"],
+                    row["multiview_rrf_rank"],
+                    int(row["chunk_id"]),
+                ),
+            )
+            selection_policy = "equal_rank_blend_unknown_section"
+
+        evidence = ordered[:FINAL_EVIDENCE_COUNT]
+        if len(evidence) != FINAL_EVIDENCE_COUNT:
+            raise RuntimeError(
+                f"adaptive retrieval returned {len(evidence)} unique chunks; expected 5"
+            )
+        for rank, row in enumerate(evidence, start=1):
+            row["final_rank"] = rank
+            row["selection_rank"] = rank
+            row["selection_policy"] = selection_policy
+        return {
+            "question": focused_question,
+            "policy": {
+                "policy_version": SECTION_ADAPTIVE_POLICY_VERSION,
+                "models_fixed": True,
+                "section_routing": "detected_required_hard_filter",
+                "query_views": list(views),
+                "candidates_per_view": CANDIDATES_PER_SOURCE,
+                "candidate_fusion": f"reciprocal_rank_fusion_k_{MULTIVIEW_RRF_K}",
+                "section_selection": selection_policy,
+                "final_evidence_count": FINAL_EVIDENCE_COUNT,
+                "bi_encoder": BI_ENCODER_REPO,
+                "bi_encoder_revision": BI_ENCODER_REVISION,
+                "reranker": CROSS_ENCODER_REPO,
+                "reranker_revision": CROSS_ENCODER_REVISION,
+            },
+            "sources": [asdict(source)],
+            "candidate_counts_by_view": {
+                name: len(rows) for name, rows in candidates_by_view.items()
+            },
+            "pooled_candidate_count": len(pool),
             "evidence": evidence,
         }
 

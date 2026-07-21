@@ -76,6 +76,36 @@ class BenchmarkAdapterTests(unittest.TestCase):
             [1, 2, 3, 4, 5],
         )
 
+    def test_run_auto_detects_fifty_supported_questions(self):
+        fields = list(question_row())
+        rows = [question_row(f"q{index}") for index in range(1, 51)]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "questions.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fields)
+                writer.writeheader()
+                writer.writerows(rows)
+            result = benchmark.run_benchmark(path, FakeRetriever())
+        self.assertEqual(len(result), 250)
+        self.assertEqual(len({row["question_id"] for row in result}), 50)
+
+    def test_explicit_expected_count_fails_closed(self):
+        fields = list(question_row())
+        rows = [question_row(f"q{index}") for index in range(1, 4)]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "questions.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fields)
+                writer.writeheader()
+                writer.writerows(rows)
+            with self.assertRaisesRegex(RuntimeError, "expected 50 supported"):
+                benchmark.run_benchmark(
+                    path,
+                    FakeRetriever(),
+                    expected_supported=50,
+                    expected_refusals=0,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,4 @@
-from src.detector_coverage_audit import PROHIBITED_GOLD_FIELDS, audit_question
+from src.detector_coverage_audit import PROHIBITED_GOLD_FIELDS, audit_question, run_audit
 from src.query_decomposition import FilingRecord, SourceResolver
 
 TICKERS = {"EBAY", "ORBS", "TBHC", "VFC"}
@@ -53,3 +53,37 @@ def test_alias_collision_and_gold_exclusion_are_explicit():
     assert {"expected_answer", "supporting_chunk_ids", "supporting_passages"}.issubset(
         PROHIBITED_GOLD_FIELDS
     )
+
+
+def test_run_audit_accepts_variable_question_count():
+    rows = [
+        row(
+            "What changed in eBay risk between its 2024 and 2026 filings?",
+            "EBAY|EBAY", "2024|2026", "Item_1A|Item_1A", "ebay-24|ebay-26",
+        )
+    ]
+    result = run_audit(
+        rows, TICKERS, ALIASES, RESOLVER,
+        questions_sha256="questions", detector_code_sha256="detector",
+        audit_code_sha256="audit", corpus_metadata_sha256="corpus",
+        expected_supported=1, refusals_excluded=0,
+    )
+    assert result["supported_questions"] == 1
+    assert result["refusals_excluded"] == 0
+
+
+def test_run_audit_explicit_count_fails_closed():
+    rows = [
+        row(
+            "What changed in eBay risk between its 2024 and 2026 filings?",
+            "EBAY|EBAY", "2024|2026", "Item_1A|Item_1A", "ebay-24|ebay-26",
+        )
+    ]
+    import pytest
+    with pytest.raises(RuntimeError, match="expected 50 supported"):
+        run_audit(
+            rows, TICKERS, ALIASES, RESOLVER,
+            questions_sha256="questions", detector_code_sha256="detector",
+            audit_code_sha256="audit", corpus_metadata_sha256="corpus",
+            expected_supported=50,
+        )

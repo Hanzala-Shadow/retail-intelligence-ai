@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -128,6 +129,54 @@ class QueryApiTests(unittest.TestCase):
             retriever.retrieve("", [source])
         with self.assertRaises(ValueError):
             retriever.retrieve("question", [source, source])
+
+    def test_adaptive_narrative_requirement_uses_multiview_rrf_order(self):
+        conn = FakeConnection(database_rows(100, 8))
+        retriever = query_api.ProductionRetriever(
+            conn=conn, bi_encoder=FakeBiEncoder(), cross_encoder=FakeCrossEncoder()
+        )
+        subquery = SimpleNamespace(
+            question="focused inventory performance",
+            claim_key="inventory performance",
+            ticker="TEST", filing_year=2025, accession_number="acc",
+            section_code="Item_7", doc_type="10-K",
+        )
+        with patch.object(query_api, "_vector_literal", return_value="[1,0]"):
+            result = retriever.retrieve_requirement(
+                subquery, original_question="original inventory question"
+            )
+        self.assertEqual(
+            [row["chunk_id"] for row in result["evidence"]],
+            [100, 101, 102, 103, 104],
+        )
+        self.assertEqual(
+            result["policy"]["section_selection"],
+            "multiview_rrf_narrative",
+        )
+
+    def test_adaptive_item8_requirement_preserves_cross_encoder_order(self):
+        conn = FakeConnection(database_rows(100, 8))
+        retriever = query_api.ProductionRetriever(
+            conn=conn, bi_encoder=FakeBiEncoder(), cross_encoder=FakeCrossEncoder()
+        )
+        subquery = SimpleNamespace(
+            question="focused revenue recognition",
+            claim_key="revenue recognition policy",
+            ticker="TEST", filing_year=2025, accession_number="acc",
+            section_code="Item_8", doc_type="10-K",
+        )
+        with patch.object(query_api, "_vector_literal", return_value="[1,0]"):
+            result = retriever.retrieve_requirement(
+                subquery, original_question="original accounting question"
+            )
+        self.assertEqual(
+            [row["chunk_id"] for row in result["evidence"]],
+            [107, 106, 105, 104, 103],
+        )
+        self.assertEqual(
+            result["policy"]["section_selection"],
+            "cross_encoder_financial_notes",
+        )
 
 
 if __name__ == "__main__":

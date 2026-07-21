@@ -30,7 +30,8 @@ from src.query_api import (  # noqa: E402
 
 DEFAULT_QUESTIONS = Path("data/00_reference/rag_eval_questions.csv")
 MODEL_ID = "bge_base_en_v1_5"
-SUPPORTED_QUESTION_COUNT = 24
+DEFAULT_EXPECTED_SUPPORTED = 24
+DEFAULT_EXPECTED_REFUSALS = 5
 ROUTING_FIELDS = (
     "expected_tickers",
     "expected_years",
@@ -97,14 +98,41 @@ def build_sources(row: dict[str, str]) -> list[SourceSpec]:
     ]
 
 
-def run_benchmark(questions_path: Path, retriever: ProductionRetriever) -> list[dict[str, Any]]:
+def load_question_rows(
+    questions_path: Path,
+    *,
+    expected_supported: int | None = None,
+    expected_refusals: int | None = None,
+) -> tuple[list[dict[str, str]], int]:
     with questions_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     supported = [row for row in rows if row["question_group"] != "refusal"]
-    if len(supported) != SUPPORTED_QUESTION_COUNT:
+    refusals = [row for row in rows if row["question_group"] == "refusal"]
+    if not supported:
+        raise RuntimeError("question set contains no supported questions")
+    if expected_supported is not None and len(supported) != expected_supported:
         raise RuntimeError(
-            f"expected {SUPPORTED_QUESTION_COUNT} supported questions, found {len(supported)}"
+            f"expected {expected_supported} supported questions, found {len(supported)}"
         )
+    if expected_refusals is not None and len(refusals) != expected_refusals:
+        raise RuntimeError(
+            f"expected {expected_refusals} refusal questions, found {len(refusals)}"
+        )
+    return supported, len(refusals)
+
+
+def run_benchmark(
+    questions_path: Path,
+    retriever: ProductionRetriever,
+    *,
+    expected_supported: int | None = None,
+    expected_refusals: int | None = None,
+) -> list[dict[str, Any]]:
+    supported, _ = load_question_rows(
+        questions_path,
+        expected_supported=expected_supported,
+        expected_refusals=expected_refusals,
+    )
 
     output: list[dict[str, Any]] = []
     for index, row in enumerate(supported, 1):
@@ -132,7 +160,7 @@ def run_benchmark(questions_path: Path, retriever: ProductionRetriever) -> list[
             flush=True,
         )
 
-    expected_rows = SUPPORTED_QUESTION_COUNT * FINAL_EVIDENCE_COUNT
+    expected_rows = len(supported) * FINAL_EVIDENCE_COUNT
     if len(output) != expected_rows:
         raise RuntimeError(f"expected {expected_rows} retrieval rows, found {len(output)}")
     return output
@@ -143,6 +171,14 @@ def main() -> int:
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument(
+        "--expected-supported", type=int,
+        help="optional fail-closed supported-question count; omitted means auto-detect",
+    )
+    parser.add_argument(
+        "--expected-refusals", type=int,
+        help="optional fail-closed refusal count; omitted means auto-detect",
+    )
     args = parser.parse_args()
     manifest_path = args.manifest or args.output.with_suffix(".manifest.json")
     for path in (args.output, manifest_path):
@@ -152,7 +188,19 @@ def main() -> int:
     started_at = _utcnow()
     started = time.monotonic()
     with ProductionRetriever() as retriever:
-        rows = run_benchmark(args.questions, retriever)
+        rows = run_benchmark(
+            args.questions,
+            retriever,
+            expected_supported=args.expected_supported,
+            expected_refusals=args.expected_refusals,
+        )
+
+    supported_count = len({row["question_id"] for row in rows})
+    _, refusal_count = load_question_rows(
+        args.questions,
+        expected_supported=args.expected_supported,
+        expected_refusals=args.expected_refusals,
+    )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("x", encoding="utf-8", newline="") as handle:
@@ -172,9 +220,9 @@ def main() -> int:
         "query_api_sha256": _sha256(REPO_ROOT / "src/query_api.py"),
         "output_path": str(args.output),
         "output_sha256": _sha256(args.output),
-        "supported_questions": SUPPORTED_QUESTION_COUNT,
+        "supported_questions": supported_count,
         "retrieval_rows": len(rows),
-        "refusals_excluded": 5,
+        "refusals_excluded": refusal_count,
         "routing_fields_used": list(ROUTING_FIELDS),
         "gold_chunk_ids_used_for_retrieval": False,
         "policy": {

@@ -23,7 +23,42 @@ stub.SourceSpec = StubSourceSpec
 stub.ProductionRetriever = object
 sys.modules.setdefault("src.query_api", stub)
 
-from src.decomposed_query_api import run_query
+from src.decomposed_query_api import _aliases_from_connection, run_query
+
+
+class AliasCursor:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def execute(self, sql):
+        self.sql = sql
+
+    def fetchall(self):
+        return [
+            ("DBGI", "DIGITAL BRANDS GROUP INC"),
+            ("DECK", "DECKERS OUTDOOR CORP"),
+            ("GPI", "GROUP 1 AUTOMOTIVE INC"),
+            ("LULU", "LULULEMON ATHLETICA INC"),
+            ("ORLY", "O'REILLY AUTOMOTIVE INC"),
+        ]
+
+
+class AliasConnection:
+    def cursor(self):
+        return AliasCursor()
+
+
+def test_aliases_retain_safe_full_names_and_drop_generic_first_words():
+    tickers, aliases = _aliases_from_connection(AliasConnection())
+    assert tickers == {"DBGI", "DECK", "GPI", "LULU", "ORLY"}
+    assert aliases["o reilly automotive"] == "ORLY"
+    assert aliases["deckers"] == "DECK"
+    assert aliases["lululemon"] == "LULU"
+    assert "digital" not in aliases
+    assert "group" not in aliases
 
 
 class SimpleRawRetriever:
