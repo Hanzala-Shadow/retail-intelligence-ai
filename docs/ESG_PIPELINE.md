@@ -103,6 +103,32 @@ they are non-empty and agree with the size and, when available, MD5 checksum
 reported by Drive. A zero-byte, size-mismatched, or checksum-mismatched local
 PDF is downloaded again. `--force` redownloads its scope.
 
+### Other sustainability related reports
+
+The Drive folder `Other Sustainability Related Reports` holds supplementary
+company disclosures that are not a regular annual sustainability report
+(climate indexes, pay gap reports, SASB indexes, progress reports). They are
+mirrored to a second raw root so they never mix with the primary corpus
+mirror:
+
+```bash
+python src/drive_downloader.py --folder other --resume   # -> data/01_raw/sustainability_other
+python src/drive_downloader.py --folder all --resume     # both folders
+```
+
+The default `--folder main` keeps the original behaviour. The other-folder
+mirror writes its own manifest (`esg_drive_manifest_other.csv`) and skips the
+`ESG_OCR_STAGING` subfolder, which is the team-shared copy of
+`data/02_interim/ocr_staging`, not a report source.
+
+`scripts/run_esg_pipeline_fast.ps1` parses both roots into the same
+`esg_text`/`esg_parse_index.csv` outputs (the index upserts by ticker and file
+name, so the roots never prune each other). Every document under the second
+root must carry a `data/00_reference/esg_source_registry.csv` row — normally
+`retrieval_tier=supplementary` with a descriptive `source_type` that citations
+can display — so nothing ingested from the other folder is silently treated
+as a primary report.
+
 ### Searchable PDF replacements
 
 `pdf_parser.py` does not perform OCR itself. If a scanned report needs OCR,
