@@ -1,0 +1,7 @@
+timestamp_utc,chunk_id,ticker,pdf_stem,detection_signal,action,page_start,page_end,before_char_count,after_char_count,verified_clean,note
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2024__emissions__0001__chunk_0004,BRLT,BRLT-BRILLIANT EARTH GP INC-2024,replacement_character,ocr_replaced,5,6,2461,10763,True,
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2024__other__0001__chunk_0001,BRLT,BRLT-BRILLIANT EARTH GP INC-2024,replacement_character,ocr_replaced,2,2,2457,5525,True,
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2025__ceo_letter__0001__chunk_0001,BRLT,BRLT-BRILLIANT EARTH GP INC-2025,replacement_character,ocr_replaced,2,2,1441,6052,True,
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2025__emissions__0001__chunk_0001,BRLT,BRLT-BRILLIANT EARTH GP INC-2025,replacement_character,ocr_replaced,3,4,2141,5425,True,
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2025__energy__0001__chunk_0000,BRLT,BRLT-BRILLIANT EARTH GP INC-2025,replacement_character,ocr_replaced,5,5,2372,4903,True,
+2026-07-22T14:51:45.601800+00:00,BRLT__BRLT_BRILLIANT_EARTH_GP_INC_2025__governance__0002__chunk_0002,BRLT,BRLT-BRILLIANT EARTH GP INC-2025,replacement_character,ocr_replaced,9,9,2489,4571,True,
