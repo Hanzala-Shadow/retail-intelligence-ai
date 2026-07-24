@@ -1,0 +1,22 @@
+CG- Total energy consumed, MWh (Etsy marketplace)
+2024 2023 2022
+95,459 96,483 95,076
+8,134 9,035 7,470
+our Etsy marketplace cloud usage has enabled us to
+5,742 6,253 6,379
+EC-130a.1 Percentage renewable energy (Etsy marketplace) 100 % 100 % 100 %
+Percentage grid electricity (Etsy marketplace) 100 % 100 % 100 %
+CG- Discussion of the integration of environmental considerations into strategic planning for data center needs.
+EC-130a.3
+When transitioning to a cloud computing infrastructure, we selected Google Cloud, a partner that shares
+our commitment to 100% renewable electricity, for the Etsy marketplace. Their highly efficient data centers
+have helped us save significant overhead energy. For more information on our computing energy target
+and benefits of Google Cloud, please see page 24.
+* monitor and manage energy consumption from our computing infrastructure for the Etsy
+marketplace. For 2024, we estimate that our energy consumption in Google Cloud was 5,742 MWh, based
+on a methodology developed by Etsy and reviewed by industry experts (our "Cloud Jewels methodology").
+Quantification of our cloud energy consumption is allowing us to meaningfully explore and activate levers
+of change to drive further cost and energy efficiencies in our computing footprint. Our 2024 hardware
+infrastructure energy footprint does not include Reverb or Depop as we are not currently able to calculate
+energy usage from AWS, but we do include the emissions from Reverb and Depop's hardware
+infrastructure in our Scope 3 Purchased Goods and Services calculations.

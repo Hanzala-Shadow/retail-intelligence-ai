@@ -1,0 +1,50 @@
+Longevity and circularity
+In rare cases our products end up with cosmetic  We want to improve the circularity of our
+APPROACH
+defects, such as chipped paint. When this  products. We started in 2019 by researching
+We build our products to last, using premium
+happens, we direct them to specialist facilities to  post-consumer recycled plastics and how
+components and materials to make them robust
+be refurbished. These products are then used to  to overcome the challenges in performance,
+and durable. In addition to physical longevity,
+fulfill warranty claims. Our goal is to make these  availability and cost. Initially we aim for post-
+we promise to maintain software updates for
+products as good as new and put them back in  consumer recycled plastics to replace internal
+a minimum of five years after we stop selling
+the market to provide years of service. In 2019  components where there are no aesthetic issues.
+a product. Past this time, the product will
+we fulfilled approximately 57% of warranty claims
+continue to function, but certain features may
+using refurbished products.
+not be available.
+Our commitment to longevity means that many of
+our products remain in use for a decade or more.
+PERFORMANCE
+This year we launched our first portable speaker,
+Move. This is powered by a rechargeable
+battery designed for 900 charge cycles,
+equivalent to about three years of use. When
+the battery eventually degrades, we designed
+Move so the customer can simply replace it at
+home. The easy change feature extends the
+life of the product, preventing perfectly good
+equipment from being disposed of due to the
+difficulty of battery replacement.
+Photo: Sonos Move speaker
+4 Sonos Responsibility Report 2019
+Standby power
+APPROACH
+Sonos speakers are ready to play music and
+respond to commands almost instantly. To do
+this, our products go into standby when they
+aren’t being used. The energy consumed in this
+mode is called ‘standby power.’
+We are pushing the boundaries of product
+design to achieve the minimum standby power
+level. As we update existing products and
+introduce new ones, we replace old components
+(like radio and processor platforms) with efficient
+electronics. Ever-smarter software powers only
+the functions necessary to activate the speaker.
+This delivers the immediate response our
+customers expect while

@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "metrics": {
+    "parse_index_documents": 1,
+    "validated_documents": 1,
+    "sections": 101,
+    "unique_section_instances": 101,
+    "chunked_section_instances": 101,
+    "unchunked_section_instances": 0,
+    "exact_sections": 101,
+    "chunks": 179,
+    "normal_chunks": 170,
+    "short_evidence_chunks": 9,
+    "unique_chunk_ids": 179,
+    "verified_exact_chunks": 179,
+    "verified_whitespace_normalized_chunks": 0,
+    "valid_token_chunks": 179,
+    "citation_status_counts": {
+      "verified_exact": 179
+    },
+    "errors": 0
+  },
+  "error_samples": []
+}

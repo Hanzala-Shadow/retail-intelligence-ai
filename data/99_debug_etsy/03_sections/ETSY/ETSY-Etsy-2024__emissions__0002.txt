@@ -1,0 +1,11 @@
+Scope 2 - Location'
+Scope 3 478,282
+Scope 3 Emissions Intensity (tCO2e/ million $ gross profit) 235 246 293
+Scope 3 GHG Emissions by Activity Source
+Category 1: Purchased Goods & Services"
+Purchased Goods & Services (excluding Computing)
+Cloud Computing - Google Cloud (Etsy marketplace)
+Other Computing
+Category 3: Fuel & Energy Related Activities®
+Fuel & Energy Related Activities Not Included in Scope 1 or Scope 2 231 251 3,429
+Category 5: Waste Generated in Operations

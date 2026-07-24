@@ -1,0 +1,29 @@
+ACCOUNTING METRICS  METRIC  CATEGORY  UNIT OF MEASURE  CODE  RESPONSE/COMMENT
+
+(1) Total energy consumed,   (1) Environment/Minimizing our impact on
+ENERGY MANAGEMENT IN  (2) percentage grid electricity,   Quantitative  Gigajoules (GJ),  CG-MR-130a.1  the world/Energy Consumption FY16-FY19
+RETAIL &  DISTRIBUTION  Percentage (%)
+(3) percentage renewable  (2) 93%
+(3) 7%
+Description of approach to
+Discussion
+identifying and addressing data  n/a  CG-MR-230a.1  Introduction/Data stewardship
+and analysis
+security risks
+DATA SECURITY  (1) Number of data breaches,
+(2) percentage involving   Ulta Beauty experienced no data breaches in
+Number,
+personally identifiable   Quantitative  CG-MR-230a.2  the past year and has not had a data breach
+Percentage (%)
+information (PII),    since the company’s founding in 1990.
+(3) number of customers affected
+the  possibilities are beautiful.ffi 33
+ffSASBfi INDEX 2020 ESG REPORT
+Sustainability Accounting
+Standards Board (SASB) Index
+ACCOUNTING METRICS  METRIC  CATEGORY  UNIT OF MEASURE  CODE  RESPONSE/COMMENT
+(1) The median hourly wage of in-store,
+full-time regular employees (excluding
+seasonal, temporary and commissioned
+employees as determined by employment
+class) as of December 2, 2020 was $18.42.

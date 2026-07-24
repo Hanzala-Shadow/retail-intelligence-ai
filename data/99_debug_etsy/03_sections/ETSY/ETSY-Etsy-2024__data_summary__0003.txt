@@ -1,0 +1,17 @@
+SASB Metrics
+SASB Code _ Metric
+CG-EC-000.A measure of
+Active buyers (thousands)
+user activity
+Active sellers (thousands)
++ Active buyers and Active sellers includes Etsy marketplace, Reverb,
+Depop and Elo7, while 2023 and 2024 excludes Elo7 (divested).
+CG-EC-000.B processing capacity
+Etsy marketplace primarily uses Google Cloud for its cloud computing
+needs, while Reverb and Depop primarily use Amazon Web Services
+('AWS').
+dynamically flex our infrastructure capacity, while providing faster
+processing speed, improved page load time, and more nimble technology
+on an as needed basis depending on traffic volume.
+Percentage outsourced 100 % 100 % 100 %
+Hardware Infrastructure Energy & Water Management

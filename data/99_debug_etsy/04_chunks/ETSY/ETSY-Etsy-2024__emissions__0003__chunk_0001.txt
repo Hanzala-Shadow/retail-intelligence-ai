@@ -1,0 +1,17 @@
+, our calculation of Air Travel emissions was changed to include emissions from radiative
+force in the emissions factors, resulting in an increase in emissions, as radiative forcing includes calculations with a higher global warming
+potential than those without. In Scope 3 - Category 7, we updated our calculations for employee commuting to use data from government
+sources and data aggregators.
+Overall the changes in methodology in 2023 decreased our calculated emissions when compared to methodologies previously used.
+2024, we updated the emissions factors that we use in our Scope 3 - Category 9 packaging emissions calculations to a more current
+source from Ecoinvent, switching from the Franklin Associates Oregon Department of Environmental Quality study. This caused an increase in
+emissions year-over-year. Additionally, for our packaging emissions calculation we included data from the usage of our planet friendly
+packaging program provided by EcoEnclose. For our Scope 3 - Category 9 shipping emissions in 2024, the emission factor applied in
+calculating the emissions for Depop shipments was derived from Depop emissions data provided by USPS, whereas in 2023 and 2022, the
+emission factor applied was derived from Etsy emissions data as a proxy. Additionally, for Etsy marketplace shipping calculations if the seller
+or buyer zip code for a shipment is not valid, then the average shipping distance of all Etsy shipments for that mail class for the reporting year
+is used to estimate the shipment distance, whereas in 2023 and 2022, the shipments were excluded from the reported Scope 3, Category 9
+emissions.
+As a result of the above changes in scope, methodology, and our continued efforts at further accountability, some categories of emissions
+data are not comparable from year to year. Additional details regarding the scope and data methodologies used to calculate our GHG
+emissions data can be found on our Investor Relations website.
