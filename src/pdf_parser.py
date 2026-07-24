@@ -504,91 +504,6 @@ def _clean_table_cell(value) -> str:
     return re.sub(r"\s+", " ", str(value)).strip().replace("|", "\\|")
 
 
-def _backfill_empty_table_cells(
-    data: list[list],
-    table_rows,
-    words: list[dict],
-    table_bbox: tuple[float, float, float, float] | None = None,
-) -> list[list]:
-    """Fill cells left empty by table.extract() using word centers inside each cell's bbox.
-
-    pdfplumber's Table.rows and PyMuPDF's Table.rows both expose `.cells` as a list of
-    (x0, top, x1, bottom) bounding boxes, with None for cells merged into a neighbor or
-    lacking explicit rule lines, so the same containment check (`_bbox_contains_word`)
-    serves both extraction paths. A None cell bbox is synthesized from the column's
-    x-span (taken from a row where that column has an explicit box) and the row's own
-    y-range, because the rows that lose text are exactly the ones whose grid lines were
-    never detected. A word is only backfilled while the table still owes its tokens:
-    the budget is the token multiset of words inside the table's row bands minus the
-    tokens already present in extracted cells, so a word whose text extract() routed
-    into a different cell is skipped instead of duplicated. The QA gate's
-    extra_token_ratio check remains the downstream backstop.
-    """
-    if not words or not table_rows:
-        return data
-
-    column_spans: dict[int, tuple[float, float]] = {}
-    row_bboxes = []
-    for table_row in table_rows:
-        row_bboxes.append(getattr(table_row, "bbox", None))
-        for col_index, cell_bbox in enumerate(getattr(table_row, "cells", None) or []):
-            if cell_bbox is not None and col_index not in column_spans:
-                column_spans[col_index] = (float(cell_bbox[0]), float(cell_bbox[2]))
-
-    # The budget region must be the whole table area: pdfplumber derives a
-    # Row's bbox from its non-None cells only, so rows missing cell boxes —
-    # exactly the ones being backfilled — have collapsed bboxes that would
-    # exclude their own words from the budget.
-    region = table_bbox
-    if region is None:
-        boxes = [tuple(map(float, bbox)) for bbox in row_bboxes if bbox is not None]
-        if not boxes:
-            return data
-        region = (
-            min(box[0] for box in boxes),
-            min(box[1] for box in boxes),
-            max(box[2] for box in boxes),
-            max(box[3] for box in boxes),
-        )
-    budget: Counter[str] = Counter()
-    for word in words:
-        if _bbox_contains_word(region, word):
-            budget.update(_canonical_tokens(str(word.get("text", ""))))
-    for row in data:
-        for cell in row:
-            if cell:
-                budget.subtract(_canonical_tokens(str(cell)))
-
-    for row, table_row in zip(data, table_rows):
-        cells = getattr(table_row, "cells", None) or []
-        row_bbox = getattr(table_row, "bbox", None)
-        for col_index, cell_bbox in enumerate(cells):
-            if col_index >= len(row) or row[col_index]:
-                continue
-            if cell_bbox is None:
-                span = column_spans.get(col_index)
-                if span is None or row_bbox is None:
-                    continue
-                cell_bbox = (span[0], float(row_bbox[1]), span[1], float(row_bbox[3]))
-            matches = [word for word in words if _bbox_contains_word(cell_bbox, word)]
-            if not matches:
-                continue
-            matches.sort(
-                key=lambda word: (round(float(word.get("top", 0.0)), 1), float(word.get("x0", 0.0)))
-            )
-            kept: list[str] = []
-            for word in matches:
-                tokens = _canonical_tokens(str(word.get("text", "")))
-                if tokens and all(budget[token] > 0 for token in tokens):
-                    for token in tokens:
-                        budget[token] -= 1
-                    kept.append(str(word.get("text", "")))
-            if kept:
-                row[col_index] = " ".join(kept)
-
-    return data
-
-
 def _table_to_markdown(data: list[list]) -> str:
     rows = [[_clean_table_cell(cell) for cell in row] for row in data]
     rows = [row for row in rows if any(row)]
@@ -606,7 +521,7 @@ def _table_to_markdown(data: list[list]) -> str:
     return "\n".join(rendered)
 
 
-def _valid_table_candidates(page, words: list[dict] | None = None) -> list[_LayoutBlock]:
+def _valid_table_candidates(page) -> list[_LayoutBlock]:
     """Return defensible grid tables, rejecting decorative ESG page geometry.
 
     pdfplumber's default table finder treats page borders, cards, maps and other
@@ -643,8 +558,6 @@ def _valid_table_candidates(page, words: list[dict] | None = None) -> list[_Layo
             data = table.extract() or []
         except Exception:
             continue
-        if words:
-            data = _backfill_empty_table_cells(data, table.rows, words, (x0, top, x1, bottom))
         rows = [[_clean_table_cell(cell) for cell in row] for row in data]
         rows = [row for row in rows if any(row)]
         row_count = len(rows)
@@ -1051,7 +964,6 @@ def _valid_pymupdf_table_candidates(page) -> list[_LayoutBlock]:
             row_boxes = [tuple(map(float, row.bbox)) for row in table.rows]
         except Exception:
             continue
-        data = _backfill_empty_table_cells(data, table.rows, page_words, (x0, top, x1, bottom))
         width = x1 - x0
         height = bottom - top
         if width < 60 or height < 20:
@@ -1759,7 +1671,7 @@ class PDFParser:
                         text,
                         words,
                     )
-                    table_blocks = _valid_table_candidates(page, words)
+                    table_blocks = _valid_table_candidates(page)
                     page_table_count = len(table_blocks)
                     page_table_candidates[i + 1] = page_table_count
                     table_count += page_table_count

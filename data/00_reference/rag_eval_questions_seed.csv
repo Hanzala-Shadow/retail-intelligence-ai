@@ -1,0 +1,41 @@
+question_id,question,task_type,expected_tickers,expected_years,required_doc_type,required_sections,citation_required,quality_gate,notes
+ESG-001,What net zero or climate target does Etsy report for 2023?,single_company_lookup,ETSY,2023,sustainability,climate|emissions,true,index_as_esg,Should retrieve Etsy 2023 sustainability content only.
+ESG-002,Should Etsy 2024 be used as an ESG-only source?,quality_gate,ETSY,2024,annual_report_with_esg,document_quality,true,exclude_from_esg_index,Expected behavior is to flag or exclude because it is possible_10k.
+ESG-003,Should Etsy 2021 be used as an ESG-only source?,quality_gate,ETSY,2021,annual_report_with_esg,document_quality,true,exclude_from_esg_index,Expected behavior is to flag or exclude because it is possible_10k.
+ESG-004,What environmental topics does American Eagle discuss in its 2024 sustainability report?,single_company_lookup,AEO,2024,sustainability,environmental|climate|emissions,true,index_as_esg,
+ESG-005,What human capital or workforce topics does American Eagle discuss in 2023?,single_company_lookup,AEO,2023,sustainability,human_capital|diversity_equity_inclusion,true,index_as_esg,
+ESG-006,What packaging or waste initiatives does Crocs discuss in 2024?,single_company_lookup,CROX,2024,sustainability,waste|environmental,true,index_as_esg,
+ESG-007,What supply chain responsibility topics does Crocs discuss in 2023?,single_company_lookup,CROX,2023,sustainability,supply_chain_ethics,true,index_as_esg,
+ESG-008,What climate or emissions information does Gap disclose for 2024?,single_company_lookup,GAP,2024,sustainability,climate|emissions,true,index_as_esg,
+ESG-009,What diversity and inclusion topics does Gap discuss in 2023?,single_company_lookup,GAP,2023,sustainability,diversity_equity_inclusion|human_capital,true,index_as_esg,
+ESG-010,What community or philanthropy topics does TJX discuss in 2024?,single_company_lookup,TJX,2024,sustainability,community,true,index_as_esg,
+ESG-011,What governance or ethics topics does TJX discuss in 2023?,single_company_lookup,TJX,2023,sustainability,governance|ethics_compliance,true,index_as_esg,
+ESG-012,Compare AEO and Crocs on emissions disclosures for 2024.,comparison,AEO|CROX,2024,sustainability,emissions,true,index_as_esg,Answer must cite both companies.
+ESG-013,Compare Gap and TJX on human capital disclosures for 2024.,comparison,GAP|TJX,2024,sustainability,human_capital,true,index_as_esg,Answer must cite both companies.
+ESG-014,Which of AEO Crocs Gap and TJX mention supply chain ethics in 2024?,multi_company_lookup,AEO|CROX|GAP|TJX,2024,sustainability,supply_chain_ethics,true,index_as_esg,
+ESG-015,Which of AEO Crocs Gap and TJX discuss waste or packaging in 2024?,multi_company_lookup,AEO|CROX|GAP|TJX,2024,sustainability,waste,true,index_as_esg,
+ESG-016,Find a citation for Scope 3 or greenhouse gas emissions in Amazon 2022.,quality_gate,AMZN,2022,sustainability,emissions,true,manual_review_before_indexing,AMZN 2022 has low_text_per_page and should require review before indexing.
+ESG-017,Should ThredUp 2023 be indexed for ESG RAG?,quality_gate,TDUP,2023,sustainability,document_quality,true,manual_review_before_indexing,OCR/text extraction issue should require review.
+ESG-018,Should Pattern Group 2023 be indexed without review?,quality_gate,PTRN,2023,sustainability,document_quality,true,manual_review_before_indexing,Garbled text flag should prevent automatic indexing.
+ESG-019,What environmental topics does Walmart discuss in 2025?,single_company_lookup,WMT,2025,sustainability,environmental,true,index_as_esg,
+ESG-020,What emissions or climate topics does Target discuss in 2025?,single_company_lookup,TGT,2025,sustainability,climate|emissions,true,index_as_esg,
+ESG-021,Compare Target and Walmart on climate disclosures in their latest available reports.,comparison,TGT|WMT,2025,sustainability,climate|emissions,true,index_as_esg,
+ESG-022,What employee or workforce topics does Best Buy discuss in 2024?,single_company_lookup,BBY,2024,sustainability,human_capital,true,index_as_esg,
+ESG-023,What community topics does Best Buy discuss in 2023?,single_company_lookup,BBY,2023,sustainability,community,true,index_as_esg,
+ESG-024,What governance topics does Home Depot discuss in 2024?,single_company_lookup,HD,2024,sustainability,governance,true,index_as_esg,
+ESG-025,What waste or circularity topics does Lowe's discuss in 2024?,single_company_lookup,LOW,2024,sustainability,waste,true,index_as_esg,
+ESG-026,Compare Home Depot and Lowe's on environmental disclosures for 2024.,comparison,HD|LOW,2024,sustainability,environmental,true,index_as_esg,
+ESG-027,What responsible sourcing topics does Nike discuss in 2024?,single_company_lookup,NKE,2024,sustainability,supply_chain_ethics,true,index_as_esg,
+ESG-028,What climate or emissions topics does Lululemon discuss in 2024?,single_company_lookup,LULU,2024,sustainability,climate|emissions,true,index_as_esg,
+ESG-029,Compare Nike and Lululemon on supply chain or materials disclosures for 2024.,comparison,NKE|LULU,2024,sustainability,supply_chain_ethics|environmental,true,index_as_esg,
+ESG-030,What emissions disclosures does VF Corp provide in 2024?,single_company_lookup,VFC,2024,sustainability,emissions,true,index_as_esg,
+ESG-031,What human capital topics does Levi Strauss discuss in 2024?,single_company_lookup,LEVI,2024,sustainability,human_capital,true,index_as_esg,
+ESG-032,Compare VF Corp and Levi Strauss on human capital disclosures for 2024.,comparison,VFC|LEVI,2024,sustainability,human_capital,true,index_as_esg,
+ESG-033,What environmental topics does Apple discuss in 2025?,single_company_lookup,AAPL,2025,sustainability,environmental|energy|emissions,true,index_as_esg,QA should confirm citation metadata coverage for the retrieved chunks.
+ESG-034,What energy topics does Apple discuss in 2024?,single_company_lookup,AAPL,2024,sustainability,energy,true,index_as_esg,Known citation metadata gap should be caught if retrieved chunk is not citation_ready.
+ESG-035,What climate topics does Exxon Mobil discuss in 2026?,single_company_lookup,XOM,2026,sustainability,climate|emissions,true,index_as_esg,
+ESG-036,What community topics does Exxon Mobil discuss in 2026?,single_company_lookup,XOM,2026,sustainability,community,true,index_as_esg,
+ESG-037,Which companies have reports marked not_found and should not be queried as ESG sources?,coverage_check,DDS|DIBS|OLLI,,sustainability,document_availability,false,not_applicable,Expected answer should rely on tracker/QA metadata not retrieval chunks.
+ESG-038,For a question about Etsy risk factors in 2024 should the ESG retriever return the Etsy 2024 PDF?,quality_gate,ETSY,2024,annual_report_with_esg,risk_factors,true,exclude_from_esg_index,Expected answer should explain this belongs outside ESG-only retrieval.
+ESG-039,What water topics does Costco discuss in 2022?,single_company_lookup,COST,2022,sustainability,water,true,index_as_esg,Known citation metadata gaps should be monitored.
+ESG-040,Compare Costco and Walmart on waste disclosures in their latest available ESG reports.,comparison,COST|WMT,2022|2025,sustainability,waste,true,index_as_esg,

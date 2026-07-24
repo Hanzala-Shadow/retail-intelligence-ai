@@ -144,13 +144,6 @@ def layout_policy_for_chunk(
     page_start = parse_int(chunk.get("page_start"))
     page_end = parse_int(chunk.get("page_end"))
     if page_start is None or page_end is None or page_start < 1 or page_end < page_start:
-        # A missing page range is only an integrity failure when the chunk
-        # actually carries parsed text that should have been located onto pages.
-        # Chunks with no parsed text (missing_parsed_text / needs_review) were
-        # never positioned, are already excluded as non-citation-ready, and must
-        # hold without a fatal reason so the manifest can still be built.
-        if not (chunk.get("parsed_text_sha256") or "").strip():
-            return "auto_hold", "layout_no_page_range_uncitable"
         return "auto_hold", "layout_missing_chunk_page_range"
 
     document_audit = layout_audit.get((ticker, pdf_stem))
