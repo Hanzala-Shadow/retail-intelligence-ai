@@ -58,7 +58,7 @@ LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
 # tests/test_esg_vector_manifest.py fails if the two ever drift. Any audit row
 # carrying a different version is treated as stale and holds its chunk, so a
 # mismatch here silently quarantines the entire corpus.
-LAYOUT_AUDIT_VERSION = "layout_v6"
+LAYOUT_AUDIT_VERSION = "layout_v7"
 
 
 def read_csv(path: Path) -> list[dict]:

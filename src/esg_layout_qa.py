@@ -40,16 +40,17 @@ from pdf_parser import (
 from esg_reading_order import canonical_order_text, reconstruct_column_order
 
 
-# v6 verifies parser region-order (xy-cut) repairs against a fresh region
-# reconstruction instead of holding them, and the column reconstructor now
-# excludes deliberately dropped rotated words from its preservation ratio.
-# This changes page decisions, so v5 rows must be rebuilt.
-AUDIT_VERSION = "layout_v6"
+# v7 auto-passes ambiguous navigation/contents-layout pages instead of
+# holding them, since they have no defensible prose order and no retrieval
+# value worth VLM spend. This changes page decisions, so v6 rows must be
+# rebuilt.
+AUDIT_VERSION = "layout_v7"
 AUTO_PASS = "auto_pass"
 AUTO_PASS_PDFIUM_COVERAGE = "auto_pass_pdfium_coverage"
 AUTO_PASS_COLUMN_ORDER = "auto_pass_column_order_reconstructed"
 AUTO_PASS_REGION_ORDER = "auto_pass_region_order_reconstructed"
 AUTO_PASS_VERIFIED_TABLE = "auto_pass_verified_table_extraction"
+AUTO_PASS_NAVIGATION = "auto_pass_navigation_contents"
 AUTO_HOLD = "auto_hold"
 AUDIT_ERROR = "audit_error"
 
@@ -536,6 +537,14 @@ def reading_order_decision(reading_order, current_text: str) -> tuple[str | None
             False,
         )
     if reading_order.status == "ambiguous":
+        if reading_order.reason == "navigation_contents_layout":
+            # Contents/nav pages have no defensible prose order and no
+            # retrieval value worth VLM spend; index them as-is.
+            return (
+                AUTO_PASS_NAVIGATION,
+                "auto_pass_navigation_contents_layout: no_prose_order_required",
+                False,
+            )
         return (
             AUTO_HOLD,
             "auto_hold_ambiguous_coordinate_layout: " + reading_order.reason,

@@ -133,7 +133,7 @@ try {
                 $lockPath,
                 [System.IO.FileMode]::OpenOrCreate,
                 [System.IO.FileAccess]::ReadWrite,
-                [System.IO.FileShare]::None
+                [System.IO.FileShare]::Read
             )
         }
         catch [System.IO.IOException] {

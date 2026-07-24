@@ -184,6 +184,46 @@ class ESGLayoutQATests(unittest.TestCase):
         self.assertFalse(matches)
         self.assertIn("not_applied", reason)
 
+    def test_ambiguous_navigation_layout_auto_passes(self) -> None:
+        result = ReadingOrderResult(
+            status="ambiguous",
+            text="",
+            reason="navigation_contents_layout",
+            column_count=0,
+            source_word_count=12,
+            reconstructed_word_count=0,
+            preservation_ratio=0.0,
+        )
+
+        decision, reason, matches = esg_layout_qa.reading_order_decision(
+            result,
+            "Table of contents",
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_PASS_NAVIGATION)
+        self.assertFalse(matches)
+        self.assertIn("navigation_contents_layout", reason)
+
+    def test_ambiguous_non_navigation_layout_still_holds(self) -> None:
+        result = ReadingOrderResult(
+            status="ambiguous",
+            text="",
+            reason="structural_grid_or_table_layout",
+            column_count=0,
+            source_word_count=12,
+            reconstructed_word_count=0,
+            preservation_ratio=0.0,
+        )
+
+        decision, reason, matches = esg_layout_qa.reading_order_decision(
+            result,
+            "Some grid layout text",
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_HOLD)
+        self.assertFalse(matches)
+        self.assertIn("structural_grid_or_table_layout", reason)
+
     def test_qa_summary_marks_missing_or_stale_audit(self) -> None:
         summary = esg_pipeline_qa.layout_summary_for_doc(
             [],

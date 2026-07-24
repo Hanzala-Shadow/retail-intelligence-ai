@@ -135,10 +135,9 @@ class ESGReadingOrderTests(unittest.TestCase):
     def test_rotated_word_in_header_band_is_excluded(self) -> None:
         """A non-upright word whose whole bbox sits inside the header band
         must not surface in the reconstructed header text. Uses 20 lines per
-        column (240 words) rather than the usual 12 so that dropping the one
-        rotated word still clears MIN_PRESERVATION_RATIO (240/241=0.9959);
-        the ratio's interaction with dropped words is exercised separately in
-        test_rotated_words_exceeding_preservation_budget_hold_the_page.
+        column (240 words) rather than the usual 12; the ratio's interaction
+        with dropped words is exercised separately in
+        test_rotated_words_do_not_count_against_preservation_budget.
         """
         words: list[dict] = []
         for line in range(20):
@@ -175,14 +174,13 @@ class ESGReadingOrderTests(unittest.TestCase):
         self.assertEqual(result.column_count, 2)
         self.assertNotIn("SIDEBARTITLE", result.text)
 
-    def test_rotated_words_exceeding_preservation_budget_hold_the_page(self) -> None:
-        """Dropping rotated words is not exempted from the preservation-ratio
-        floor (Task 0 must not touch that logic): if enough decorative
-        rotated text is excluded that real content can no longer be shown
-        >=99.5% intact, the page must fail closed to ``ambiguous`` rather than
-        ship a reconstruction quietly missing tokens. This is the real
-        behaviour measured on LULU-2021 p.29 (16 of 668 words dropped, ratio
-        0.976, held) -- fewer words here so one budget-breaking word suffices.
+    def test_rotated_words_do_not_count_against_preservation_budget(self) -> None:
+        """Deliberately dropped rotated words are excluded from the
+        preservation-ratio denominator. Under the old policy a page like
+        LULU-2021 p.29 (16 of 668 words rotated decoration, ratio 0.976) was
+        held as ``ambiguous`` even though every upright body word survived;
+        now the ratio measures only words the reconstructor intended to keep,
+        so the same page reconstructs with a perfect ratio.
         """
         words: list[dict] = []
         for line in range(12):
@@ -192,9 +190,9 @@ class ESGReadingOrderTests(unittest.TestCase):
 
         result = esg_reading_order.reconstruct_column_order(words, 800, 500)
 
-        self.assertEqual(result.status, "ambiguous")
-        self.assertTrue(result.reason.startswith("word_preservation_ratio="))
-        self.assertEqual(result.text, "")
+        self.assertEqual(result.status, "reconstructed")
+        self.assertNotIn("SIDEBARTITLE", result.text)
+        self.assertGreaterEqual(result.preservation_ratio, 0.995)
 
     def test_short_nonupright_word_is_kept_not_dropped(self) -> None:
         """Not every ``upright: False`` word is real rotation: GES-GUESS-2024
