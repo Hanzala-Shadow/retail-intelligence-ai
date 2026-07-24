@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("all", "parse", "section", "chunk", "layout", "qa", "validate", "tests")]
+    [ValidateSet("all", "intake", "parse", "remediate", "section", "chunk", "layout", "vlm", "qa", "manifest", "validate", "tests")]
     [string]$Stage = "all",
 
     [string]$Ticker,
@@ -22,6 +22,12 @@ param(
     [ValidateRange(1, 5000)]
     [int]$ChunkCheckpointEvery = 500,
 
+    [switch]$EnableVlmIntegration,
+
+    [switch]$EnablePyMuPdfParser,
+
+    [string]$VlmDir = "data/04_vlm",
+
     [switch]$Force,
     [switch]$WhatIf
 )
@@ -32,12 +38,16 @@ param(
 # remain enabled. Batched checkpoints reduce repeated full-index rewrites; a
 # crash can cause at most the current batch to be checked again on resume.
 #
-# Full restart-safe run:
+# Full restart-safe run (VLM API calls stay off):
 #   scripts\run_esg_pipeline_fast.cmd
 # Targeted forced repair:
 #   scripts\run_esg_pipeline_fast.cmd -Ticker LOVE -PdfFile "report.pdf" -Force
 # Preview commands without writes:
 #   scripts\run_esg_pipeline_fast.cmd -WhatIf
+# Use already verified VLM artifacts in the manifest (still no API calls):
+#   scripts\run_esg_pipeline_fast.cmd -EnableVlmIntegration
+# Opt in to the experimental table-aware parser for a reviewed scope:
+#   scripts\run_esg_pipeline_fast.cmd -Stage parse -Ticker WMT -PdfFile "report.pdf" -EnablePyMuPdfParser -Force
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -58,6 +68,9 @@ if (($PdfFile -or $PdfStem) -and -not $Ticker) {
 }
 if ($Force -and -not $Ticker) {
     throw "A full-corpus forced rebuild is intentionally blocked. Supply -Ticker (and preferably -PdfFile/-PdfStem)."
+}
+if ($EnablePyMuPdfParser -and -not $Ticker) {
+    throw "The table-aware PyMuPDF parser is opt-in and must be scoped with -Ticker (and preferably -PdfFile)."
 }
 if ($PdfFile -and -not $PdfStem) {
     $PdfStem = [System.IO.Path]::GetFileNameWithoutExtension($PdfFile)
@@ -129,12 +142,41 @@ try {
     }
 
     $runParse = $Stage -in @("all", "parse")
+    $runIntake = $Stage -in @("all", "intake")
+    $runRemediate = $Stage -in @("all", "remediate")
     $runSection = $Stage -in @("all", "section")
     $runChunk = $Stage -in @("all", "chunk")
     $runLayout = $Stage -in @("all", "layout")
+    $runVlm = $Stage -in @("all", "vlm")
     $runQa = $Stage -in @("all", "qa")
+    $runManifest = $Stage -in @("all", "manifest", "vlm")
     $runValidate = $Stage -in @("all", "validate")
     $runTests = $Stage -in @("all", "tests")
+
+    if ($runIntake) {
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        $arguments.Add("src/esg_intake_catalog.py")
+        $arguments.Add("--raw-root")
+        $arguments.Add("data/01_raw/sustainability")
+        $arguments.Add("--raw-root")
+        $arguments.Add("data/01_raw/sustainability_other")
+        $arguments.Add("--ocr-root")
+        $arguments.Add("data/02_interim/ocr_staging")
+        $arguments.Add("--catalog")
+        $arguments.Add("data/00_reference/esg_file_catalog.csv")
+        $arguments.Add("--ocr-approval")
+        $arguments.Add("data/00_reference/esg_ocr_approval.csv")
+        Add-ScopedArguments -Arguments $arguments
+        if ($PdfFile) {
+            $arguments.Add("--pdf-file")
+            $arguments.Add($PdfFile)
+        }
+        elseif ($PdfStem) {
+            $arguments.Add("--pdf-stem")
+            $arguments.Add($PdfStem)
+        }
+        Invoke-PythonStage -Name "intake" -Arguments $arguments.ToArray()
+    }
 
     if ($runParse) {
         $arguments = [System.Collections.Generic.List[string]]::new()
@@ -160,6 +202,9 @@ try {
         elseif ($PdfStem) {
             $arguments.Add("--pdf-file")
             $arguments.Add($PdfStem)
+        }
+        if ($EnablePyMuPdfParser) {
+            $arguments.Add("--prefer-pymupdf")
         }
         if ($Force) {
             $arguments.Add("--force")
@@ -194,10 +239,37 @@ try {
             $arguments.Add("--pdf-file")
             $arguments.Add($PdfStem)
         }
+        if ($EnablePyMuPdfParser) {
+            $arguments.Add("--prefer-pymupdf")
+        }
         if ($Force) {
             $arguments.Add("--force")
         }
         Invoke-PythonStage -Name "parse-other" -Arguments $arguments.ToArray()
+    }
+
+    if ($runRemediate) {
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        $arguments.Add("src/pipeline_ocr_remediation_stage.py")
+        $arguments.Add("--parse-index")
+        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add("--sections-index")
+        $arguments.Add("data/00_reference/esg_sections_index.csv")
+        $arguments.Add("--chunks-index")
+        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        Add-ScopedArguments -Arguments $arguments
+        if ($PdfFile) {
+            $arguments.Add("--pdf-file")
+            $arguments.Add($PdfFile)
+        }
+        elseif ($PdfStem) {
+            $arguments.Add("--pdf-stem")
+            $arguments.Add($PdfStem)
+        }
+        if ($Force) {
+            $arguments.Add("--force")
+        }
+        Invoke-PythonStage -Name "remediate" -Arguments $arguments.ToArray()
     }
 
     if ($runSection) {
@@ -273,23 +345,84 @@ try {
         Invoke-PythonStage -Name "layout" -Arguments $arguments.ToArray()
     }
 
+    if ($runVlm) {
+        Write-Host ""
+        if ($EnableVlmIntegration) {
+            Write-Host "[vlm] Verified local VLM artifacts will be integrated by the manifest stage. No VLM API call will run." -ForegroundColor Cyan
+        }
+        else {
+            Write-Host "[vlm] Integration is disabled. Use -EnableVlmIntegration only after local VLM artifacts are verified. No VLM API call will run." -ForegroundColor Yellow
+        }
+    }
+
     if ($runQa) {
-        Invoke-PythonStage -Name "qa" -Arguments @(
-            "src/esg_pipeline_qa.py",
-            "--out", "data/00_reference/esg_pipeline_qa.csv",
-            "--layout-audit", "data/00_reference/esg_page_layout_qa.csv"
-        )
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        $arguments.Add("src/esg_pipeline_qa.py")
+        $arguments.Add("--out")
+        $arguments.Add("data/00_reference/esg_pipeline_qa.csv")
+        $arguments.Add("--layout-audit")
+        $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        Add-ScopedArguments -Arguments $arguments
+        if ($PdfFile) {
+            $arguments.Add("--pdf-file")
+            $arguments.Add($PdfFile)
+        }
+        elseif ($PdfStem) {
+            $arguments.Add("--pdf-stem")
+            $arguments.Add($PdfStem)
+        }
+        Invoke-PythonStage -Name "qa" -Arguments $arguments.ToArray()
+    }
+
+    if ($runManifest) {
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        $arguments.Add("scripts/build_esg_vector_manifest.py")
+        $arguments.Add("--chunks-index")
+        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add("--source-registry")
+        $arguments.Add("data/00_reference/esg_source_registry.csv")
+        $arguments.Add("--layout-audit")
+        $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        $arguments.Add("--out")
+        $arguments.Add("data/00_reference/vector_index_manifest.csv")
+        Add-ScopedArguments -Arguments $arguments
+        if ($PdfFile) {
+            $arguments.Add("--pdf-file")
+            $arguments.Add($PdfFile)
+        }
+        elseif ($PdfStem) {
+            $arguments.Add("--pdf-stem")
+            $arguments.Add($PdfStem)
+        }
+        if ($EnableVlmIntegration) {
+            $arguments.Add("--vlm-dir")
+            $arguments.Add($VlmDir)
+        }
+        Invoke-PythonStage -Name "manifest" -Arguments $arguments.ToArray()
     }
 
     if ($runValidate) {
         $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
-        Invoke-PythonStage -Name "provenance" -Arguments @(
-            "scripts/validate_esg_provenance.py",
-            "--parse-index", "data/00_reference/esg_parse_index.csv",
-            "--sections-index", "data/00_reference/esg_sections_index.csv",
-            "--chunks-index", "data/00_reference/esg_chunks_index.csv",
-            "--json-out", "reports/esg_provenance_validation_fast_$stamp.json"
-        )
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        $arguments.Add("scripts/validate_esg_provenance.py")
+        $arguments.Add("--parse-index")
+        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add("--sections-index")
+        $arguments.Add("data/00_reference/esg_sections_index.csv")
+        $arguments.Add("--chunks-index")
+        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add("--json-out")
+        $arguments.Add("reports/esg_provenance_validation_fast_$stamp.json")
+        Add-ScopedArguments -Arguments $arguments
+        if ($PdfFile) {
+            $arguments.Add("--pdf-file")
+            $arguments.Add($PdfFile)
+        }
+        elseif ($PdfStem) {
+            $arguments.Add("--pdf-stem")
+            $arguments.Add($PdfStem)
+        }
+        Invoke-PythonStage -Name "provenance" -Arguments $arguments.ToArray()
     }
 
     if ($runTests) {

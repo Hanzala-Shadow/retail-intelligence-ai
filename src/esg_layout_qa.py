@@ -39,14 +39,14 @@ from pdf_parser import (
 from esg_reading_order import canonical_order_text, reconstruct_column_order
 
 
-# v4 repairs the metric pattern feeding the grid signature (its percent branch
-# could never match, so metric tables scored metric_lines=0 and passed) and
-# assigns column words from each column's left edge rather than the median of
-# its starts. Both change page decisions, so v3 rows must be rebuilt, not reused.
-AUDIT_VERSION = "layout_v4"
+# v5 admits only parser-produced Markdown tables that pass a separate,
+# rotation-aware token and shape check. Generic grids, charts, and contents
+# pages remain held. This changes page decisions, so v4 rows must be rebuilt.
+AUDIT_VERSION = "layout_v5"
 AUTO_PASS = "auto_pass"
 AUTO_PASS_PDFIUM_COVERAGE = "auto_pass_pdfium_coverage"
 AUTO_PASS_COLUMN_ORDER = "auto_pass_column_order_reconstructed"
+AUTO_PASS_VERIFIED_TABLE = "auto_pass_verified_table_extraction"
 AUTO_HOLD = "auto_hold"
 AUDIT_ERROR = "audit_error"
 
@@ -73,6 +73,15 @@ LAYOUT_AUDIT_FIELDS = [
     "two_column_candidate",
     "mixed_column_lines",
     "visual_object_count",
+    "page_map_parse_status",
+    "page_map_repair_method",
+    "page_map_table_candidate_count",
+    "table_row_count",
+    "table_column_count",
+    "table_source_token_count",
+    "table_output_token_count",
+    "table_token_recall",
+    "table_extra_token_ratio",
     "reading_order_status",
     "reading_order_columns",
     "reading_order_preservation_ratio",
@@ -91,6 +100,11 @@ MIN_COLUMN_SHARE = 0.25
 MIN_COLUMN_VERTICAL_OVERLAP = 0.35
 MIN_MIXED_COLUMN_LINES = 2
 LOW_TEXT_MIN_NATIVE_WORDS = 40
+TABLE_REPAIR_METHODS = frozenset(
+    {"table_aware_xy_cut_order", "pymupdf_table_aware_xy_cut_order"}
+)
+TABLE_MIN_TOKEN_RECALL = 0.995
+TABLE_MAX_EXTRA_TOKEN_RATIO = 0.005
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -141,25 +155,141 @@ def resolve_path(value: str | None) -> Path | None:
     return path if path.is_absolute() else Path.cwd() / path
 
 
-def page_texts_from_map(text_path: Path, page_map_path: Path) -> dict[int, str]:
+def page_records_from_map(text_path: Path, page_map_path: Path) -> dict[int, dict]:
     if not text_path.exists() or not page_map_path.exists():
         return {}
     with text_path.open("r", encoding="utf-8", newline="") as handle:
         source_text = handle.read()
     rows = read_csv(page_map_path)
-    pages: dict[int, str] = {}
+    pages: dict[int, dict] = {}
     for row in rows:
         page = parse_int(row.get("page"))
         start = parse_int(row.get("char_start"))
         end = parse_int(row.get("char_end"))
         if page is None or start is None or end is None or start < 0 or end < start:
             continue
-        pages[page] = source_text[start:end]
+        pages[page] = {**row, "text": source_text[start:end]}
     return pages
+
+
+def page_texts_from_map(text_path: Path, page_map_path: Path) -> dict[int, str]:
+    return {
+        page: str(record.get("text") or "")
+        for page, record in page_records_from_map(text_path, page_map_path).items()
+    }
 
 
 def reliable_token_count(text: str) -> int:
     return sum(1 for token in WORD_RE.findall(text) if re.search(r"[A-Za-z]", token))
+
+
+def _semantic_token_counter(text: str) -> Counter[str]:
+    return Counter(token.casefold() for token in WORD_RE.findall(text) if token)
+
+
+def _upright_source_tokens(words: list[dict]) -> Counter[str]:
+    source_text = " ".join(
+        str(word.get("text") or "")
+        for word in words
+        if word.get("upright", True) is not False
+    )
+    return _semantic_token_counter(source_text)
+
+
+def _markdown_table_shape(text: str) -> tuple[int, int]:
+    table_lines = [
+        line.strip()
+        for line in text.splitlines()
+        if line.strip().startswith("|") and line.strip().endswith("|")
+    ]
+    if len(table_lines) < 3:
+        return 0, 0
+
+    def cells(line: str) -> list[str]:
+        return [
+            value.strip().replace(r"\|", "|")
+            for value in re.split(r"(?<!\\)\|", line.strip()[1:-1])
+        ]
+
+    rows = [cells(line) for line in table_lines]
+    column_count = len(rows[0])
+    if column_count < 2 or any(len(row) != column_count for row in rows):
+        return 0, 0
+    if not all(re.fullmatch(r":?-{3,}:?", value) for value in rows[1]):
+        return 0, 0
+    body = rows[2:]
+    if len(body) < 2 or any(not any(cell for cell in row) for row in body):
+        return 0, 0
+    return len(body), column_count
+
+
+def table_extraction_decision(
+    page_record: dict,
+    current_text: str,
+    words: list[dict],
+) -> tuple[str | None, str, dict[str, str | int]]:
+    """Validate parser-produced tables without counting rotated decoration."""
+
+    method = str(page_record.get("repair_method") or "").strip()
+    metrics: dict[str, str | int] = {
+        "table_row_count": "",
+        "table_column_count": "",
+        "table_source_token_count": "",
+        "table_output_token_count": "",
+        "table_token_recall": "",
+        "table_extra_token_ratio": "",
+    }
+    candidate_count = parse_int(page_record.get("table_candidate_count")) or 0
+    if method not in TABLE_REPAIR_METHODS:
+        if candidate_count > 0:
+            return AUTO_HOLD, "auto_hold_table_candidate_not_extracted", metrics
+        return None, "", metrics
+
+    if candidate_count < 1:
+        return AUTO_HOLD, "auto_hold_table_extraction_missing_candidate", metrics
+
+    row_count, column_count = _markdown_table_shape(current_text)
+    metrics["table_row_count"] = row_count
+    metrics["table_column_count"] = column_count
+    if row_count < 2 or column_count < 2:
+        return AUTO_HOLD, "auto_hold_table_extraction_invalid_markdown_shape", metrics
+
+    source_tokens = _upright_source_tokens(words)
+    output_tokens = _semantic_token_counter(current_text)
+    source_count = sum(source_tokens.values())
+    output_count = sum(output_tokens.values())
+    matched_count = sum((source_tokens & output_tokens).values())
+    recall = matched_count / max(source_count, 1)
+    extra_ratio = sum((output_tokens - source_tokens).values()) / max(source_count, 1)
+    metrics.update(
+        {
+            "table_source_token_count": source_count,
+            "table_output_token_count": output_count,
+            "table_token_recall": f"{recall:.6f}",
+            "table_extra_token_ratio": f"{extra_ratio:.6f}",
+        }
+    )
+    if source_count == 0:
+        return AUTO_HOLD, "auto_hold_table_extraction_missing_source_tokens", metrics
+    if recall < TABLE_MIN_TOKEN_RECALL:
+        return (
+            AUTO_HOLD,
+            f"auto_hold_table_extraction_token_recall={recall:.4f}",
+            metrics,
+        )
+    if extra_ratio > TABLE_MAX_EXTRA_TOKEN_RATIO:
+        return (
+            AUTO_HOLD,
+            f"auto_hold_table_extraction_extra_token_ratio={extra_ratio:.4f}",
+            metrics,
+        )
+    return (
+        AUTO_PASS_VERIFIED_TABLE,
+        "auto_pass_verified_table_extraction: "
+        f"rows={row_count}; columns={column_count}; "
+        f"token_recall={recall:.4f}; extra_token_ratio={extra_ratio:.4f}",
+        metrics,
+    )
 
 
 def text_quality_score(text: str) -> int:
@@ -398,6 +528,15 @@ def _error_row(parse_row: dict, message: str) -> dict:
         "two_column_candidate": "",
         "mixed_column_lines": "",
         "visual_object_count": "",
+        "page_map_parse_status": "",
+        "page_map_repair_method": "",
+        "page_map_table_candidate_count": "",
+        "table_row_count": "",
+        "table_column_count": "",
+        "table_source_token_count": "",
+        "table_output_token_count": "",
+        "table_token_recall": "",
+        "table_extra_token_ratio": "",
         "reading_order_status": "",
         "reading_order_columns": "",
         "reading_order_preservation_ratio": "",
@@ -420,10 +559,14 @@ def audit_document(parse_row: dict) -> list[dict]:
         return [_error_row(parse_row, "audit_error_parse_outputs_missing")]
 
     try:
-        current_page_texts = page_texts_from_map(text_path, page_map_path)
-        parsed_text_sha256 = parse_row.get("content_hash") or hashlib.sha256(
-            text_path.read_bytes()
-        ).hexdigest()
+        current_page_records = page_records_from_map(text_path, page_map_path)
+        current_page_texts = {
+            page: str(record.get("text") or "")
+            for page, record in current_page_records.items()
+        }
+        # Use the saved artifact as the source of truth. Older parse indexes may
+        # contain a hash of the pre-serialization string (not the exact bytes).
+        parsed_text_sha256 = hashlib.sha256(text_path.read_bytes()).hexdigest()
         rows: list[dict] = []
         with pdfplumber.open(source_pdf) as pdf:
             pdfium_document = None
@@ -432,8 +575,19 @@ def audit_document(parse_row: dict) -> list[dict]:
                     pdfium_document = pdfium.PdfDocument(str(source_pdf))
                 for page_number, page in enumerate(pdf.pages, start=1):
                     current_text = current_page_texts.get(page_number, "")
+                    page_record = current_page_records.get(page_number, {})
                     native_text = normalize_extracted_page_text(page.extract_text_simple() or "")
-                    words = page.extract_words(use_text_flow=False, keep_blank_chars=False) or []
+                    try:
+                        words = page.extract_words(
+                            use_text_flow=False,
+                            keep_blank_chars=False,
+                            extra_attrs=["upright"],
+                        ) or []
+                    except TypeError:
+                        words = page.extract_words(
+                            use_text_flow=False,
+                            keep_blank_chars=False,
+                        ) or []
                     rect_count = len(getattr(page, "rects", []) or [])
                     image_count = len(getattr(page, "images", []) or [])
                     curve_count = len(getattr(page, "curves", []) or [])
@@ -467,10 +621,19 @@ def audit_document(parse_row: dict) -> list[dict]:
                         # designs. Require the complete table/grid signature.
                         structural_grid_risk=layout_grid_risk_from_metrics(native_layout_metrics),
                     )
-                    decision, reason, current_order_matches = reading_order_decision(
-                        reading_order,
+                    table_decision, table_reason, table_metrics = table_extraction_decision(
+                        page_record,
                         current_text,
+                        words,
                     )
+                    current_order_matches = False
+                    if table_decision is not None:
+                        decision, reason = table_decision, table_reason
+                    else:
+                        decision, reason, current_order_matches = reading_order_decision(
+                            reading_order,
+                            current_text,
+                        )
                     preference, scores = _candidate_preference(
                         current_text,
                         native_text,
@@ -508,6 +671,12 @@ def audit_document(parse_row: dict) -> list[dict]:
                             "two_column_candidate": str(bool(metrics["two_column_candidate"])).lower(),
                             "mixed_column_lines": metrics["mixed_column_lines"],
                             "visual_object_count": metrics["visual_object_count"],
+                            "page_map_parse_status": page_record.get("parse_status", ""),
+                            "page_map_repair_method": page_record.get("repair_method", ""),
+                            "page_map_table_candidate_count": page_record.get(
+                                "table_candidate_count", ""
+                            ),
+                            **table_metrics,
                             "reading_order_status": reading_order.status,
                             "reading_order_columns": reading_order.column_count,
                             "reading_order_preservation_ratio": (
@@ -537,10 +706,14 @@ def _audit_complete(existing_rows: list[dict], parse_row: dict) -> bool:
     page_count = parse_int(parse_row.get("page_count")) or 0
     if not page_count or len(existing_rows) != page_count:
         return False
+    text_path = resolve_path(parse_row.get("parsed_text_file"))
+    if text_path is None or not text_path.exists():
+        return False
+    actual_parsed_text_sha256 = hashlib.sha256(text_path.read_bytes()).hexdigest()
     return all(
         row.get("audit_version") == AUDIT_VERSION
         and row.get("source_sha256") == (parse_row.get("source_sha256") or "")
-        and row.get("parsed_text_sha256") == (parse_row.get("content_hash") or "")
+        and row.get("parsed_text_sha256") == actual_parsed_text_sha256
         and row.get("decision") not in {"", AUDIT_ERROR}
         for row in existing_rows
     )

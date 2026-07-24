@@ -62,7 +62,7 @@ The extraction policy is hybrid:
 4. Pages with grid/tile risk or irregular coordinate structure are **recorded, not
    guessed at** — they get handed to the layout gate in Stage 4.
 
-The current reconstruction logic is `layout_v4` (`src/esg_reading_order.py`). Two v4 fixes
+The simple-column logic came from `layout_v4`; the active audit is `layout_v5`, which adds a verified-table gate. Two v4 fixes
 are load-bearing and should not be "improved" casually — both were measured:
 - the metric regex could not match `%` (a `\b` after a non-word char never matches), so
   percentage-dense tables never fired the grid signature;
@@ -100,7 +100,7 @@ Only `verified_exact` and `verified_whitespace_normalized` count.
 
 ### Stage 4 — Layout QA (the first gate)
 `src/esg_layout_qa.py` → `data/00_reference/esg_page_layout_qa.csv`
-**28,249 pages, all `layout_v4`.**
+**Historical snapshot: 28,249 pages, all `layout_v4`. Rebuild before quoting `layout_v5` counts.**
 
 | decision | pages | meaning |
 |---|---:|---|
@@ -168,19 +168,21 @@ every excluded chunk remains on disk and auditable.
 ## 3. Order of operations
 
 ```
-scripts\run_esg_pipeline_fast.cmd          # A: parse → section → chunk → layout → qa → validate → tests
-scripts\run_esg_vlm.py classify --transport batch --wait
-scripts\run_esg_vlm.py extract  --transport batch --wait
-scripts\build_esg_vlm_chunks.py            # B: VLM (needs OPENAI_API_KEY)
-scripts\build_esg_vector_manifest.py       # C: eligibility — consumes B
-scripts\validate_esg_provenance.py ; pytest tests\ -q
+scripts\run_esg_pipeline_fast.cmd          # A: intake → parse → remediation → section → chunk → layout → VLM decision → QA → manifest → validate → tests
+scripts\run_esg_vlm.py classify --transport batch --wait  # B: optional paid work; approval required
+scripts\run_esg_vlm.py extract  --transport batch --wait  # B: optional paid work; approval required
+scripts\build_esg_vlm_chunks.py
+scripts\run_esg_pipeline_fast.cmd -Stage vlm -EnableVlmIntegration -WhatIf  # C: no-write preview
+scripts\run_esg_pipeline_fast.cmd -Stage vlm -EnableVlmIntegration          # D: approved local integration
 ```
 
-A before B (the VLM stages read the layout-QA table A produces), B before C. Every stage is
-resume-safe: each writes through a `.tmp` file plus atomic replace, checkpoints its index,
-and skips an item only when the output exists *and* the index row matches the current
-source fingerprint. Adding one document later = drop in the PDF + a registry row and rerun
-the same commands; the parser resume and the VLM cache make it cost pennies.
+A before B because the optional VLM stages read the layout-QA table. B must be
+checked before C or D. The fast runner never starts paid VLM work. Its default
+run still rebuilds the manifest and keeps unsafe pages held. Preview the full
+run with `scripts\run_esg_pipeline_fast.cmd -Stage all -WhatIf`. Preview one
+report with `-Ticker TICKER -PdfFile "report.pdf" -WhatIf`. An unscoped
+`-Force` is blocked. The runner does not download or change Drive files, load a
+live database, run migrations, or create embeddings.
 
 ---
 

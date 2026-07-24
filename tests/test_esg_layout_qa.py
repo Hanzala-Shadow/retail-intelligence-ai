@@ -18,6 +18,71 @@ def word(text: str, x0: float, top: float) -> dict:
 
 
 class ESGLayoutQATests(unittest.TestCase):
+    def test_verified_markdown_table_ignores_rotated_decoration(self) -> None:
+        current = (
+            "| GRI indicator | Description | Reported |\n"
+            "| --- | --- | --- |\n"
+            "| G4-28 | Reporting period | FY2015 |\n"
+            "| G4-29 | Reporting cycle | Annually |"
+        )
+        source_tokens = (
+            "GRI indicator Description Reported G4-28 Reporting period FY2015 "
+            "G4-29 Reporting cycle Annually"
+        ).split()
+        words = [word(token, 40 + index * 5, 80) for index, token in enumerate(source_tokens)]
+        rotated = word("tropeR", 760, 200)
+        rotated["upright"] = False
+        words.append(rotated)
+
+        decision, reason, metrics = esg_layout_qa.table_extraction_decision(
+            {
+                "repair_method": "pymupdf_table_aware_xy_cut_order",
+                "table_candidate_count": "1",
+            },
+            current,
+            words,
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_PASS_VERIFIED_TABLE)
+        self.assertIn("rows=2", reason)
+        self.assertEqual(metrics["table_token_recall"], "1.000000")
+
+    def test_malformed_parser_table_fails_closed(self) -> None:
+        decision, reason, _ = esg_layout_qa.table_extraction_decision(
+            {
+                "repair_method": "pymupdf_table_aware_xy_cut_order",
+                "table_candidate_count": "1",
+            },
+            "GRI indicator Description Reported without markdown rows",
+            [word("GRI", 40, 80), word("indicator", 80, 80)],
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_HOLD)
+        self.assertEqual(reason, "auto_hold_table_extraction_invalid_markdown_shape")
+
+    def test_table_method_without_candidate_fails_closed(self) -> None:
+        decision, reason, _ = esg_layout_qa.table_extraction_decision(
+            {
+                "repair_method": "pymupdf_table_aware_xy_cut_order",
+                "table_candidate_count": "0",
+            },
+            "| A | B |\n| --- | --- |\n| one | two |\n| three | four |",
+            [word("A", 40, 80), word("B", 80, 80)],
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_HOLD)
+        self.assertEqual(reason, "auto_hold_table_extraction_missing_candidate")
+
+    def test_unextracted_table_candidate_fails_closed(self) -> None:
+        decision, reason, _ = esg_layout_qa.table_extraction_decision(
+            {"repair_method": "none", "table_candidate_count": "1"},
+            "G4-28 Reporting period FY2015 G4-29 Reporting cycle Annually",
+            [word("G4-28", 40, 80), word("Reporting", 80, 80)],
+        )
+
+        self.assertEqual(decision, esg_layout_qa.AUTO_HOLD)
+        self.assertEqual(reason, "auto_hold_table_candidate_not_extracted")
+
     def test_two_column_metrics_detect_structural_candidate(self) -> None:
         words = []
         for index in range(35):

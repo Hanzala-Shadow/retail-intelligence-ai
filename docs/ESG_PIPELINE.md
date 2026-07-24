@@ -24,8 +24,12 @@ from `data/01_raw/sustainability/{ticker}/`.
 - `data/00_reference/esg_parse_index.csv`
 - `data/00_reference/esg_sections_index.csv`
 - `data/00_reference/esg_chunks_index.csv`
+- `data/00_reference/esg_file_catalog.csv`
+- `data/00_reference/esg_ocr_approval.csv`
 - `data/00_reference/esg_source_registry.csv`
+- `data/00_reference/esg_page_layout_qa.csv`
 - `data/00_reference/esg_pipeline_qa.csv`
+- `data/00_reference/vector_index_manifest.csv`
 
 The ESG scripts do not overwrite 10-K paths such as `data/03_sections/10k`, `data/04_chunks/10k`, `sections_index.csv`, or `chunks_index.csv`.
 
@@ -41,6 +45,63 @@ python src/esg_pipeline_qa.py --out data/00_reference/esg_pipeline_qa.csv
 python src/drive_to_db.py --dry-run
 python src/drive_to_db.py --commit
 ```
+
+## Safe Fast Runner
+
+The fast runner is the normal local entry point. Its default `all` order is:
+
+```text
+intake -> parse -> page remediation -> section -> chunk -> layout ->
+VLM integration decision -> QA -> vector manifest -> provenance -> tests
+```
+
+The VLM decision is off by default. The runner never starts paid VLM
+classification or extraction. It always builds the vector manifest. Pages that
+do not have a safe replacement stay held.
+
+Preview a full resume run. This makes no files, indexes, reports, or lock files:
+
+```powershell
+.\scripts\run_esg_pipeline_fast.cmd -Stage all -WhatIf
+```
+
+Preview one report. `-PdfFile` and `-PdfStem` require `-Ticker`:
+
+```powershell
+.\scripts\run_esg_pipeline_fast.cmd -Ticker LOVE -PdfFile "LOVE-Report-2024.pdf" -WhatIf
+```
+
+Run the same report with resume checks:
+
+```powershell
+.\scripts\run_esg_pipeline_fast.cmd -Ticker LOVE -PdfFile "LOVE-Report-2024.pdf"
+```
+
+Use force only for a reviewed, narrow repair. Preview it first:
+
+```powershell
+.\scripts\run_esg_pipeline_fast.cmd -Ticker LOVE -PdfFile "LOVE-Report-2024.pdf" -Force -WhatIf
+.\scripts\run_esg_pipeline_fast.cmd -Ticker LOVE -PdfFile "LOVE-Report-2024.pdf" -Force
+```
+
+An unscoped `-Force` is blocked. The runner also does not download from Drive,
+change Drive, migrate or load a live database, create embeddings, or start paid
+VLM work.
+
+To use already verified local VLM artifacts, preview the VLM and manifest step:
+
+```powershell
+.\scripts\run_esg_pipeline_fast.cmd -Stage vlm -EnableVlmIntegration -WhatIf
+```
+
+After approval, remove `-WhatIf`. This only passes the local VLM artifact folder
+to the manifest builder. It does not call a model API. Run paid VLM work outside
+this runner and only with separate approval.
+
+Individual safe stages are `intake`, `parse`, `remediate`, `section`, `chunk`,
+`layout`, `vlm`, `qa`, `manifest`, `validate`, and `tests`. `-Stage vlm` also
+rebuilds the manifest because integration is not complete until retrieval
+eligibility is checked.
 
 ## Resume / Continue Protocol
 
@@ -210,6 +271,14 @@ not silently produce bad reading order:
    `data/00_reference/esg_parser_overrides.csv`, but the former Amazon 2021
    PDFium override was retired after the coordinate-order pilot showed that
    PDFium itself interleaved columns.
+6. PyMuPDF table extraction is opt-in. Install the optional dependency with
+   `pip install -r requirements-pymupdf.txt`, then use `--prefer-pymupdf` only
+   for a reviewed ticker/PDF scope. Installing PyMuPDF alone never changes the
+   default parser.
+7. A parser-produced Markdown table is released only when `layout_v5` confirms
+   a real table candidate, valid rectangular Markdown rows, at least 99.5%
+   recall of upright source tokens, and no more than 0.5% extra tokens. Rotated
+   page decoration is ignored. Contents pages and unproven grids stay held.
 
 Override CSV schema:
 
@@ -230,7 +299,7 @@ The parse index records parser provenance:
 - `parser_used`: actual extractor path, such as `pdfplumber`,
   `pdfplumber_column_order`, `pdfplumber+pypdfium_text`,
   `pdfplumber+pypdfium_layout`, or
-  `pypdfium_text_forced`.
+  `pypdfium_text_forced`, or `pymupdf_layout_column_order`.
 - `parser_policy`: why that extractor path was selected, such as
   `auto_pdfplumber_column_order_v1`, `auto_text_layer_fallback`,
    `auto_layout_grid_fallback`, `override_pdfium`, or `cli_forced_pdfium`.
@@ -249,7 +318,16 @@ Useful targeted commands:
 python src/pdf_parser.py --ticker AMZN --pdf-file AMZN-Amazon-2021.pdf --force
 python src/pdf_parser.py --ticker AMZN --pdf-file AMZN-Amazon-2021.pdf --prefer-pdfium --force
 python src/pdf_parser.py --ticker AMZN --pdf-file AMZN-Amazon-2021.pdf --auto-layout-pdfium --force
+python src/pdf_parser.py --ticker WMT --pdf-file WMT-Report.pdf --prefer-pymupdf --force
 ```
+
+The fast runner exposes the same reviewed opt-in route:
+
+```powershell
+scripts\run_esg_pipeline_fast.cmd -Stage parse -Ticker WMT -PdfFile "WMT-Report.pdf" -EnablePyMuPdfParser -Force
+```
+
+`-EnablePyMuPdfParser` is blocked without `-Ticker`.
 
 ## Status Values
 
@@ -462,7 +540,9 @@ vector builder requires the layout audit by default; its
 `--allow-missing-layout-audit` switch is only for isolated legacy diagnostics.
 
 The fast runner includes this as `-Stage layout` and runs it automatically in
-`-Stage all` after chunking. A scoped example is:
+`-Stage all` after chunking. The same `all` run later rebuilds the vector
+manifest, so held pages cannot stay in an old active manifest. A scoped example
+is:
 
 ```powershell
 .\scripts\run_esg_pipeline_fast.cmd -Stage layout -Ticker AMZN -PdfFile AMZN-Amazon-2022.pdf

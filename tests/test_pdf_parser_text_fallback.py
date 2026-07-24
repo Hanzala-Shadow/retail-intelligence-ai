@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -216,18 +217,32 @@ class PDFParserTextFallbackTests(unittest.TestCase):
         self.assertEqual(request["parser_reason"], "known_grid_issue")
 
     def test_default_request_uses_coordinate_reading_order_policy(self) -> None:
+        with mock.patch.object(pdf_parser, "fitz", object()):
+            request = pdf_parser.parser_request_for_pdf(
+                ticker="TEST",
+                pdf=Path("TEST-Report-2024.pdf"),
+                overrides={},
+                prefer_pdfium=False,
+            )
+
+        self.assertFalse(request["prefer_pdfium"])
+        self.assertFalse(request["prefer_pymupdf"])
+        self.assertEqual(
+            request["parser_policy"],
+            pdf_parser.AUTO_PDFPLUMBER_COLUMN_POLICY,
+        )
+
+    def test_pymupdf_requires_explicit_request(self) -> None:
         request = pdf_parser.parser_request_for_pdf(
             ticker="TEST",
             pdf=Path("TEST-Report-2024.pdf"),
             overrides={},
             prefer_pdfium=False,
+            prefer_pymupdf=True,
         )
 
-        self.assertFalse(request["prefer_pdfium"])
-        self.assertEqual(
-            request["parser_policy"],
-            pdf_parser.AUTO_PDFPLUMBER_COLUMN_POLICY,
-        )
+        self.assertTrue(request["prefer_pymupdf"])
+        self.assertEqual(request["parser_policy"], "cli_forced_pymupdf_layout")
 
     def test_new_coordinate_policy_reprocesses_old_default_row(self) -> None:
         self.assertFalse(

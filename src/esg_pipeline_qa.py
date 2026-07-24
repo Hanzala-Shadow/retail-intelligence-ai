@@ -53,7 +53,7 @@ VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
 }
-LAYOUT_AUDIT_VERSION = "layout_v4"
+LAYOUT_AUDIT_VERSION = "layout_v5"
 LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
 
 
@@ -216,7 +216,7 @@ def quality_status_for_parse_rows(parse_rows: list[dict]) -> str:
     if not parse_rows:
         return ""
     if any(parse_bool(row.get("possible_wrong_doc_type")) for row in parse_rows):
-        return "exclude_from_esg_rag"
+        return "needs_review"
     for row in parse_rows:
         flags = row_quality_flags(row)
         if row.get("status") != "parsed" or flags & {
@@ -554,6 +554,8 @@ def run(
     source_registry_path: str | Path = "data/00_reference/esg_source_registry.csv",
     layout_audit_path: str | Path = "data/00_reference/esg_page_layout_qa.csv",
     raw_root: str | Path = "data/01_raw/sustainability",
+    ticker: str | None = None,
+    pdf_stem: str | None = None,
 ) -> list[dict]:
     out_path = Path(out)
     tracker_rows = read_csv(Path(tracker_path))
@@ -564,6 +566,38 @@ def run(
     source_registry = load_source_registry(Path(source_registry_path))
     layout_by_doc = load_layout_audit(Path(layout_audit_path))
     local_pdfs = count_local_pdfs(Path(raw_root))
+
+    selected_ticker = ticker.strip().upper() if ticker else None
+    selected_pdf_stem = Path(pdf_stem).stem if pdf_stem else None
+    if selected_ticker:
+        parse_rows = [
+            row for row in parse_rows
+            if (row.get("ticker") or "").strip().upper() == selected_ticker
+        ]
+        tracker_rows = [
+            row for row in tracker_rows
+            if (row.get("ticker") or "").strip().upper() == selected_ticker
+        ]
+    if selected_pdf_stem:
+        parse_rows = [
+            row for row in parse_rows
+            if pdf_stem_from_parse_row(row) == selected_pdf_stem
+        ]
+    if selected_ticker or selected_pdf_stem:
+        section_rows = [
+            row for row in section_rows
+            if (
+                (not selected_ticker or (row.get("ticker") or "").strip().upper() == selected_ticker)
+                and (not selected_pdf_stem or (row.get("pdf_stem") or "").strip() == selected_pdf_stem)
+            )
+        ]
+        chunk_rows = [
+            row for row in chunk_rows
+            if (
+                (not selected_ticker or (row.get("ticker") or "").strip().upper() == selected_ticker)
+                and (not selected_pdf_stem or (row.get("pdf_stem") or "").strip() == selected_pdf_stem)
+            )
+        ]
 
     parse_by_ticker = group_by(parse_rows, "ticker")
     parse_by_doc = group_parse_by_doc(parse_rows)
@@ -655,7 +689,7 @@ def run(
         if bad_parse_status:
             notes.append(f"invalid parse status values: {sorted(set(bad_parse_status))}")
         if wrong_doc_type_count:
-            notes.append("possible 10-K or SEC filing in sustainability folder; exclude from ESG RAG")
+            notes.append("possible 10-K or SEC filing in sustainability folder; manual review before indexing")
         if garbled_text_count:
             notes.append("garbled parsed text")
         if any("low_readable_word_ratio" in row_quality_flags(row) for row in parse_doc_rows):
@@ -689,6 +723,16 @@ def run(
             )
 
         registry_row = source_registry.get((ticker, pdf_stem))
+        governed_annual_excerpt = bool(
+            wrong_doc_type_count
+            and registry_row
+            and parse_bool(registry_row.get("include_in_esg_index"))
+            and (registry_row.get("source_scope") or "").strip() in {"esg_excerpt", "governed_esg_excerpt"}
+            and (registry_row.get("source_type") or "").strip() in {"annual_report", "annual_report_with_esg"}
+        )
+        if governed_annual_excerpt:
+            doc_quality_status = "ok"
+            notes.append("approved registry rule admits a governed ESG excerpt from an annual report")
         doc_quality_status, rag_action, policy_notes = registry_aware_document_policy(
             registry_row=registry_row,
             chunk_rows=chunk_doc_rows,
@@ -762,6 +806,8 @@ def run(
             {pdf_stem_from_parse_row(row) for row in ticker_parse_rows if pdf_stem_from_parse_row(row)}
         )
 
+        if selected_pdf_stem:
+            matched_pdf_stems = [selected_pdf_stem]
         if matched_pdf_stems:
             for pdf_stem in matched_pdf_stems:
                 key = (ticker, pdf_stem)
@@ -807,7 +853,17 @@ def run(
         )
         cleanup_tickers.append(ticker)
 
-    rows = sorted(rows, key=lambda r: (r["status"], r["ticker"]))
+    rows = sorted(rows, key=lambda r: (r["status"], r["ticker"], r.get("pdf_file", "")))
+    if selected_ticker or selected_pdf_stem:
+        existing_rows = read_csv(out_path)
+        rows.extend(
+            row for row in existing_rows
+            if not (
+                (not selected_ticker or (row.get("ticker") or "").strip().upper() == selected_ticker)
+                and (not selected_pdf_stem or Path(row.get("pdf_file") or "").stem == selected_pdf_stem)
+            )
+        )
+        rows.sort(key=lambda r: (r["status"], r["ticker"], r.get("pdf_file", "")))
     write_csv(out_path, rows)
 
     print(f"Wrote ESG QA report: {out_path}")
@@ -829,7 +885,12 @@ def main():
     parser.add_argument("--source-registry", default="data/00_reference/esg_source_registry.csv")
     parser.add_argument("--layout-audit", default="data/00_reference/esg_page_layout_qa.csv")
     parser.add_argument("--raw-root", default="data/01_raw/sustainability")
+    parser.add_argument("--ticker", default=None)
+    parser.add_argument("--pdf-file", default=None)
+    parser.add_argument("--pdf-stem", default=None)
     args = parser.parse_args()
+    if args.pdf_file and args.pdf_stem:
+        parser.error("use only one of --pdf-file and --pdf-stem")
 
     run(
         out=args.out,
@@ -841,6 +902,8 @@ def main():
         source_registry_path=args.source_registry,
         layout_audit_path=args.layout_audit,
         raw_root=args.raw_root,
+        ticker=args.ticker,
+        pdf_stem=args.pdf_stem or (Path(args.pdf_file).stem if args.pdf_file else None),
     )
 
 

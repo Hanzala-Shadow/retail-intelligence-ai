@@ -12,8 +12,10 @@ from pathlib import Path
 
 MANIFEST_FIELDS = [
     "chunk_id",
+    "logical_source_id",
     "source_id",
     "source_version_id",
+    "extraction_artifact_id",
     "ticker",
     "canonical_ticker",
     "pdf_stem",
@@ -40,6 +42,12 @@ MANIFEST_FIELDS = [
     "layout_qa_reason",
     "eligibility_decision",
     "eligibility_reason",
+    "retrieval_state",
+    "vlm_model",
+    "vlm_prompt_version",
+    "source_page_sha256",
+    "vlm_output_sha256",
+    "vlm_verification_state",
 ]
 
 VERIFIED_CITATION_STATUSES = {"verified_exact", "verified_whitespace_normalized"}
@@ -50,7 +58,7 @@ LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
 # tests/test_esg_vector_manifest.py fails if the two ever drift. Any audit row
 # carrying a different version is treated as stale and holds its chunk, so a
 # mismatch here silently quarantines the entire corpus.
-LAYOUT_AUDIT_VERSION = "layout_v4"
+LAYOUT_AUDIT_VERSION = "layout_v5"
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -149,20 +157,20 @@ def layout_policy_for_chunk(
             return "auto_hold", f"layout_audit_missing_page={page}"
         if (row.get("audit_version") or "").strip() != LAYOUT_AUDIT_VERSION:
             return "auto_hold", f"layout_audit_stale_version_page={page}"
-        audit_source_hash = (row.get("source_sha256") or "").strip()
+        audit_source_hash = (row.get("source_sha256") or "").strip().lower()
         parsed_hash = (chunk.get("parsed_text_sha256") or "").strip()
         audit_parsed_hash = (row.get("parsed_text_sha256") or "").strip()
-        if parsed_hash and audit_parsed_hash and parsed_hash != audit_parsed_hash:
+        if not parsed_hash or not audit_parsed_hash or parsed_hash != audit_parsed_hash:
             return "auto_hold", f"layout_audit_stale_parse_hash_page={page}"
         # Chunk ``source_sha256`` is the section-source fingerprint in the
         # current chunk contract, not the raw-PDF hash. The canonical raw hash
         # is carried by the source-version identifier instead.
-        source_version_id = (chunk.get("source_version_id") or "").strip()
-        if (
-            len(audit_source_hash) >= 12
-            and source_version_id
-            and audit_source_hash[:12] not in source_version_id
-        ):
+        source_version_id = (chunk.get("source_version_id") or "").strip().lower()
+        source_hash_bound = (
+            source_version_id.endswith("__" + audit_source_hash[:12])
+            or source_version_id == "sv_" + audit_source_hash[:24]
+        ) if len(audit_source_hash) == 64 and source_version_id else False
+        if not source_hash_bound:
             return "auto_hold", f"layout_audit_stale_source_version_page={page}"
         page_rows.append((page, row))
 
@@ -240,7 +248,12 @@ def load_vlm_dir(vlm_dir: str | Path | None) -> tuple[dict, list[dict]]:
             key = ((meta.get("ticker") or "").strip().upper(),
                    (meta.get("pdf_stem") or "").strip())
             flagged.setdefault(key, set()).add(int(meta["page"]))
-    vlm_rows = read_csv(vlm_dir / "vlm_chunks_index.csv")
+    vlm_rows = []
+    for row in read_csv(vlm_dir / "vlm_chunks_index.csv"):
+        verified = (row.get("verification_state") or row.get("screen_status") or "").strip().lower()
+        required = [row.get("model"), row.get("prompt_version") or row.get("prompt_hash"), row.get("source_page_sha256") or row.get("source_sha256"), row.get("output_sha256")]
+        if verified in {"verified", "passed", "screen_pass"} and all(str(value or "").strip() for value in required):
+            vlm_rows.append(row)
     return flagged, vlm_rows
 
 
@@ -280,8 +293,10 @@ def vlm_manifest_row(v: dict, registry: dict[tuple[str, str], dict]) -> dict:
     reason = ";".join(reasons) if reasons else f"vlm_extraction_v1;{screen_note}"
     return {
         "chunk_id": (v.get("chunk_id") or "").strip(),
+        "logical_source_id": v.get("logical_source_id", ""),
         "source_id": policy["source_id"],
-        "source_version_id": "",
+        "source_version_id": v.get("source_version_id", ""),
+        "extraction_artifact_id": v.get("extraction_artifact_id", ""),
         "ticker": ticker,
         "canonical_ticker": policy["canonical_ticker"] or ticker,
         "pdf_stem": pdf_stem,
@@ -308,6 +323,12 @@ def vlm_manifest_row(v: dict, registry: dict[tuple[str, str], dict]) -> dict:
         "layout_qa_reason": f"{v.get('lineage', 'vlm_extraction_v1')};model={v.get('model', '')}",
         "eligibility_decision": decision,
         "eligibility_reason": reason,
+        "retrieval_state": "eligible" if decision == "eligible" else "held_for_document_review",
+        "vlm_model": v.get("model", ""),
+        "vlm_prompt_version": v.get("prompt_version") or v.get("prompt_hash", ""),
+        "source_page_sha256": v.get("source_page_sha256") or v.get("source_sha256", ""),
+        "vlm_output_sha256": v.get("output_sha256", ""),
+        "vlm_verification_state": v.get("verification_state") or v.get("screen_status", ""),
     }
 
 
@@ -330,6 +351,8 @@ def eligibility_for_chunk(
     }
     citation_ready = parse_bool(chunk.get("citation_ready"))
     citation_status = (chunk.get("citation_validation_status") or "").strip()
+    if (chunk.get("lifecycle_state") or "").strip().lower() == "superseded":
+        reasons.append("lifecycle_state=superseded")
 
     if (
         short_action == "excluded"
@@ -372,10 +395,24 @@ def manifest_row(
         vlm_hold_reason=vlm_hold_reason_for_chunk(chunk, vlm_flagged or {}),
     )
 
+    if decision == "eligible":
+        retrieval_state = "eligible"
+    elif (chunk.get("lifecycle_state") or "").strip() == "superseded":
+        retrieval_state = "superseded"
+    elif "duplicate_of=" in reason:
+        retrieval_state = "excluded_duplicate"
+    elif "vlm_" in reason:
+        retrieval_state = "held_for_vlm"
+    elif "held_for_ocr" in (chunk.get("quality_flags") or ""):
+        retrieval_state = "held_for_ocr"
+    else:
+        retrieval_state = "held_for_document_review" if "rag_action=" in reason else "held_for_vlm"
     return {
         "chunk_id": (chunk.get("chunk_id") or "").strip(),
+        "logical_source_id": chunk.get("logical_source_id", ""),
         "source_id": policy["source_id"],
         "source_version_id": chunk.get("source_version_id", ""),
+        "extraction_artifact_id": chunk.get("extraction_artifact_id", ""),
         "ticker": ticker,
         "canonical_ticker": policy["canonical_ticker"],
         "pdf_stem": pdf_stem,
@@ -402,7 +439,27 @@ def manifest_row(
         "layout_qa_reason": layout_reason,
         "eligibility_decision": decision,
         "eligibility_reason": reason,
+        "retrieval_state": retrieval_state,
+        "vlm_model": "", "vlm_prompt_version": "", "source_page_sha256": "",
+        "vlm_output_sha256": "", "vlm_verification_state": "",
     }
+
+
+def validate_fail_closed(rows: list[dict]) -> None:
+    fatal_layout = [row for row in rows if any(marker in (row.get("layout_qa_reason") or "") for marker in ("layout_audit_missing", "layout_audit_stale", "layout_missing_chunk_page_range"))]
+    if fatal_layout:
+        raise ValueError(f"missing or stale layout QA for {len(fatal_layout)} chunk(s)")
+    bad_superseded = [row for row in rows if row.get("retrieval_state") == "superseded" and row.get("eligibility_decision") == "eligible"]
+    if bad_superseded:
+        raise ValueError("a superseded chunk is eligible")
+    eligible_by_page: dict[tuple[str, str, str], set[str]] = {}
+    for row in rows:
+        if row.get("eligibility_decision") != "eligible":
+            continue
+        for page in range(int(row.get("page_start") or 0), int(row.get("page_end") or 0) + 1):
+            eligible_by_page.setdefault((row.get("ticker", ""), row.get("pdf_stem", ""), str(page)), set()).add("vlm" if row.get("chunk_type") == "vlm_page_markdown" else "parser")
+    if any(kinds == {"parser", "vlm"} for kinds in eligible_by_page.values()):
+        raise ValueError("an approved VLM replacement and parser chunk are both eligible")
 
 
 def atomic_write_csv(path: Path, rows: list[dict]) -> None:
@@ -455,20 +512,37 @@ def build_manifest(
     source_registry: str | Path,
     out: str | Path,
     layout_audit_path: str | Path | None = None,
-    require_layout_audit: bool = False,
+    require_layout_audit: bool = True,
     vlm_dir: str | Path | None = None,
+    ticker: str | None = None,
+    pdf_stem: str | None = None,
 ) -> list[dict]:
     chunks = read_csv(Path(chunks_index))
     validate_chunk_ids(chunks)
+    selected_ticker = ticker.strip().upper() if ticker else None
+    selected_pdf_stem = Path(pdf_stem).stem if pdf_stem else None
+
+    def selected(row: dict) -> bool:
+        return (
+            (not selected_ticker or (row.get("ticker") or "").strip().upper() == selected_ticker)
+            and (not selected_pdf_stem or (row.get("pdf_stem") or "").strip() == selected_pdf_stem)
+        )
+
+    target_chunks = [row for row in chunks if selected(row)]
     registry = load_source_registry(Path(source_registry))
     layout_audit = load_layout_audit(
         layout_audit_path,
         require=require_layout_audit,
     )
     vlm_flagged, vlm_rows = load_vlm_dir(vlm_dir)
-    rows = [manifest_row(chunk, registry, layout_audit, vlm_flagged) for chunk in chunks]
-    rows.extend(vlm_manifest_row(v, registry) for v in vlm_rows)
+    target_vlm_rows = [row for row in vlm_rows if selected(row)]
+    rows = [manifest_row(chunk, registry, layout_audit, vlm_flagged) for chunk in target_chunks]
+    rows.extend(vlm_manifest_row(v, registry) for v in target_vlm_rows)
+    if selected_ticker or selected_pdf_stem:
+        rows.extend(row for row in read_csv(Path(out)) if not selected(row))
     rows.sort(key=lambda row: row["chunk_id"])
+    validate_chunk_ids(rows)
+    validate_fail_closed(rows)
     atomic_write_csv(Path(out), rows)
     verify_written_manifest(
         Path(out), chunks,
@@ -494,7 +568,12 @@ def main() -> None:
         help="VLM activation (default OFF): exclude parser chunks of classifier-flagged "
              "pages and append verified VLM extraction chunks (e.g. data/04_vlm).",
     )
+    parser.add_argument("--ticker", default=None)
+    parser.add_argument("--pdf-file", default=None)
+    parser.add_argument("--pdf-stem", default=None)
     args = parser.parse_args()
+    if args.pdf_file and args.pdf_stem:
+        parser.error("use only one of --pdf-file and --pdf-stem")
 
     rows = build_manifest(
         chunks_index=args.chunks_index,
@@ -503,6 +582,8 @@ def main() -> None:
         layout_audit_path=args.layout_audit,
         require_layout_audit=not args.allow_missing_layout_audit,
         vlm_dir=args.vlm_dir,
+        ticker=args.ticker,
+        pdf_stem=args.pdf_stem or (Path(args.pdf_file).stem if args.pdf_file else None),
     )
     counts = Counter(row["eligibility_decision"] for row in rows)
     _, vlm_rows = load_vlm_dir(args.vlm_dir)

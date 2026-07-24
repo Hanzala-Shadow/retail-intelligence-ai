@@ -58,3 +58,4 @@ reports/*.log
 reports/*.tar.gz
 data/03_sections/esg/
 *.docx
+outputs/pdf_parser_experiments/

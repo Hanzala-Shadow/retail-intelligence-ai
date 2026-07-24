@@ -75,6 +75,25 @@ def parse_doc_key(row: dict) -> tuple[str, str] | None:
     return ticker, pdf_stem
 
 
+def row_matches_scope(
+    row: dict,
+    ticker: str | None = None,
+    pdf_stem: str | None = None,
+) -> bool:
+    selected_ticker = ticker.strip().upper() if ticker else None
+    selected_stem = Path(pdf_stem).stem if pdf_stem else None
+    row_ticker = (row.get("ticker") or "").strip().upper()
+    row_stem = (
+        parse_doc_key(row)[1]
+        if parse_doc_key(row) is not None
+        else (row.get("pdf_stem") or "").strip()
+    )
+    return (
+        (not selected_ticker or row_ticker == selected_ticker)
+        and (not selected_stem or row_stem == selected_stem)
+    )
+
+
 def atomic_write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_name = tempfile.mkstemp(
@@ -301,12 +320,31 @@ def main() -> None:
     parser.add_argument("--sections-index", required=True)
     parser.add_argument("--chunks-index", required=True)
     parser.add_argument("--json-out")
+    parser.add_argument("--ticker")
+    parser.add_argument("--pdf-file")
+    parser.add_argument("--pdf-stem")
     args = parser.parse_args()
+    if args.pdf_file and args.pdf_stem:
+        parser.error("use only one of --pdf-file and --pdf-stem")
+    selected_stem = args.pdf_stem or (Path(args.pdf_file).stem if args.pdf_file else None)
+
+    parse_rows = [
+        row for row in read_csv(Path(args.parse_index))
+        if row_matches_scope(row, args.ticker, selected_stem)
+    ]
+    section_rows = [
+        row for row in read_csv(Path(args.sections_index))
+        if row_matches_scope(row, args.ticker, selected_stem)
+    ]
+    chunk_rows = [
+        row for row in read_csv(Path(args.chunks_index))
+        if row_matches_scope(row, args.ticker, selected_stem)
+    ]
 
     result = validate(
-        read_csv(Path(args.parse_index)),
-        read_csv(Path(args.sections_index)),
-        read_csv(Path(args.chunks_index)),
+        parse_rows,
+        section_rows,
+        chunk_rows,
     )
     print(json.dumps(result["metrics"], indent=2, sort_keys=True))
     if result["error_samples"]:
