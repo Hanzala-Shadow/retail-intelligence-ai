@@ -59,6 +59,29 @@ def _usable_words(words: list[dict]) -> list[dict]:
     return [word for word in words if str(word.get("text", "")).strip()]
 
 
+def _linear_words(words: list[dict]) -> list[dict]:
+    """Usable words minus genuinely rotated runs.
+
+    Rotated (non-upright) text -- a vertical sidebar title, a rotated nav
+    tab -- has a bounding box that spans whatever vertical range the glyph
+    run occupies, not one line's height, so it rarely lands in the
+    header/footer band; it would fall through to column assignment and
+    corrupt body text. Dropping it here, before column detection, keeps the
+    detection input, the reconstructed output, and the preservation ratio
+    consistent: a deliberately excluded word must not count as "lost".
+    ROTATED_WORD_MIN_HEIGHT guards against the font-scaling false positive.
+    """
+
+    kept: list[dict] = []
+    for word in _usable_words(words):
+        top = _number(word, "top")
+        bottom = _number(word, "bottom", top)
+        if not word.get("upright", True) and (bottom - top) > ROTATED_WORD_MIN_HEIGHT:
+            continue
+        kept.append(word)
+    return kept
+
+
 def _line_groups(words: list[dict]) -> list[list[dict]]:
     groups: list[list[dict]] = []
     tops: list[float] = []
@@ -229,7 +252,7 @@ def reconstruct_column_order(
     latter without an alternative verified parser output.
     """
 
-    usable = _usable_words(words)
+    usable = _linear_words(words)
     if page_width <= 0 or page_height <= 0:
         return ReadingOrderResult(
             "not_applicable", "", "insufficient_geometry_or_words", 0, len(usable), 0, 0.0
@@ -271,15 +294,6 @@ def reconstruct_column_order(
     for word in usable:
         top = _number(word, "top")
         bottom = _number(word, "bottom", top)
-        # Rotated (non-upright) text -- a vertical sidebar title, a rotated
-        # nav tab -- has a bounding box that spans whatever vertical range the
-        # glyph run occupies, not one line's height, so it rarely lands in the
-        # header/footer band below; it falls through to column assignment and
-        # corrupts body text instead. Drop it before any classification, but
-        # only once it's tall enough to be a real rotated run rather than the
-        # font-scaling false positive ROTATED_WORD_MIN_HEIGHT guards against.
-        if not word.get("upright", True) and (bottom - top) > ROTATED_WORD_MIN_HEIGHT:
-            continue
         if bottom <= header_limit:
             headers.append(word)
             continue

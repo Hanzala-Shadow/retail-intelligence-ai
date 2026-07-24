@@ -35,17 +35,20 @@ from pdf_parser import (
     layout_grid_risk_from_metrics,
     normalize_extracted_page_text,
     page_layout_grid_metrics,
+    reconstruct_region_order,
 )
 from esg_reading_order import canonical_order_text, reconstruct_column_order
 
 
-# v5 admits only parser-produced Markdown tables that pass a separate,
-# rotation-aware token and shape check. Generic grids, charts, and contents
-# pages remain held. This changes page decisions, so v4 rows must be rebuilt.
-AUDIT_VERSION = "layout_v5"
+# v6 verifies parser region-order (xy-cut) repairs against a fresh region
+# reconstruction instead of holding them, and the column reconstructor now
+# excludes deliberately dropped rotated words from its preservation ratio.
+# This changes page decisions, so v5 rows must be rebuilt.
+AUDIT_VERSION = "layout_v6"
 AUTO_PASS = "auto_pass"
 AUTO_PASS_PDFIUM_COVERAGE = "auto_pass_pdfium_coverage"
 AUTO_PASS_COLUMN_ORDER = "auto_pass_column_order_reconstructed"
+AUTO_PASS_REGION_ORDER = "auto_pass_region_order_reconstructed"
 AUTO_PASS_VERIFIED_TABLE = "auto_pass_verified_table_extraction"
 AUTO_HOLD = "auto_hold"
 AUDIT_ERROR = "audit_error"
@@ -102,6 +105,9 @@ MIN_MIXED_COLUMN_LINES = 2
 LOW_TEXT_MIN_NATIVE_WORDS = 40
 TABLE_REPAIR_METHODS = frozenset(
     {"table_aware_xy_cut_order", "pymupdf_table_aware_xy_cut_order"}
+)
+REGION_REPAIR_METHODS = frozenset(
+    {"region_xy_cut_order", "pymupdf_region_xy_cut_order"}
 )
 TABLE_MIN_TOKEN_RECALL = 0.995
 TABLE_MAX_EXTRA_TOKEN_RATIO = 0.005
@@ -473,6 +479,40 @@ def automatic_decision(
     return AUTO_PASS, "auto_pass_no_unresolved_layout_signal", preference, scores
 
 
+def region_order_decision(
+    page_record: dict,
+    current_text: str,
+    words: list[dict],
+    page_width: float,
+    page_height: float,
+) -> tuple[str, str] | None:
+    """Verify a parser region-order repair the column reconstructor cannot model.
+
+    The parser's xy-cut region pass is a legitimate reading-order repair, but
+    ``reading_order_decision`` only compares against pure column
+    reconstruction, so a region-repaired page would always look like a
+    mismatch and be held. When the page map says a region repair was applied,
+    recompute it here and pass the page only if the stored text matches the
+    fresh reconstruction exactly.
+    """
+
+    method = str(page_record.get("repair_method") or "").strip()
+    if method not in REGION_REPAIR_METHODS:
+        return None
+    region_order = reconstruct_region_order(words, page_width, page_height)
+    if region_order.status != "reconstructed":
+        return None
+    if canonical_order_text(current_text) != canonical_order_text(region_order.text):
+        return None
+    return (
+        AUTO_PASS_REGION_ORDER,
+        "auto_pass_region_order_reconstructed: "
+        f"blocks={region_order.block_count}; "
+        f"preservation_ratio={region_order.preservation_ratio:.4f}; "
+        f"extra_token_ratio={region_order.extra_token_ratio:.4f}",
+    )
+
+
 def reading_order_decision(reading_order, current_text: str) -> tuple[str | None, str, bool]:
     """Return a decisive coordinate-order gate when a page has a layout signal."""
 
@@ -634,6 +674,17 @@ def audit_document(parse_row: dict) -> list[dict]:
                             reading_order,
                             current_text,
                         )
+                        if decision == AUTO_HOLD:
+                            region_verdict = region_order_decision(
+                                page_record,
+                                current_text,
+                                words,
+                                float(page.width),
+                                float(page.height),
+                            )
+                            if region_verdict is not None:
+                                decision, reason = region_verdict
+                                current_order_matches = True
                     preference, scores = _candidate_preference(
                         current_text,
                         native_text,

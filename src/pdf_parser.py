@@ -1652,10 +1652,14 @@ class PDFParser:
                     page = pdf.pages[i]
                     text = normalize_extracted_page_text(page.extract_text_simple() or "")
                     try:
+                        # "upright" must match the layout-QA extraction exactly:
+                        # the reading-order reconstructor drops tall rotated
+                        # runs, so parser and auditor must see the same words
+                        # or every rotated-sidebar page is held on mismatch.
                         words = page.extract_words(
                             use_text_flow=False,
                             keep_blank_chars=False,
-                            extra_attrs=["size"],
+                            extra_attrs=["size", "upright"],
                         ) or []
                     except TypeError:
                         words = page.extract_words(
