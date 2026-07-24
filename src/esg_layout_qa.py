@@ -618,10 +618,15 @@ def audit_document(parse_row: dict) -> list[dict]:
                     page_record = current_page_records.get(page_number, {})
                     native_text = normalize_extracted_page_text(page.extract_text_simple() or "")
                     try:
+                        # extra_attrs must match the parser's extraction
+                        # exactly: pdfplumber only merges adjacent characters
+                        # into one word when every requested attr agrees, so a
+                        # different attr set here yields a different word
+                        # segmentation and a false reading-order mismatch.
                         words = page.extract_words(
                             use_text_flow=False,
                             keep_blank_chars=False,
-                            extra_attrs=["upright"],
+                            extra_attrs=["size", "upright"],
                         ) or []
                     except TypeError:
                         words = page.extract_words(
