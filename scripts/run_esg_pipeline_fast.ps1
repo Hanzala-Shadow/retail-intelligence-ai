@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("all", "intake", "parse", "remediate", "section", "chunk", "layout", "vlm", "qa", "manifest", "validate", "tests")]
+    [ValidateSet("all", "intake", "parse", "remediate", "section", "chunk", "layout", "vlm", "qa", "manifest", "enrich", "validate", "tests")]
     [string]$Stage = "all",
 
     [string]$Ticker,
@@ -150,6 +150,7 @@ try {
     $runVlm = $Stage -in @("all", "vlm")
     $runQa = $Stage -in @("all", "qa")
     $runManifest = $Stage -in @("all", "manifest", "vlm")
+    $runEnrich = $Stage -in @("all", "enrich")
     $runValidate = $Stage -in @("all", "validate")
     $runTests = $Stage -in @("all", "tests")
 
@@ -399,6 +400,15 @@ try {
             $arguments.Add($VlmDir)
         }
         Invoke-PythonStage -Name "manifest" -Arguments $arguments.ToArray()
+    }
+
+    if ($runEnrich) {
+        # P1 metadata enrichment: additive-only, deterministic. Rebuilds the
+        # enriched chunk index and embedding_text_plain copies from the current
+        # chunks index; the base index and chunk files are never modified.
+        Invoke-PythonStage -Name "enrich" -Arguments @(
+            "src/esg_p1_enrichment.py"
+        )
     }
 
     if ($runValidate) {
