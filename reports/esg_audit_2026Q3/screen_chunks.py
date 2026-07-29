@@ -13,7 +13,10 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[1] / "src"))
+# The ESG pipeline moved under esg/; these reports live outside both
+# pipelines, so they name the two entries a pipeline _bootstrap would add.
+sys.path.insert(0, str(HERE.parents[1]))
+sys.path.insert(0, str(HERE.parents[1] / "esg"))
 
 import config  # noqa: E402
 

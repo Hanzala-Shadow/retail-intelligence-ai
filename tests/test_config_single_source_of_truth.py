@@ -1,37 +1,50 @@
-"""config.py is the only place a data/reports/logs path may be spelled out.
+"""The three config modules are the only place a data/reports/logs path lives.
 
-Every other module imports its paths from config, so the pipeline resolves
+Every other module imports its paths from `config`, so both pipelines resolve
 the same directories no matter which working directory a script is invoked
-from -- and so moving the ESG and 10-K pipelines into separate top-level
-directories touches one file instead of forty.
+from.
+
+Since the pipelines were split, "config" is three files -- common/config.py
+plus one per pipeline -- and the shell runners read the union of all three via
+`python common/config.py --json`. That union is what this test polices: a
+lookup naming a constant no config defines is an empty argument at runtime, and
+the split is exactly what could have introduced one.
 """
 
 import ast
 import re
-import sys
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "src"))
+from common import config  # noqa: E402
 
-import config  # noqa: E402
-
-SCANNED_DIRS = ("src", "scripts", "tests", "reports/esg_audit_2026Q3")
+# Every directory holding pipeline code. Missing one here means it stops being
+# policed silently, so the test asserts below that each still exists.
+SCANNED_DIRS = (
+    "common",
+    "esg/src",
+    "esg/scripts",
+    "esg/tests",
+    "filings/src",
+    "filings/scripts",
+    "tests",
+    "reports/esg_audit_2026Q3",
+)
 
 # Shell/PowerShell cannot import config, so they read it through
-# `python src/config.py --json` (see scripts/PipelinePaths.ps1). They are
-# scanned with a text rule rather than the AST rule used for Python.
+# `python common/config.py --json` (see esg/scripts/PipelinePaths.ps1). They
+# are scanned with a text rule rather than the AST rule used for Python.
 SCANNED_SHELL = (
     "run_pipeline.sh",
     "scripts_project_snapshot.sh",
-    "scripts/run_esg_pipeline_fast.ps1",
-    "scripts/run_esg_pipeline_year.ps1",
-    "scripts/run_esg_pymupdf_full_corpus.ps1",
-    "scripts/run_esg_random_sample.ps1",
-    "scripts/run_esg_sample_reparse.ps1",
-    "scripts/run_esg_pipeline_fast.cmd",
-    "scripts/run_esg_pymupdf_full_corpus.cmd",
+    "esg/scripts/run_esg_pipeline_fast.ps1",
+    "esg/scripts/run_esg_pipeline_year.ps1",
+    "esg/scripts/run_esg_pymupdf_full_corpus.ps1",
+    "esg/scripts/run_esg_random_sample.ps1",
+    "esg/scripts/run_esg_sample_reparse.ps1",
+    "esg/scripts/run_esg_pipeline_fast.cmd",
+    "esg/scripts/run_esg_pymupdf_full_corpus.cmd",
 )
 
 # A quoted "data/..." / 'reports/...' / data\... in shell or PowerShell.
@@ -136,31 +149,45 @@ class ConfigIsSingleSourceOfTruthTests(unittest.TestCase):
         self.assertEqual(
             offenders,
             [],
-            "These modules hardcode a pipeline path. Add a constant to "
-            "src/config.py and import it instead:\n  " + "\n  ".join(offenders),
+            "These modules hardcode a pipeline path. Add a constant to the "
+            "config that owns it (common/, esg/ or filings/) and import it "
+            "instead:\n  " + "\n  ".join(offenders),
+        )
+
+    def test_every_scanned_dir_exists(self):
+        """A renamed directory would drop out of the scan without a failure."""
+        missing = [d for d in SCANNED_DIRS if not (REPO_ROOT / d).is_dir()]
+        self.assertEqual(
+            missing,
+            [],
+            f"SCANNED_DIRS names directories that no longer exist: {missing}. "
+            "Update it, or these paths stop being policed silently.",
         )
 
     def test_every_config_path_is_absolute_and_under_the_repo(self):
-        for name in dir(config):
-            if name.startswith("_"):
-                continue
-            value = getattr(config, name)
-            if not isinstance(value, Path):
-                continue
+        # The merged table, not one module's namespace: after the split, each
+        # config holds only its own third.
+        for name, value in config.merged_path_constants()["absolute"].items():
+            path = Path(value)
             if name.endswith("_REL"):
-                self.assertFalse(
-                    value.is_absolute(),
-                    f"config.{name} is a repo-relative form but is absolute",
-                )
                 continue
             self.assertTrue(
-                value.is_absolute(),
+                path.is_absolute(),
                 f"config.{name} must be absolute so it is CWD-independent",
             )
             self.assertEqual(
                 config.REPO_ROOT,
-                Path(*value.parts[: len(config.REPO_ROOT.parts)]),
+                Path(*path.parts[: len(config.REPO_ROOT.parts)]),
                 f"config.{name} must live under REPO_ROOT",
+            )
+
+    def test_repo_relative_forms_stay_relative(self):
+        for name, value in config.merged_path_constants()["relative"].items():
+            if not name.endswith("_REL"):
+                continue
+            self.assertFalse(
+                Path(value).is_absolute(),
+                f"config.{name} is a repo-relative form but is absolute",
             )
 
     def test_no_shell_runner_spells_out_a_data_path(self):
@@ -182,17 +209,19 @@ class ConfigIsSingleSourceOfTruthTests(unittest.TestCase):
             offenders,
             [],
             "These runners hardcode a pipeline path. Read it from config "
-            "instead -- PowerShell via scripts/PipelinePaths.ps1, bash via "
-            "`python src/config.py --json`:\n  " + "\n  ".join(offenders),
+            "instead -- PowerShell via esg/scripts/PipelinePaths.ps1, bash via "
+            "`python common/config.py --json`:\n  " + "\n  ".join(offenders),
         )
 
     def test_runner_path_lookups_name_real_config_constants(self):
-        """A typo'd $Paths key silently yields an empty argument, so pin them."""
-        known = {
-            name
-            for name in dir(config)
-            if not name.startswith("_") and isinstance(getattr(config, name), Path)
-        }
+        """A typo'd $Paths key silently yields an empty argument, so pin them.
+
+        Checked against the MERGED table, which is what the runners actually
+        read. Checking one config's namespace would fail every lookup naming a
+        constant the other pipeline owns -- and `scripts_project_snapshot.sh`
+        legitimately reads both.
+        """
+        known = set(config.merged_path_constants()["relative"])
         offenders = []
         for rel in SCANNED_SHELL:
             path = REPO_ROOT / rel
@@ -209,7 +238,7 @@ class ConfigIsSingleSourceOfTruthTests(unittest.TestCase):
         self.assertEqual(sorted(set(offenders)), [], "\n  ".join(sorted(set(offenders))))
 
     def test_json_bridge_exposes_absolute_and_relative_forms(self):
-        payload = config.path_constants()
+        payload = config.merged_path_constants()
         self.assertIn("absolute", payload)
         self.assertIn("relative", payload)
         self.assertEqual(sorted(payload["absolute"]), sorted(payload["relative"]))
@@ -219,9 +248,38 @@ class ConfigIsSingleSourceOfTruthTests(unittest.TestCase):
         )
         self.assertTrue(Path(payload["absolute"]["ESG_PARSE_INDEX_CSV"]).is_absolute())
 
+    def test_merged_table_spans_every_config(self):
+        """The bridge the runners read must not lose a pipeline.
+
+        This is the failure the split could have caused: path_constants() walks
+        one namespace, so pointing the runners at a pipeline config yields a
+        table missing the other pipeline's constants entirely. A missing key
+        becomes an empty command-line argument -- which fails deep inside a
+        corpus run, not at startup.
+        """
+        merged = config.merged_path_constants()["relative"]
+
+        # One sentinel per config, spelled out so the assertion names what is
+        # missing rather than just a count.
+        for owner, key, expected in (
+            ("common", "REFERENCE_DIR", "data/00_reference"),
+            ("esg", "ESG_PARSE_INDEX_CSV", "data/00_reference/esg_parse_index.csv"),
+            ("filings", "RAW_10K_DIR", "data/01_raw/10k"),
+        ):
+            self.assertIn(
+                key, merged, f"merged path table lost {owner}/config.py ({key})"
+            )
+            self.assertEqual(merged[key], expected)
+
+        # The union must be strictly larger than any one config's share.
+        shared_only = set(config.path_constants())
+        self.assertGreater(len(merged), len(shared_only))
+
     def test_as_repo_relative_round_trips(self):
+        merged = config.merged_path_constants()["absolute"]
+        esg_index = Path(merged["ESG_PARSE_INDEX_CSV"])
         self.assertEqual(
-            config.as_repo_relative(config.ESG_PARSE_INDEX_CSV).as_posix(),
+            config.as_repo_relative(esg_index).as_posix(),
             "data/00_reference/esg_parse_index.csv",
         )
         # Already-relative and outside-the-repo paths pass through unchanged.

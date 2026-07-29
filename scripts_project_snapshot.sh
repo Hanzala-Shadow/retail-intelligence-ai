@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -u
 
-# Layout comes from src/config.py so this snapshot does not fork it.
+# Layout comes from common/config.py so this snapshot does not fork it.
 # Each constant lands in the shell as CFG_<NAME>, repo-relative.
+#
+# merged_path_constants(), not path_constants(): this snapshot counts files
+# under BOTH pipelines, so it needs the union of the shared, ESG and 10-K
+# tables -- exactly the set the single pre-split config.py exposed.
 eval "$(python3 - <<'PY'
 import sys
-sys.path.insert(0, "src")
-import config
-for name, value in config.path_constants()["relative"].items():
+sys.path.insert(0, ".")
+from common import config
+for name, value in config.merged_path_constants()["relative"].items():
     print(f'CFG_{name}="{value}"')
 PY
 )"
@@ -47,8 +51,8 @@ mkdir -p "$CFG_REPORTS_DIR"
     -print | sort
   echo
 
-  echo "==================== SRC FILES ===================="
-  find src -maxdepth 2 -type f | sort
+  echo "==================== SOURCE FILES ===================="
+  find common esg/src esg/scripts filings/src -maxdepth 2 -type f -name "*.py" | sort
   echo
 
   echo "==================== DATA COUNTS ===================="
