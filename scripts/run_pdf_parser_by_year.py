@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -53,7 +54,13 @@ def main() -> int:
     )
     parser.add_argument("--out", default="data/02_interim/esg_text")
     parser.add_argument("--index", default="data/00_reference/esg_parse_index.csv")
-    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--workers", type=int, default=1,
+                        help="Passed through to each pdf_parser.py invocation (irrelevant per-call "
+                             "since each call scopes exactly one PDF; use --parallel for concurrency).")
+    parser.add_argument("--parallel", type=int, default=1,
+                        help="Number of pdf_parser.py subprocesses to run concurrently, one PDF each "
+                             "(pdf_parser.py's own --workers only parallelizes across jobs in a single "
+                             "invocation, and each invocation here has exactly one job).")
     parser.add_argument("--force", action="store_true", help="Reparse even if current outputs are complete.")
     parser.add_argument("--prefer-pdfium", action="store_true")
     parser.add_argument("--prefer-pymupdf", action="store_true")
@@ -81,8 +88,8 @@ def main() -> int:
         return 0
 
     parser_path = repo / "src" / "pdf_parser.py"
-    failures: list[tuple[str, str, int]] = []
-    for root_rel, ticker, pdf in matches:
+
+    def build_command(root_rel: str, ticker: str, pdf: Path) -> list[str]:
         command = [
             sys.executable,
             str(parser_path),
@@ -107,11 +114,71 @@ def main() -> int:
             command.append("--prefer-pymupdf")
         if args.log_pages:
             command.append("--log-pages")
+        return command
 
-        print(f"\n=== Parsing [{ticker}] {pdf.name} ===")
+    def run_one(job: tuple[str, str, Path]) -> tuple[str, str, int]:
+        root_rel, ticker, pdf = job
+        command = build_command(root_rel, ticker, pdf)
         completed = subprocess.run(command, cwd=repo)
+        return ticker, pdf.name, completed.returncode
+
+    failures: list[tuple[str, str, int]] = []
+    parallel = max(1, args.parallel)
+
+    # esg_parse_index.csv is a single shared CSV rewritten by each invocation
+    # (upsert-on-write in src/pdf_parser.py); concurrent writers would race on
+    # it, so each job writes to its own scoped, unique --index file, and the
+    # shards are merged back into the real index once every job has finished.
+    if parallel == 1:
+        for root_rel, ticker, pdf in matches:
+            print(f"\n=== Parsing [{ticker}] {pdf.name} ===")
+            _, _, code = run_one((root_rel, ticker, pdf))
+            if code:
+                failures.append((ticker, pdf.name, code))
+    else:
+        print(f"\nRunning up to {parallel} parser subprocess(es) concurrently...")
+        real_index = repo / args.index
+        shard_dir = real_index.parent / "_year_run_shards"
+        shard_dir.mkdir(parents=True, exist_ok=True)
+        jobs = []
+        for i, (root_rel, ticker, pdf) in enumerate(matches):
+            jobs.append((root_rel, ticker, pdf, shard_dir / f"shard_{i:04d}.csv"))
+
+        def run_sharded(job) -> tuple[str, str, int]:
+            root_rel, ticker, pdf, shard_index = job
+            command = build_command(root_rel, ticker, pdf)
+            # swap the shared --index for this job's private shard
+            idx = command.index("--index") + 1
+            command[idx] = str(shard_index)
+            completed = subprocess.run(command, cwd=repo)
+            return ticker, pdf.name, completed.returncode
+
+        completed_count = 0
+        with ThreadPoolExecutor(max_workers=parallel) as pool:
+            futures = {pool.submit(run_sharded, job): job for job in jobs}
+            for future in as_completed(futures):
+                root_rel, ticker, pdf, _shard = futures[future]
+                ticker_r, name_r, code = future.result()
+                completed_count += 1
+                status = "OK" if not code else f"FAILED (exit {code})"
+                print(f"[{completed_count}/{len(jobs)}] [{ticker_r}] {name_r}: {status}")
+                if code:
+                    failures.append((ticker_r, name_r, code))
+
+        # merge shards into the real index in original match order, then clean up
+        merge_command = [
+            sys.executable,
+            str(repo / "scripts" / "merge_parse_index_shards.py"),
+            "--index",
+            str(real_index),
+            "--shard-dir",
+            str(shard_dir),
+        ]
+        completed = subprocess.run(merge_command, cwd=repo)
         if completed.returncode:
-            failures.append((ticker, pdf.name, completed.returncode))
+            print("\nShard merge failed; shards preserved at "
+                  f"{shard_dir} for manual recovery.", file=sys.stderr)
+            return 1
 
     if failures:
         print("\nFailures:", file=sys.stderr)
