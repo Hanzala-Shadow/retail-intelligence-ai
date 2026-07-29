@@ -25,7 +25,6 @@ import esg_year  # noqa: E402
 
 DEFAULT_ROOTS = [
     "data/01_raw/sustainability",
-    "data/01_raw/sustainability_other",
 ]
 
 
@@ -50,7 +49,7 @@ def main() -> int:
         "--root",
         action="append",
         dest="roots",
-        help="Raw PDF root, relative to --repo (repeatable). Defaults to both sustainability roots.",
+        help="Raw PDF root, relative to --repo (repeatable). Defaults to the Sustainability Reports root.",
     )
     parser.add_argument("--out", default="data/02_interim/esg_text")
     parser.add_argument("--index", default="data/00_reference/esg_parse_index.csv")
