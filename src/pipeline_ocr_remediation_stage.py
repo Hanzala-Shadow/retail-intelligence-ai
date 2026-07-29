@@ -15,25 +15,44 @@ import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Sequence
 
 import pypdfium2 as pdfium
 import pytesseract
 
 
+# One row per inspected page, and the stage's only audit record. It carries the
+# page-level hashes for the override itself plus the parsed-document hashes the
+# override produced, so a page can be traced to the document version it landed
+# in. drive_to_db.py reads these as artifact_role=page_ocr_override.
 OVERRIDE_FIELDS = [
     "logical_source_id", "source_version_id", "extraction_artifact_id",
     "ticker", "pdf_stem", "page", "source_page_sha256", "before_text_sha256",
-    "after_text_sha256", "detection_signal", "action", "verification_result",
-    "ocr_engine", "created_at", "active",
+    "after_text_sha256", "parsed_doc_before_sha256", "parsed_doc_after_sha256",
+    "detection_signal", "action", "verification_result", "note",
+    "recovery_method", "attempted_methods", "ocr_engine", "created_at", "active",
 ]
-LOG_FIELDS = [
-    "timestamp_utc", "logical_source_id", "source_version_id", "ticker", "pdf_stem",
-    "pages", "reason", "action", "before_hash", "after_hash", "verification_result", "note",
-]
+# Recovery candidates, tried cheapest-first. Most flagged pages are not scanned
+# at all: the embedded text layer is intact and only the extractor that produced
+# the parsed document mishandled it, so simply re-reading the page costs a
+# fraction of a render-plus-Tesseract pass and preserves the original line
+# structure. OCR is the last resort, for pages that really are images.
+RECOVERY_METHOD_PDFIUM = "pdfium_text"
+RECOVERY_METHOD_OCR = "ocr"
 RENDER_SCALE = 3.0
 MIN_OCR_CONFIDENCE = 45
 REPLACEMENT_MARKERS = ("\ufffd", "ï¿½", "Ã¯Â¿Â½")
+
+
+# ESG data pages -- emissions inventories, SASB indexes, multi-year appendices --
+# are legitimately mostly digits. Rating readability by letter share alone scores
+# a clean metrics table like garbage, which both sends it to OCR needlessly and
+# then refuses the OCR result at verification, so the pages carrying the actual
+# metrics could never be repaired. Readability is measured over recognizable
+# tokens instead, where a well-formed number counts exactly as much as a word.
+TOKEN_EDGE_PUNCT = "([{<\"'`.,;:!?)]}>%"
+MIN_CONTENT_RATIO = 0.40
+SINGLE_CHAR_WORDS = frozenset({"a", "A", "I"})
 
 
 def _sha_text(text: str) -> str:
@@ -48,15 +67,37 @@ def has_replacement_characters(text: str) -> bool:
     return any(marker in text for marker in REPLACEMENT_MARKERS)
 
 
+def is_content_token(token: str) -> bool:
+    """True when a token reads as a word, a number, or an identifier code."""
+    core = token.strip(TOKEN_EDGE_PUNCT)
+    if not core:
+        return False
+    alnum = sum(char.isalnum() for char in core)
+    if not alnum:
+        return False
+    # A lone character is as likely to be OCR speckle as real content, so it
+    # counts only as a digit or one of the two English single-letter words.
+    if len(core) == 1:
+        return core.isdigit() or core in SINGLE_CHAR_WORDS
+    return alnum / len(core) >= 0.5
+
+
+def content_ratio(text: str) -> float:
+    """Share of non-space characters sitting inside recognizable tokens."""
+    tokens = re.findall(r"\S+", text)
+    if not tokens:
+        return 0.0
+    total = sum(len(token) for token in tokens)
+    content = sum(len(token) for token in tokens if is_content_token(token))
+    return content / max(total, 1)
+
+
 def is_likely_garbled(text: str) -> bool:
     if not text.strip():
         return True
-    chars = [char for char in text if not char.isspace()]
-    letters = sum(char.isalpha() for char in chars)
     words = re.findall(r"\S+", text)
     long_words = sum(len(word) > 24 for word in words)
-    readable_ratio = letters / max(len(chars), 1)
-    return readable_ratio < 0.40 or long_words > max(2, len(words) // 20)
+    return content_ratio(text) < MIN_CONTENT_RATIO or long_words > max(2, len(words) // 20)
 
 
 def detect_page_quality(text: str) -> list[str]:
@@ -80,10 +121,8 @@ def detect_garbled(text: str) -> tuple[bool, str]:
 def quality_score(text: str) -> float:
     if not text.strip():
         return -1000.0
-    words = re.findall(r"[A-Za-z][A-Za-z'-]*", text)
-    chars = [char for char in text if not char.isspace()]
-    letters = sum(char.isalpha() for char in chars)
-    score = 100.0 * letters / max(len(chars), 1) + min(len(words), 300) / 10
+    tokens = [token for token in re.findall(r"\S+", text) if is_content_token(token)]
+    score = 100.0 * content_ratio(text) + min(len(tokens), 300) / 10
     score -= 80 * len(re.findall(r"\(cid:\d+\)", text, re.I))
     score -= 80 * sum(text.count(marker) for marker in REPLACEMENT_MARKERS)
     return score
@@ -104,21 +143,45 @@ def discover_tesseract() -> str:
 
 
 def ocr_page(pdf_doc, page_number_1indexed: int) -> str:
+    """OCR one page, preserving its line and column reading order.
+
+    Delegates to the searchable-PDF helper so a remediated page is segmented the
+    same way ocr_pdf.py segments one: words grouped into lines, lines split at
+    column gaps, then ordered. Joining the raw word list with spaces instead
+    would collapse a two-column ESG page into a single run-on line, which then
+    flows into sections and chunks with no structure left to split on.
+    """
+    from ocr_pdf import ocr_image_page, preprocess_image
+
     pytesseract.pytesseract.tesseract_cmd = discover_tesseract()
     page = pdf_doc[page_number_1indexed - 1]
-    image = page.render(scale=RENDER_SCALE).to_pil()
-    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    words: list[str] = []
-    for word, raw_conf in zip(data["text"], data["conf"]):
-        if not str(word).strip():
-            continue
-        try:
-            confidence = float(raw_conf)
-        except (TypeError, ValueError):
-            confidence = -1
-        if confidence >= MIN_OCR_CONFIDENCE or confidence == -1:
-            words.append(str(word))
-    return " ".join(words)
+    bitmap = page.render(scale=RENDER_SCALE)
+    image = bitmap.to_pil()
+    processed = preprocess_image(image)
+    try:
+        return ocr_image_page(processed, page_number_1indexed, MIN_OCR_CONFIDENCE, False).text
+    finally:
+        for handle in (processed, image, bitmap, page):
+            if handle is not None and hasattr(handle, "close"):
+                handle.close()
+
+
+def extract_pdfium_text(pdf_doc, page_number_1indexed: int) -> str:
+    """Re-read a page's embedded text layer, without rendering or OCR."""
+    # Normalized exactly as the parser normalized the rest of the document, so
+    # recovered text splices into it without introducing a formatting seam.
+    from pdf_parser import normalize_extracted_page_text
+
+    page = None
+    text_page = None
+    try:
+        page = pdf_doc[page_number_1indexed - 1]
+        text_page = page.get_textpage()
+        return normalize_extracted_page_text(text_page.get_text_range() or "")
+    finally:
+        for handle in (text_page, page):
+            if handle is not None and hasattr(handle, "close"):
+                handle.close()
 
 
 def page_texts(text: str, page_map: list[dict]) -> dict[int, str]:
@@ -152,10 +215,46 @@ def regenerate_document(pages: dict[int, str]) -> tuple[str, list[dict]]:
     return "".join(parts), rows
 
 
+def _recover_page(
+    page: int,
+    before: str,
+    sources: Sequence[tuple[str, Callable[[int], str]]],
+) -> tuple[str | None, str, list[str], list[str], bool]:
+    """Try each source in order, returning the first text that verifies.
+
+    Returns ``(accepted_text, winning_method, attempted, reasons, any_ran)``.
+    ``accepted_text`` is None when no source produced verified text. ``any_ran``
+    distinguishes engines that ran and did not help from engines that never ran.
+    """
+    attempted: list[str] = []
+    reasons: list[str] = []
+    any_ran = False
+    for method, provide in sources:
+        attempted.append(method)
+        try:
+            candidate = provide(page)
+        except Exception as exc:
+            reasons.append(str(exc))
+            continue
+        any_ran = True
+        candidate_signals = detect_page_quality(candidate)
+        improved = quality_score(candidate) > quality_score(before) + 1.0
+        if candidate.strip() and not candidate_signals and improved:
+            return candidate, method, attempted, reasons, any_ran
+        reasons.append(";".join(candidate_signals) or "not_better")
+    return None, "", attempted, reasons, any_ran
+
+
 def remediate_page_texts(
     existing_pages: dict[int, str],
-    ocr: Callable[[int], str],
+    ocr: Callable[[int], str] | None = None,
+    *,
+    sources: Sequence[tuple[str, Callable[[int], str]]] | None = None,
 ) -> tuple[dict[int, str], list[dict]]:
+    if sources is None:
+        if ocr is None:
+            raise ValueError("remediate_page_texts requires an ocr callable or explicit sources")
+        sources = ((RECOVERY_METHOD_OCR, ocr),)
     final_pages = dict(existing_pages)
     outcomes: list[dict] = []
     for page, before in sorted(existing_pages.items()):
@@ -163,20 +262,16 @@ def remediate_page_texts(
         if not signals:
             continue
         before_hash = _sha_text(before)
-        try:
-            candidate = ocr(page)
-        except Exception as exc:
-            outcomes.append({"page": page, "signal": ";".join(signals), "action": "manual_review_hold", "before_hash": before_hash, "after_hash": before_hash, "verification": "ocr_failed", "note": str(exc)})
-            continue
-        candidate_signals = detect_page_quality(candidate)
-        improved = quality_score(candidate) > quality_score(before) + 1.0
-        verified = bool(candidate.strip()) and not candidate_signals and improved
-        if verified:
-            final_pages[page] = candidate
+        accepted, method, attempted, reasons, any_ran = _recover_page(page, before, sources)
+        if accepted is not None:
+            final_pages[page] = accepted
             action, verification = "approved_page_override", "verified_quality_improvement"
         else:
-            action, verification = "manual_review_hold", "ocr_not_verified_or_not_better"
-        outcomes.append({"page": page, "signal": ";".join(signals), "action": action, "before_hash": before_hash, "after_hash": _sha_text(final_pages[page]), "verification": verification, "note": ";".join(candidate_signals)})
+            action = "manual_review_hold"
+            # No engine running at all is a different operational problem from
+            # an engine that ran and did not improve the page.
+            verification = "ocr_not_verified_or_not_better" if any_ran else "ocr_failed"
+        outcomes.append({"page": page, "signal": ";".join(signals), "action": action, "before_hash": before_hash, "after_hash": _sha_text(final_pages[page]), "verification": verification, "note": "; ".join(reasons), "method": method, "attempted": ";".join(attempted)})
     return final_pages, outcomes
 
 
@@ -203,31 +298,6 @@ def _write_text(path: Path, text: str) -> None:
     temp.replace(path)
 
 
-def _append_log(path: Path, rows: list[dict]) -> None:
-    if not rows:
-        return
-    existing = _read_csv(path)
-    key_fields = (
-        "logical_source_id",
-        "source_version_id",
-        "pdf_stem",
-        "pages",
-        "action",
-        "before_hash",
-        "after_hash",
-        "verification_result",
-    )
-    seen: set[tuple[str, ...]] = set()
-    merged: list[dict] = []
-    for row in existing + rows:
-        key = tuple(str(row.get(field) or "") for field in key_fields)
-        if key in seen:
-            continue
-        seen.add(key)
-        merged.append(row)
-    _write_csv(path, merged, LOG_FIELDS)
-
-
 def _selected(row: dict, ticker: str | None, pdf_stem: str | None, pdf_file: str | None) -> bool:
     if ticker and str(row.get("ticker") or "").upper() != ticker.upper():
         return False
@@ -249,7 +319,6 @@ def run(
     source_registry: str | Path = "data/00_reference/esg_source_registry.csv",
     override_index: str | Path = "data/00_reference/esg_page_ocr_overrides.csv",
     chunk_history: str | Path = "data/00_reference/esg_chunk_history.csv",
-    log_path: str | Path = "reports/pipeline_ocr_remediation_log.csv",
     ocr_function: Callable[[object, int], str] = ocr_page,
 ) -> list[dict]:
     if not (ticker or pdf_stem or pdf_file):
@@ -268,7 +337,13 @@ def run(
         existing_pages = page_texts(text, _read_csv(map_path))
         pdf_doc = pdfium.PdfDocument(str(source_pdf))
         try:
-            final_pages, outcomes = remediate_page_texts(existing_pages, lambda page: ocr_function(pdf_doc, page))
+            final_pages, outcomes = remediate_page_texts(
+                existing_pages,
+                sources=(
+                    (RECOVERY_METHOD_PDFIUM, lambda page: extract_pdfium_text(pdf_doc, page)),
+                    (RECOVERY_METHOD_OCR, lambda page: ocr_function(pdf_doc, page)),
+                ),
+            )
         finally:
             pdf_doc.close()
         if not outcomes:
@@ -304,11 +379,11 @@ def run(
         override_rows = _read_csv(Path(override_index))
         for result in outcomes:
             ocr_engine = ""
-            if result["action"] == "approved_page_override" and ocr_function is ocr_page:
+            if result["method"] == RECOVERY_METHOD_OCR and ocr_function is ocr_page:
                 ocr_engine = Path(discover_tesseract()).name
             override_rows.append({
                 "logical_source_id": row.get("logical_source_id", ""), "source_version_id": row.get("source_version_id", ""), "extraction_artifact_id": row.get("extraction_artifact_id", ""),
-                "ticker": row.get("ticker", ""), "pdf_stem": Path(str(row.get("pdf_file") or "")).stem, "page": result["page"], "source_page_sha256": result["before_hash"], "before_text_sha256": result["before_hash"], "after_text_sha256": result["after_hash"], "detection_signal": result["signal"], "action": result["action"], "verification_result": result["verification"], "ocr_engine": ocr_engine, "created_at": now, "active": "true" if result["action"] == "approved_page_override" else "false",
+                "ticker": row.get("ticker", ""), "pdf_stem": Path(str(row.get("pdf_file") or "")).stem, "page": result["page"], "source_page_sha256": result["before_hash"], "before_text_sha256": result["before_hash"], "after_text_sha256": result["after_hash"], "parsed_doc_before_sha256": old_hash, "parsed_doc_after_sha256": new_hash if changed else old_hash, "detection_signal": result["signal"], "action": result["action"], "verification_result": result["verification"], "note": result["note"], "recovery_method": result["method"], "attempted_methods": result["attempted"], "ocr_engine": ocr_engine, "created_at": now, "active": "true" if result["action"] == "approved_page_override" else "false",
             })
         unique_override_rows: list[dict] = []
         seen_override: set[tuple[str, ...]] = set()
@@ -325,8 +400,6 @@ def run(
             seen_override.add(override_key)
             unique_override_rows.append(override_row)
         _write_csv(Path(override_index), unique_override_rows, OVERRIDE_FIELDS)
-        log_rows = [{"timestamp_utc": now, "logical_source_id": row.get("logical_source_id", ""), "source_version_id": row.get("source_version_id", ""), "ticker": row.get("ticker", ""), "pdf_stem": Path(str(row.get("pdf_file") or "")).stem, "pages": result["page"], "reason": result["signal"], "action": result["action"], "before_hash": old_hash, "after_hash": new_hash if changed else old_hash, "verification_result": result["verification"], "note": result["note"]} for result in outcomes]
-        _append_log(Path(log_path), log_rows)
         all_outcomes.extend(outcomes)
     return all_outcomes
 

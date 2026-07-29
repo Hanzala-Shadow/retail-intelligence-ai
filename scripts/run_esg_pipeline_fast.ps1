@@ -143,7 +143,15 @@ try {
 
     $runParse = $Stage -in @("all", "parse")
     $runIntake = $Stage -in @("all", "intake")
-    $runRemediate = $Stage -in @("all", "remediate")
+    # Page-level OCR remediation rewrites parsed text and force-rebuilds the
+    # doc's sections/chunks, so it refuses to run corpus-wide. In a full run it
+    # is skipped unless a scope was supplied; asked for explicitly, it fails
+    # here instead of part-way through the pipeline.
+    $hasScope = [bool]($Ticker -or $PdfStem -or $PdfFile)
+    if ($Stage -eq "remediate" -and -not $hasScope) {
+        throw "-Stage remediate is scope-only. Supply -Ticker (and preferably -PdfFile/-PdfStem)."
+    }
+    $runRemediate = ($Stage -eq "remediate") -or ($Stage -eq "all" -and $hasScope)
     $runSection = $Stage -in @("all", "section")
     $runChunk = $Stage -in @("all", "chunk")
     $runLayout = $Stage -in @("all", "layout")
@@ -271,6 +279,10 @@ try {
             $arguments.Add("--force")
         }
         Invoke-PythonStage -Name "remediate" -Arguments $arguments.ToArray()
+    }
+    elseif ($Stage -eq "all") {
+        Write-Host ""
+        Write-Host "[remediate] Skipped: page-level OCR remediation is scope-only. Run -Stage remediate -Ticker <T> -PdfFile <file> for a held document." -ForegroundColor Yellow
     }
 
     if ($runSection) {

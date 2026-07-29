@@ -108,7 +108,9 @@ def count_local_pdfs(raw_root: Path) -> dict[str, list[Path]]:
     pdfs: dict[str, list[Path]] = defaultdict(list)
     if not raw_root.exists():
         return pdfs
-    for pdf_file in raw_root.glob("*/*.pdf"):
+    for pdf_file in raw_root.glob("*/*"):
+        if not pdf_file.is_file() or pdf_file.suffix.lower() != ".pdf":
+            continue
         pdfs[pdf_file.parent.name.upper()].append(pdf_file)
     return pdfs
 

@@ -2083,7 +2083,14 @@ def discover(
     for ticker_dir in ticker_dirs:
         if not ticker_dir.exists() or not ticker_dir.is_dir():
             continue
-        pdfs = sorted(ticker_dir.glob("*.pdf"))
+        # Match the extension case-insensitively. Drive holds a few reports
+        # named ".PDF", and a case-sensitive glob silently drops them on Linux
+        # while leaving their stale parse-index rows in place.
+        pdfs = sorted(
+            path
+            for path in ticker_dir.glob("*")
+            if path.is_file() and path.suffix.lower() == ".pdf"
+        )
         if selected_pdf:
             selected_stem = Path(selected_pdf).stem
             pdfs = [
@@ -2286,8 +2293,8 @@ def select_parse_source(
         ocr_ticker_root = (ocr_root_path / ticker.upper()).resolve()
         candidate_paths = {
             _normalized_locator(path): path
-            for path in ocr_ticker_root.glob("*.pdf")
-            if path.is_file()
+            for path in ocr_ticker_root.glob("*")
+            if path.is_file() and path.suffix.lower() == ".pdf"
         }
         saw_ocr_candidate = bool(candidate_paths)
         saw_stale_original = False

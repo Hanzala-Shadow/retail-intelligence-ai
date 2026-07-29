@@ -55,6 +55,20 @@ OCR_APPROVAL_FIELDS = [
 APPROVED_STATUSES = {"approved", "approve"}
 ACTIVE_STATES = {"active", "current"}
 
+BANNED_COMPANIES_PATH = Path("data/00_reference/banned_companies.csv")
+
+
+def load_banned_tickers(path: str | Path | None = None) -> set[str]:
+    """Tickers excluded by policy. Missing file means nothing is banned."""
+    target = Path(path) if path is not None else BANNED_COMPANIES_PATH
+    if not target.is_file():
+        return set()
+    return {
+        row["ticker"].strip().upper()
+        for row in read_csv(target)
+        if row.get("ticker", "").strip()
+    }
+
 
 def _stable_id(prefix: str, value: str) -> str:
     digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[:24]
@@ -151,7 +165,9 @@ def discover_files(
     ticker: str | None = None,
     pdf_file: str | None = None,
     pdf_stem: str | None = None,
+    banned_tickers: set[str] | None = None,
 ) -> list[IntakeFile]:
+    banned = load_banned_tickers() if banned_tickers is None else banned_tickers
     wanted_ticker = ticker.upper() if ticker else None
     wanted_stem = pdf_stem or (Path(pdf_file).stem if pdf_file else None)
     wanted_name = Path(pdf_file).name if pdf_file else None
@@ -160,8 +176,14 @@ def discover_files(
     def add_root(root: Path, role: str) -> None:
         if not root.is_dir():
             return
-        for path in sorted(root.glob("*/*.pdf")):
+        for path in sorted(
+            candidate
+            for candidate in root.glob("*/*")
+            if candidate.is_file() and candidate.suffix.lower() == ".pdf"
+        ):
             file_ticker = path.parent.name.upper()
+            if file_ticker in banned:
+                continue
             if wanted_ticker and file_ticker != wanted_ticker:
                 continue
             if wanted_name and path.name != wanted_name and path.stem != wanted_stem:
