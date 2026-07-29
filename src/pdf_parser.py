@@ -31,6 +31,7 @@ except ImportError:
     psutil = None
 
 import config
+import esg_year
 from base_parser import ParsedDocument
 from esg_reading_order import reconstruct_column_order
 from esg_intake_catalog import (
@@ -2072,6 +2073,7 @@ def discover(
     root: str | Path,
     ticker: str | None = None,
     pdf_file: str | None = None,
+    years: set[int] | None = None,
 ) -> dict[str, list[Path]]:
     root = Path(root)
     out: dict[str, list[Path]] = {}
@@ -2099,6 +2101,12 @@ def discover(
                 for pdf in pdfs
                 if pdf.name == selected_pdf or pdf.stem == selected_stem
             ]
+        # Year scoping uses the canonical report year from esg_year (max of the
+        # year tokens), so a "-2023-2024" stem is a 2024 document. A stem with
+        # no parseable year yields None and is never silently swept into a
+        # target set.
+        if years:
+            pdfs = [pdf for pdf in pdfs if esg_year.report_year(pdf.stem) in years]
         if pdfs:
             out[ticker_dir.name.upper()] = pdfs
 
@@ -2846,12 +2854,13 @@ def run(
     auto_layout_pdfium: bool = DEFAULT_AUTO_LAYOUT_PDFIUM,
     file_catalog: str | Path | None = DEFAULT_FILE_CATALOG,
     ocr_approval: str | Path | None = DEFAULT_OCR_APPROVAL,
+    years: set[int] | None = None,
 ) -> list[dict]:
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
 
     ticker = ticker.upper() if ticker else None
-    data = discover(root, ticker=ticker, pdf_file=pdf_file)
+    data = discover(root, ticker=ticker, pdf_file=pdf_file, years=years)
     if num_companies is not None and ticker is None:
         data = dict(list(sorted(data.items()))[:num_companies])
 
@@ -3148,6 +3157,15 @@ def main():
             "ticker,pdf_file,parser_mode,reason,active."
         ),
     )
+    ap.add_argument(
+        "--years",
+        default=None,
+        help=(
+            "Comma-separated report years to include, e.g. 2023,2024. The year "
+            "is the canonical one from esg_year (max of the stem's year tokens), "
+            "so '-2023-2024' is a 2024 document. Omit to parse every year."
+        ),
+    )
     layout_mode = ap.add_mutually_exclusive_group()
     layout_mode.add_argument(
         "--auto-layout-pdfium",
@@ -3212,6 +3230,12 @@ def main():
     if args.checkpoint_every < 1:
         ap.error("--checkpoint-every must be at least 1")
 
+    target_years: set[int] | None = None
+    if args.years:
+        target_years = {int(y) for y in args.years.split(",") if y.strip()}
+        if not target_years:
+            ap.error("--years produced no valid years")
+
     run(
         root=args.root,
         out=args.out,
@@ -3231,6 +3255,7 @@ def main():
         auto_layout_pdfium=args.auto_layout_pdfium,
         file_catalog=args.file_catalog,
         ocr_approval=args.ocr_approval,
+        years=target_years,
     )
 
 
