@@ -361,10 +361,10 @@ def main() -> None:
     args = parser.parse_args()
     if args.pdf_file and args.pdf_stem:
         parser.error("use only one of --pdf-file and --pdf-stem")
-    args.raw_root = args.raw_root or [
-        "data/01_raw/sustainability",
-        "data/01_raw/sustainability_other",
-    ]
+    # Only the primary "Sustainability Reports" mirror is catalogued.
+    # "Other Sustainability Related Reports" is a separate source class and is
+    # not ingested by this pipeline (see docs/ESG_PIPELINE.md).
+    args.raw_root = args.raw_root or ["data/01_raw/sustainability"]
     run(args)
 
 

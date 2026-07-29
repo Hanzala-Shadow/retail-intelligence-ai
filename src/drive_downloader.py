@@ -1,5 +1,9 @@
 """Download ESG/sustainability report PDFs from Google Drive safely.
 
+The downloader mirrors exactly one Drive folder, "Sustainability Reports".
+Supplementary disclosures under "Other Sustainability Related Reports" are a
+different source class and are deliberately not mirrored here.
+
 The downloader is deliberately resumable: an existing, non-empty local PDF is
 kept when its byte size and, when Drive provides it, checksum agree with the
 Drive metadata.  Every download is
@@ -11,7 +15,6 @@ Usage:
     python src/drive_downloader.py --resume
     python src/drive_downloader.py --ticker GAP --force
     python src/drive_downloader.py --dry-run
-    python src/drive_downloader.py --folder other --resume
 """
 
 from __future__ import annotations
@@ -40,17 +43,10 @@ CLIENT_SECRET_PATH = os.getenv("GOOGLE_DRIVE_CLIENT_SECRET", "client_secret.json
 TOKEN_PATH = "token.json"
 DRIVE_ROOT_FOLDER_ID = os.getenv("DRIVE_ROOT_FOLDER_ID")
 SUSTAINABILITY_FOLDER_NAME = "Sustainability Reports"
-OTHER_FOLDER_NAME = "Other Sustainability Related Reports"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO_ROOT / "data" / "01_raw" / "sustainability"
-OTHER_OUTPUT_DIR = REPO_ROOT / "data" / "01_raw" / "sustainability_other"
 DEFAULT_MANIFEST = REPO_ROOT / "data" / "00_reference" / "esg_drive_manifest.csv"
-OTHER_MANIFEST = REPO_ROOT / "data" / "00_reference" / "esg_drive_manifest_other.csv"
-# Subfolders of the "other" Drive folder that are not report sources. The OCR
-# staging area's local counterpart is data/02_interim/ocr_staging, managed by
-# the searchable-PDF workflow in docs/ESG_PIPELINE.md, never by this mirror.
-OTHER_SKIP_SUBFOLDERS = frozenset({"ESG_OCR_STAGING"})
 
 MANIFEST_FIELDS = [
     "ticker",
@@ -311,12 +307,8 @@ def run(
     force: bool = False,
     checkpoint_every: int = 1,
     manifest_path: Path = DEFAULT_MANIFEST,
-    folder_name: str = SUSTAINABILITY_FOLDER_NAME,
-    output_dir: Path = OUTPUT_DIR,
-    skip_subfolders: frozenset[str] = frozenset(),
-    try_alt_names: bool = True,
 ) -> dict[str, int]:
-    """Download ESG PDFs and return a machine-testable summary."""
+    """Mirror the "Sustainability Reports" Drive folder and return a summary."""
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
     if not DRIVE_ROOT_FOLDER_ID:
@@ -324,10 +316,10 @@ def run(
         sys.exit(1)
 
     service = get_service()
-    print(f"Looking for '{folder_name}' under root folder...")
-    esg_folder_id = find_folder(service, folder_name, DRIVE_ROOT_FOLDER_ID)
+    print(f"Looking for '{SUSTAINABILITY_FOLDER_NAME}' under root folder...")
+    esg_folder_id = find_folder(service, SUSTAINABILITY_FOLDER_NAME, DRIVE_ROOT_FOLDER_ID)
 
-    if not esg_folder_id and try_alt_names:
+    if not esg_folder_id:
         for alt_name in ["Sustainability Report", "ESG Reports", "ESG"]:
             esg_folder_id = find_folder(service, alt_name, DRIVE_ROOT_FOLDER_ID)
             if esg_folder_id:
@@ -376,9 +368,6 @@ def run(
 
     for folder in sorted(ticker_folders, key=lambda item: item["name"].upper()):
         ticker = folder["name"].upper()
-        if ticker in skip_subfolders:
-            print(f"{ticker}: skipped (not a report source)")
-            continue
         files = list_folder_children(service, folder["id"])
         pdfs = sorted(
             (item for item in files if item["name"].lower().endswith(".pdf")),
@@ -391,7 +380,7 @@ def run(
         print(f"{ticker}: {len(pdfs)} PDF(s) found")
         summary["found_drive_files"] += len(pdfs)
         for drive_file in pdfs:
-            destination = output_dir / ticker / drive_file["name"]
+            destination = OUTPUT_DIR / ticker / drive_file["name"]
             if dry_run:
                 size_mb = (remote_size_bytes(drive_file) or 0) / 1_000_000
                 print(f"  [dry-run] {drive_file['name']} ({size_mb:.1f} MB) -> {destination}")
@@ -422,7 +411,7 @@ def run(
 
     print("\n" + "\n".join(f"{key}: {value}" for key, value in summary.items()))
     if not dry_run:
-        print(f"Files saved to: {output_dir.resolve()}")
+        print(f"Files saved to: {OUTPUT_DIR.resolve()}")
         print(f"Manifest: {manifest_path.resolve()}")
     return summary
 
@@ -452,42 +441,17 @@ if __name__ == "__main__":
         "--manifest",
         type=Path,
         default=None,
-        help=f"Drive manifest output path (default: {DEFAULT_MANIFEST}, "
-        f"or {OTHER_MANIFEST} for --folder other)",
-    )
-    parser.add_argument(
-        "--folder",
-        choices=["main", "other", "all"],
-        default="main",
-        help="Which Drive folder to mirror: 'main' = Sustainability Reports "
-        "(default, unchanged behaviour), 'other' = Other Sustainability "
-        "Related Reports -> data/01_raw/sustainability_other, 'all' = both.",
+        help=f"Drive manifest output path (default: {DEFAULT_MANIFEST})",
     )
     args = parser.parse_args()
     if args.checkpoint_every < 1:
         parser.error("--checkpoint-every must be at least 1")
-    if args.folder == "all" and args.manifest is not None:
-        parser.error("--manifest cannot be combined with --folder all")
 
-    if args.folder in ("main", "all"):
-        run(
-            only_ticker=args.ticker,
-            dry_run=args.dry_run,
-            resume=args.resume,
-            force=args.force,
-            checkpoint_every=args.checkpoint_every,
-            manifest_path=args.manifest or DEFAULT_MANIFEST,
-        )
-    if args.folder in ("other", "all"):
-        run(
-            only_ticker=args.ticker,
-            dry_run=args.dry_run,
-            resume=args.resume,
-            force=args.force,
-            checkpoint_every=args.checkpoint_every,
-            manifest_path=args.manifest or OTHER_MANIFEST,
-            folder_name=OTHER_FOLDER_NAME,
-            output_dir=OTHER_OUTPUT_DIR,
-            skip_subfolders=OTHER_SKIP_SUBFOLDERS,
-            try_alt_names=False,
-        )
+    run(
+        only_ticker=args.ticker,
+        dry_run=args.dry_run,
+        resume=args.resume,
+        force=args.force,
+        checkpoint_every=args.checkpoint_every,
+        manifest_path=args.manifest or DEFAULT_MANIFEST,
+    )

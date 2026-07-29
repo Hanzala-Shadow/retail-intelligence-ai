@@ -168,27 +168,41 @@ PDF is downloaded again. `--force` redownloads its scope.
 
 The Drive folder `Other Sustainability Related Reports` holds supplementary
 company disclosures that are not a regular annual sustainability report
-(climate indexes, pay gap reports, SASB indexes, progress reports). They are
-mirrored to a second raw root so they never mix with the primary corpus
-mirror:
+(climate indexes, pay gap reports, SASB indexes, progress reports).
 
-```bash
-python src/drive_downloader.py --folder other --resume   # -> data/01_raw/sustainability_other
-python src/drive_downloader.py --folder all --resume     # both folders
-```
-
-The default `--folder main` keeps the original behaviour. The other-folder
-mirror writes its own manifest (`esg_drive_manifest_other.csv`) and skips the
-`ESG_OCR_STAGING` subfolder, which is the team-shared copy of
-`data/02_interim/ocr_staging`, not a report source.
-
-`scripts/run_esg_pipeline_fast.ps1` parses both roots into the same
-`esg_text`/`esg_parse_index.csv` outputs (the index upserts by ticker and file
-name, so the roots never prune each other). Every document under the second
-root must carry a `data/00_reference/esg_source_registry.csv` row — normally
+**The downloader does not mirror this folder.** `src/drive_downloader.py`
+mirrors only `Sustainability Reports`, and there is no CLI switch to change
+that. Supplementary disclosures are a separate source class; if the team
+decides to ingest them, they need their own governed intake path with an
+explicit `data/00_reference/esg_source_registry.csv` row (normally
 `retrieval_tier=supplementary` with a descriptive `source_type` that citations
-can display — so nothing ingested from the other folder is silently treated
-as a primary report.
+can display), not a second mirror of the same downloader.
+
+Nine PDFs were mirrored to `data/01_raw/sustainability_other` before this
+restriction and eight of them had been parsed. Every artifact derived from them
+was quarantined on 2026-07-28 to
+`quarantine/other_sustainability_reports/`, following the same
+backup-and-move convention as `quarantine/banned_companies/`:
+
+| Index | Rows removed |
+| --- | --- |
+| `esg_parse_index.csv` | 8 |
+| `esg_file_catalog.csv` | 9 |
+| `esg_sections_index.csv` | 68 |
+| `esg_chunks_index.csv` | 136 |
+| `esg_page_layout_qa.csv` | 87 |
+
+220 derived files (section text, chunk text, parsed text and page maps) were
+moved under `quarantine/other_sustainability_reports/files/`, and
+`esg_drive_manifest_other.csv` was retired. Neither
+`scripts/run_esg_pipeline_fast.ps1` nor `src/esg_intake_catalog.py` reads
+`data/01_raw/sustainability_other` any more.
+
+Two things were deliberately left in place: the nine raw PDFs under
+`data/01_raw/sustainability_other/` (harmless now that no stage reads that
+root, and re-downloadable from Drive), and the six
+`data/00_reference/esg_source_registry.csv` rows describing them, which are
+hand-curated governance decisions rather than derived data.
 
 ### Searchable PDF replacements
 
