@@ -167,8 +167,6 @@ try {
         $arguments.Add("src/esg_intake_catalog.py")
         $arguments.Add("--raw-root")
         $arguments.Add("data/01_raw/sustainability")
-        $arguments.Add("--raw-root")
-        $arguments.Add("data/01_raw/sustainability_other")
         $arguments.Add("--ocr-root")
         $arguments.Add("data/02_interim/ocr_staging")
         $arguments.Add("--catalog")
@@ -219,42 +217,6 @@ try {
             $arguments.Add("--force")
         }
         Invoke-PythonStage -Name "parse" -Arguments $arguments.ToArray()
-
-        # Second parse root: supplementary reports mirrored from the Drive
-        # "Other Sustainability Related Reports" folder. Same output tree and
-        # index; the parser upserts by (ticker, pdf_file), so the two roots
-        # never prune each other's rows. Missing root is a clean no-op.
-        $arguments = [System.Collections.Generic.List[string]]::new()
-        $arguments.Add("src/pdf_parser.py")
-        $arguments.Add("--resume")
-        $arguments.Add("--root")
-        $arguments.Add("data/01_raw/sustainability_other")
-        $arguments.Add("--ocr-root")
-        $arguments.Add("data/02_interim/ocr_staging")
-        $arguments.Add("--out")
-        $arguments.Add("data/02_interim/esg_text")
-        $arguments.Add("--index")
-        $arguments.Add("data/00_reference/esg_parse_index.csv")
-        $arguments.Add("--workers")
-        $arguments.Add([string]$ParserWorkers)
-        $arguments.Add("--checkpoint-every")
-        $arguments.Add([string]$ParserCheckpointEvery)
-        Add-ScopedArguments -Arguments $arguments
-        if ($PdfFile) {
-            $arguments.Add("--pdf-file")
-            $arguments.Add($PdfFile)
-        }
-        elseif ($PdfStem) {
-            $arguments.Add("--pdf-file")
-            $arguments.Add($PdfStem)
-        }
-        if ($EnablePyMuPdfParser) {
-            $arguments.Add("--prefer-pymupdf")
-        }
-        if ($Force) {
-            $arguments.Add("--force")
-        }
-        Invoke-PythonStage -Name "parse-other" -Arguments $arguments.ToArray()
     }
 
     if ($runRemediate) {
