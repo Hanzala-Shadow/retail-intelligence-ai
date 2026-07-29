@@ -36,6 +36,11 @@ import sys
 import unicodedata
 from collections import Counter, defaultdict
 
+# The year rule lives in exactly one module. This name is re-exported so callers
+# and tests can keep using p1.extract_report_year, but it IS esg_year's function
+# -- not a copy that can drift from it.
+from esg_year import extract_report_year  # noqa: F401
+
 # Rule-set versions. Bump when a rule changes so downstream runs stay traceable.
 YEAR_RULE_VERSION = "esg_year_v1"
 TIER_RULE_VERSION = "esg_tier_v1"
@@ -69,45 +74,13 @@ NEW_COLUMNS = [
 # ---------------------------------------------------------------------------
 # 1. report_year
 # ---------------------------------------------------------------------------
-
-YEAR_MIN, YEAR_MAX = 1990, 2030
-
-# Trailing decorations seen in real stems: "-Report", ".pdf", "(Italian)",
-# "(Climate Index)". Stripped before year extraction so they cannot be mistaken
-# for a year token.
-_STEM_DECORATION = re.compile(r"(\([^)]*\)|\.pdf|-Report)\s*$", re.IGNORECASE)
-_YEAR_TOKEN = re.compile(r"(?<!\d)((?:19|20)\d{2})(?!\d)")
-
-
-def extract_report_year(pdf_stem: str):
-    """Return (year_or_None, status, span) for a pdf_stem.
-
-    Deterministic and conservative: a stem with no parseable 4-digit year in
-    range yields (None, "unresolved") rather than a guess. DLTR-...-202E is the
-    known real case -- "202E" is a typo, not a year, and must not become 2020.
-
-    Multi-year stems use both orderings in this corpus -- ACI-...-2021-2022
-    ascends while GES-GUESS-2021-2020 descends -- so positional rules ("take the
-    last token") assign different semantics to the two forms. report_year is
-    therefore defined as max(years): the latest year the document covers, which
-    is order-independent. The full span is returned alongside so a question about
-    an earlier covered year can still match via report_year_span.
-    """
-    stem = pdf_stem
-    # Strip repeated trailing decorations, e.g. "...-2022.pdf" or "...(Italian)".
-    for _ in range(4):
-        stripped = _STEM_DECORATION.sub("", stem).strip()
-        if stripped == stem:
-            break
-        stem = stripped
-
-    years = sorted({int(m) for m in _YEAR_TOKEN.findall(stem)
-                    if YEAR_MIN <= int(m) <= YEAR_MAX})
-    if not years:
-        return None, "unresolved", ""
-    span = str(years[0]) if len(years) == 1 else f"{years[0]}-{years[-1]}"
-    status = "parsed" if len(years) == 1 else "multi_year_range"
-    return years[-1], status, span
+#
+# `extract_report_year` is imported from src/esg_year.py at the top of this
+# module. It used to be defined here as a second implementation of the same
+# rule; that copy agreed with the canonical one, but a fork that agrees today is
+# still a fork. The manifest builder held a *third* implementation that took the
+# first year token instead of max(), which is how VFC-VF CORP-2023-2024 came to
+# be labelled 2023 in the manifest and 2024 here, for the same 103 chunks.
 
 
 # ---------------------------------------------------------------------------

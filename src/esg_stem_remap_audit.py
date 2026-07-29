@@ -29,16 +29,23 @@ import os
 import re
 from collections import Counter
 
+import esg_year
+
 PARSE_INDEX = "data/00_reference/esg_parse_index.csv"
 RAW_ROOT = "data/01_raw/sustainability"
 OUT = "reports/esg_stem_remap_audit.csv"
 
-_YEARS = re.compile(r"(?<!\d)((?:19|20)\d{2})(?!\d)")
 _TICKER = re.compile(r"^([A-Z][A-Z0-9.\-]*?)-")
 
 
 def years_of(stem: str):
-    return sorted({int(y) for y in _YEARS.findall(stem) if 1990 <= int(y) <= 2030})
+    """Delegates to src/esg_year.py -- this module must not carry its own rule.
+
+    Note this now strips trailing decorations ("(Italian)", "-Report", ".pdf")
+    before extracting, which the local copy did not. That is strictly more
+    correct for a stem-drift audit: a decoration is not a year token.
+    """
+    return esg_year.years_in_stem(stem)
 
 
 def ticker_of(stem: str):

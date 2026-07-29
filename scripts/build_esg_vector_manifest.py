@@ -4,10 +4,13 @@ import argparse
 import csv
 import json
 import os
-import re
+import sys
 import uuid
 from collections import Counter
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+import esg_year  # noqa: E402
 
 
 MANIFEST_FIELDS = [
@@ -20,6 +23,7 @@ MANIFEST_FIELDS = [
     "canonical_ticker",
     "pdf_stem",
     "inferred_year",
+    "report_year_span",
     "section_label",
     "section_instance_id",
     "chunk_index",
@@ -75,8 +79,25 @@ def parse_bool(value: str | bool | None) -> bool:
 
 
 def infer_year(pdf_stem: str) -> str:
-    match = re.search(r"\b((?:19|20)\d{2})\b", pdf_stem or "")
-    return match.group(1) if match else ""
+    """Canonical report year as a string; "" when the stem carries no year.
+
+    Delegates to src/esg_year.py. This function used to hold its own regex that
+    took the *first* year token, which disagreed with the scoping driver
+    (scripts/run_pdf_parser_by_year.py) and the enrichment stage on every
+    multi-year stem -- VFC-VF CORP-2023-2024 was labelled 2023 here while both
+    other stages called it 2024. One rule, one place.
+    """
+    year = esg_year.report_year(pdf_stem)
+    return "" if year is None else str(year)
+
+
+def infer_year_span(pdf_stem: str) -> str:
+    """Full covered span for a stem, e.g. "2021-2022"; "" when unresolved.
+
+    Carried alongside the scalar so a question about the earlier year of a
+    multi-year report can still match: the scalar routes, the span recalls.
+    """
+    return esg_year.extract_report_year(pdf_stem)[2]
 
 
 def load_source_registry(path: Path) -> dict[tuple[str, str], dict]:
@@ -308,6 +329,7 @@ def vlm_manifest_row(v: dict, registry: dict[tuple[str, str], dict]) -> dict:
         "canonical_ticker": policy["canonical_ticker"] or ticker,
         "pdf_stem": pdf_stem,
         "inferred_year": infer_year(pdf_stem),
+        "report_year_span": infer_year_span(pdf_stem),
         "section_label": v.get("section_label", ""),
         "section_instance_id": v.get("section_instance_id", ""),
         "chunk_index": "",
@@ -424,6 +446,7 @@ def manifest_row(
         "canonical_ticker": policy["canonical_ticker"],
         "pdf_stem": pdf_stem,
         "inferred_year": infer_year(pdf_stem),
+        "report_year_span": infer_year_span(pdf_stem),
         "section_label": chunk.get("section_code", ""),
         "section_instance_id": chunk.get("section_instance_id", ""),
         "chunk_index": chunk.get("chunk_index", ""),
