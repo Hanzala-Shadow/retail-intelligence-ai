@@ -15,6 +15,8 @@ from pathlib import Path
 
 import tiktoken
 
+import config
+
 
 ENCODING = "cl100k_base"
 CHUNK_SIZE = 500
@@ -317,7 +319,7 @@ def load_source_registry(registry_path: Path | None) -> dict[tuple[str, str], di
 
 def load_doc_metadata(
     parse_index_path: Path,
-    source_registry_path: Path | None = Path("data/00_reference/esg_source_registry.csv"),
+    source_registry_path: Path | None = config.ESG_SOURCE_REGISTRY_CSV,
 ) -> dict[tuple[str, str], dict]:
     metadata: dict[tuple[str, str], dict] = {}
     if not parse_index_path.exists():
@@ -1592,9 +1594,9 @@ def run(
     input_root: str | Path,
     out: str | Path,
     index: str | Path,
-    sections_index: str | Path = "data/00_reference/esg_sections_index.csv",
-    parse_index: str | Path = "data/00_reference/esg_parse_index.csv",
-    source_registry: str | Path = "data/00_reference/esg_source_registry.csv",
+    sections_index: str | Path = config.ESG_SECTIONS_INDEX_CSV,
+    parse_index: str | Path = config.ESG_PARSE_INDEX_CSV,
+    source_registry: str | Path = config.ESG_SOURCE_REGISTRY_CSV,
     ticker: str | None = None,
     pdf_stem: str | None = None,
     resume: bool = True,
@@ -1884,14 +1886,14 @@ def run(
 
 def main():
     parser = argparse.ArgumentParser(description="Chunk ESG sections into retrieval-ready text chunks.")
-    parser.add_argument("--input", default="data/03_sections/esg")
-    parser.add_argument("--out", default="data/04_chunks/esg")
-    parser.add_argument("--index", default="data/00_reference/esg_chunks_index.csv")
-    parser.add_argument("--sections-index", default="data/00_reference/esg_sections_index.csv")
-    parser.add_argument("--parse-index", default="data/00_reference/esg_parse_index.csv")
+    parser.add_argument("--input", default=str(config.ESG_SECTIONS_DIR))
+    parser.add_argument("--out", default=str(config.ESG_CHUNKS_DIR))
+    parser.add_argument("--index", default=str(config.ESG_CHUNKS_INDEX_CSV))
+    parser.add_argument("--sections-index", default=str(config.ESG_SECTIONS_INDEX_CSV))
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
     parser.add_argument(
         "--source-registry",
-        default="data/00_reference/esg_source_registry.csv",
+        default=str(config.ESG_SOURCE_REGISTRY_CSV),
     )
     parser.add_argument("--ticker", default=None)
     parser.add_argument(

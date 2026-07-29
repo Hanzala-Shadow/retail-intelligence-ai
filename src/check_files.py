@@ -1,6 +1,8 @@
 from pathlib import Path
 
-root = Path('data/01_raw/10k')
+import config
+
+root = config.RAW_10K_DIR
 folders = [f for f in root.iterdir() if f.is_dir()]
 print(f'Company folders found: {len(folders)}')
 

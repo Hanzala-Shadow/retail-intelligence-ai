@@ -1,8 +1,10 @@
 import pandas as pd
 from pathlib import Path
 
+import config
+
 # Load chunks index
-chunks = pd.read_csv('data/00_reference/chunks_index.csv')
+chunks = pd.read_csv(config.CHUNKS_INDEX_CSV)
 
 print(f"Total chunks to validate: {len(chunks)}")
 
@@ -22,7 +24,7 @@ print(f"  Too short (<50 tokens):  {too_short}")
 print(f"  Too long  (>600 tokens): {too_long}")
 
 # Companies with zero chunks
-companies = pd.read_csv('data/00_reference/companies.csv')
+companies = pd.read_csv(config.COMPANIES_CSV)
 chunked_companies = set(chunks['company'].unique())
 all_companies = set(companies['ticker'].unique())
 zero_chunk_companies = all_companies - chunked_companies
@@ -45,14 +47,14 @@ company_summary['has_issues'] = (
 )
 
 # Save QA report
-output_path = Path('data/00_reference/chunk_qa_report.csv')
+output_path = config.CHUNK_QA_REPORT_CSV
 flagged = chunks[chunks['flag'] != 'ok'][[
     'chunk_id', 'company', 'section', 'chunk_index', 'token_count', 'flag'
 ]]
 flagged.to_csv(output_path, index=False)
 
 # Save company summary
-summary_path = Path('data/00_reference/chunk_qa_company_summary.csv')
+summary_path = config.CHUNK_QA_COMPANY_SUMMARY_CSV
 company_summary.to_csv(summary_path, index=False)
 
 print(f"\nFlagged chunks saved to {output_path}")

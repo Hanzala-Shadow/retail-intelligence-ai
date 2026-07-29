@@ -29,16 +29,20 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
+
 PKG = ROOT / "esg_chunk_handoff_100_20260728/esg_chunk_handoff_100_20260728"
 
 REF_JSONL = PKG / "representative_100_chunks.jsonl"
 REF_FIELD_DICT = PKG / "field_dictionary.csv"
 REF_MANIFEST = PKG / "sampling_manifest.json"
 
-ESG_CHUNKS = ROOT / "data/00_reference/esg_chunks_index_enriched.csv"
-ESG_CONTEXT = ROOT / "data/00_reference/esg_chunk_embedding_context.csv"
+ESG_CHUNKS = config.ESG_CHUNKS_INDEX_ENRICHED_CSV
+ESG_CONTEXT = config.ESG_CHUNK_EMBEDDING_CONTEXT_CSV
 
-OUT_REPORT = ROOT / "reports/esg_contract_conformance.md"
+OUT_REPORT = config.ESG_CONTRACT_CONFORMANCE_MD
 
 csv.field_size_limit(10_000_000)
 

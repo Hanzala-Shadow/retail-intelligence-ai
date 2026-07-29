@@ -35,6 +35,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
+import config
+
 
 load_dotenv()
 
@@ -44,9 +46,9 @@ TOKEN_PATH = "token.json"
 DRIVE_ROOT_FOLDER_ID = os.getenv("DRIVE_ROOT_FOLDER_ID")
 SUSTAINABILITY_FOLDER_NAME = "Sustainability Reports"
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-OUTPUT_DIR = REPO_ROOT / "data" / "01_raw" / "sustainability"
-DEFAULT_MANIFEST = REPO_ROOT / "data" / "00_reference" / "esg_drive_manifest.csv"
+REPO_ROOT = config.REPO_ROOT
+OUTPUT_DIR = config.RAW_SUSTAINABILITY_DIR
+DEFAULT_MANIFEST = config.ESG_DRIVE_MANIFEST_CSV
 
 MANIFEST_FIELDS = [
     "ticker",

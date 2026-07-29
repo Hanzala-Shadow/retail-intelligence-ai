@@ -1,6 +1,8 @@
 import pandas as pd
 
-df = pd.read_csv('data/00_reference/filing_state.csv')
+import config
+
+df = pd.read_csv(config.FILING_STATE_CSV)
 print(f"Total filings: {len(df)}")
 print(f"Downloaded: {(df['download_status'] == 'downloaded').sum()}")
 print(f"Pending: {(df['download_status'] == 'pending').sum()}")

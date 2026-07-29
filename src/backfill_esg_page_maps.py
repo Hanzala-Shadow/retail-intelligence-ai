@@ -4,8 +4,10 @@ import argparse
 import csv
 from pathlib import Path
 
+import config
 
-DEFAULT_INDEX = Path("data/00_reference/esg_parse_index.csv")
+
+DEFAULT_INDEX = config.ESG_PARSE_INDEX_CSV
 
 
 def display_path(path: str | Path) -> str:

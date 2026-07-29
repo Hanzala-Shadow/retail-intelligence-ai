@@ -6,6 +6,8 @@ import re
 import sys
 from pathlib import Path
 
+import config
+
 TABLE_FILENAME_RE = re.compile(r"^(?P<doc_id>.+)__(?P<table_id>table_\d+)\.csv$")
 
 
@@ -129,13 +131,13 @@ def main():
         help="Directory containing table CSVs. Repeatable. "
              "Default: data/tables/html_table and data/tables/pdf_table",
     )
-    ap.add_argument("--out", default="data/tables/tables_index.csv")
+    ap.add_argument("--out", default=str(config.TABLES_INDEX_CSV))
     args = ap.parse_args()
 
     dirs = (
         [Path(d) for d in args.tables_dirs]
         if args.tables_dirs
-        else [Path("data/tables/html_table"), Path("data/tables/pdf_table")]
+        else [config.HTML_TABLE_DIR, config.PDF_TABLE_DIR]
     )
 
     print(f"Scanning: {', '.join(str(d) for d in dirs)}")

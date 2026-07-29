@@ -10,13 +10,18 @@ switched on. Read-only against everything except data/04_vlm/.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data" / "04_vlm"
-MANIFEST = ROOT / "data" / "00_reference" / "vector_index_manifest.csv"
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
+
+DATA = config.VLM_DIR
+MANIFEST = config.VECTOR_INDEX_MANIFEST_CSV
 
 
 def page_section_map(manifest: pd.DataFrame) -> dict[tuple[str, str, int], tuple[str, str, bool]]:

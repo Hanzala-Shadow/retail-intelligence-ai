@@ -4,15 +4,17 @@ from pathlib import Path
 
 import tiktoken
 
+import config
+
 CHUNK_SIZE = 500
 OVERLAP = 50
 ENCODING = "cl100k_base"
 
-INPUT_DIR = Path("data/03_sections/10k")
-OUTPUT_DIR = Path("data/04_chunks/10k")
-CHUNKS_INDEX = Path("data/00_reference/chunks_index.csv")
-CHUNKABLE_FINAL = Path("reports/chunkable_10k_sections_final.txt")
-CHUNKABLE_OLD = Path("reports/chunkable_10k_sections.txt")
+INPUT_DIR = config.SECTIONS_10K_DIR
+OUTPUT_DIR = config.CHUNKS_10K_DIR
+CHUNKS_INDEX = config.CHUNKS_INDEX_CSV
+CHUNKABLE_FINAL = config.CHUNKABLE_10K_SECTIONS_FINAL_TXT
+CHUNKABLE_OLD = config.CHUNKABLE_10K_SECTIONS_TXT
 
 
 def chunk_text(text, encoder, chunk_size=CHUNK_SIZE, overlap=OVERLAP):

@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 set -u
 
-OUT="reports/project_snapshot_$(date +%Y%m%d_%H%M%S).txt"
-mkdir -p reports
+# Layout comes from src/config.py so this snapshot does not fork it.
+# Each constant lands in the shell as CFG_<NAME>, repo-relative.
+eval "$(python3 - <<'PY'
+import sys
+sys.path.insert(0, "src")
+import config
+for name, value in config.path_constants()["relative"].items():
+    print(f'CFG_{name}="{value}"')
+PY
+)"
+
+OUT="$CFG_REPORTS_DIR/project_snapshot_$(date +%Y%m%d_%H%M%S).txt"
+mkdir -p "$CFG_REPORTS_DIR"
 
 {
   echo "============================================================"
@@ -30,7 +41,7 @@ mkdir -p reports
   find . -maxdepth 3 \
     -path "./.git" -prune -o \
     -path "./venv" -prune -o \
-    -path "./data/tables" -prune -o \
+    -path "./$CFG_TABLES_DIR" -prune -o \
     -path "./tables" -prune -o \
     -path "./backups" -prune -o \
     -print | sort
@@ -42,32 +53,32 @@ mkdir -p reports
 
   echo "==================== DATA COUNTS ===================="
   echo "10-K raw files:"
-  find data/01_raw/10k -type f 2>/dev/null | wc -l
+  find "$CFG_RAW_10K_DIR" -type f 2>/dev/null | wc -l
 
   echo "Sustainability raw PDFs:"
-  find data/01_raw/sustainability -type f \( -iname "*.pdf" -o -iname "*.html" -o -iname "*.htm" \) 2>/dev/null | wc -l
+  find "$CFG_RAW_SUSTAINABILITY_DIR" -type f \( -iname "*.pdf" -o -iname "*.html" -o -iname "*.htm" \) 2>/dev/null | wc -l
 
   echo "HTML parsed 10-K text files:"
-  find data/02_interim/html_text -type f -name "*.txt" 2>/dev/null | wc -l
+  find "$CFG_HTML_TEXT_DIR" -type f -name "*.txt" 2>/dev/null | wc -l
 
   echo "10-K section files:"
-  find data/03_sections/10k -type f -name "*.txt" 2>/dev/null | wc -l
+  find "$CFG_SECTIONS_10K_DIR" -type f -name "*.txt" 2>/dev/null | wc -l
 
   echo "Chunk files:"
-  find data/04_chunks -type f 2>/dev/null | wc -l
+  find "$CFG_CHUNKS_DIR" -type f 2>/dev/null | wc -l
 
   echo "PDF raw text files:"
-  find data/raw_text/pdf_text -type f -name "*.txt" 2>/dev/null | wc -l
+  find "$CFG_ESG_TEXT_DIR" -type f -name "*.txt" 2>/dev/null | wc -l
 
   echo "HTML table CSV files:"
-  find data/tables/html_table -type f -name "*.csv" 2>/dev/null | wc -l
+  find "$CFG_HTML_TABLE_DIR" -type f -name "*.csv" 2>/dev/null | wc -l
 
   echo "PDF table CSV files:"
-  find data/tables/pdf_table -type f -name "*.csv" 2>/dev/null | wc -l
+  find "$CFG_PDF_TABLE_DIR" -type f -name "*.csv" 2>/dev/null | wc -l
   echo
 
   echo "==================== REFERENCE CSV STATUS ===================="
-  for f in data/00_reference/*.csv; do
+  for f in "$CFG_REFERENCE_DIR"/*.csv; do
     if [ -f "$f" ]; then
       echo "$f : $(wc -l < "$f") rows including header"
       echo "Header:"
@@ -78,42 +89,42 @@ mkdir -p reports
   echo
 
   echo "==================== SECTIONING QA ===================="
-  if [ -f data/00_reference/sections_index.csv ]; then
+  if [ -f "$CFG_SECTIONS_INDEX_CSV" ]; then
     echo "sections_index.csv rows including header:"
-    wc -l data/00_reference/sections_index.csv
+    wc -l "$CFG_SECTIONS_INDEX_CSV"
 
     echo "FULL_DOCUMENT_FALLBACK count:"
-    grep -c "FULL_DOCUMENT_FALLBACK" data/00_reference/sections_index.csv || true
+    grep -c "FULL_DOCUMENT_FALLBACK" "$CFG_SECTIONS_INDEX_CSV" || true
   fi
 
-  if [ -f reports/chunkable_10k_sections.txt ]; then
+  if [ -f "$CFG_CHUNKABLE_10K_SECTIONS_TXT" ]; then
     echo "Chunkable 10-K section list count:"
-    wc -l reports/chunkable_10k_sections.txt
+    wc -l "$CFG_CHUNKABLE_10K_SECTIONS_TXT"
   fi
 
-  if [ -f reports/fallback_10k_sections.txt ]; then
+  if [ -f "$CFG_FALLBACK_10K_SECTIONS_TXT" ]; then
     echo "Fallback 10-K section list count:"
-    wc -l reports/fallback_10k_sections.txt
+    wc -l "$CFG_FALLBACK_10K_SECTIONS_TXT"
   fi
 
-  if [ -f reports/fallback_10k_files.txt ]; then
+  if [ -f "$CFG_FALLBACK_10K_FILES_TXT" ]; then
     echo "Fallback 10-K filing count:"
-    wc -l reports/fallback_10k_files.txt
+    wc -l "$CFG_FALLBACK_10K_FILES_TXT"
     echo "Fallback companies count:"
-    cut -d'_' -f1 reports/fallback_10k_files.txt | sort | uniq -c | sort -nr | head -40
+    cut -d'_' -f1 "$CFG_FALLBACK_10K_FILES_TXT" | sort | uniq -c | sort -nr | head -40
   fi
   echo
 
   echo "==================== REPORTS FOLDER ===================="
-  find reports -maxdepth 2 -type f -printf "%TY-%Tm-%Td %TH:%TM  %s bytes  %p\n" 2>/dev/null | sort -r | head -80
+  find "$CFG_REPORTS_DIR" -maxdepth 2 -type f -printf "%TY-%Tm-%Td %TH:%TM  %s bytes  %p\n" 2>/dev/null | sort -r | head -80
   echo
 
   echo "==================== LOGS FOLDER ===================="
-  find logs -maxdepth 2 -type f -printf "%TY-%Tm-%Td %TH:%TM  %s bytes  %p\n" 2>/dev/null | sort -r | head -80
+  find "$CFG_LOGS_DIR" -maxdepth 2 -type f -printf "%TY-%Tm-%Td %TH:%TM  %s bytes  %p\n" 2>/dev/null | sort -r | head -80
   echo
 
   echo "==================== RECENT LOG TAILS ===================="
-  for log in logs/html_parser_rerun.log logs/section_splitter_rerun.log logs/section_splitter_rerun_v2.log logs/parse_errors.log nohup.out; do
+  for log in "$CFG_LOGS_DIR"/html_parser_rerun.log "$CFG_LOGS_DIR"/section_splitter_rerun.log "$CFG_LOGS_DIR"/section_splitter_rerun_v2.log "$CFG_LOGS_DIR"/parse_errors.log nohup.out; do
     if [ -f "$log" ]; then
       echo
       echo "----- $log last 40 lines -----"

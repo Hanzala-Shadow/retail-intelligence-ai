@@ -10,10 +10,15 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
+
 SCRIPT = ROOT / "scripts/build_esg_embedding_context.py"
 
 _spec = importlib.util.spec_from_file_location("build_esg_embedding_context", SCRIPT)
@@ -106,7 +111,7 @@ class ContentTypeTests(unittest.TestCase):
 class GeneratedOutputTests(unittest.TestCase):
     """Verify the real output when it exists; skip cleanly when it does not."""
 
-    INDEX = ROOT / "data/00_reference/esg_chunk_embedding_context.csv"
+    INDEX = config.ESG_CHUNK_EMBEDDING_CONTEXT_CSV
 
     def setUp(self):
         if not self.INDEX.exists():

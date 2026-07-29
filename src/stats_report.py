@@ -1,10 +1,12 @@
 import pandas as pd
 from pathlib import Path
 
+import config
+
 # Load indexes
-chunks = pd.read_csv('data/00_reference/chunks_index.csv')
-sections = pd.read_csv('data/00_reference/sections_index.csv')
-companies = pd.read_csv('data/00_reference/companies.csv')
+chunks = pd.read_csv(config.CHUNKS_INDEX_CSV)
+sections = pd.read_csv(config.SECTIONS_INDEX_CSV)
+companies = pd.read_csv(config.COMPANIES_CSV)
 
 # Per company stats from chunks
 chunk_stats = chunks.groupby('company').agg(
@@ -29,7 +31,7 @@ report['avg_tokens'] = report['avg_tokens'].round(1)
 report = report.sort_values('company')
 
 # Save
-output_path = Path('data/00_reference/stats_report.csv')
+output_path = config.STATS_REPORT_CSV
 report.to_csv(output_path, index=False)
 
 # Print summary

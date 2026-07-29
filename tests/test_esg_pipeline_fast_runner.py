@@ -3,11 +3,16 @@ from __future__ import annotations
 import hashlib
 import shutil
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+import config  # noqa: E402
+
 RUNNER = REPO_ROOT / "scripts" / "run_esg_pipeline_fast.ps1"
 POWERSHELL = shutil.which("powershell.exe") or shutil.which("powershell")
 
@@ -155,7 +160,7 @@ class ESGFastPipelineRunnerTests(unittest.TestCase):
         self.assertIn("--force", next(line for line in output.splitlines() if line.startswith("[parse]")))
 
     def test_manifest_whatif_does_not_write_manifest_or_lock(self) -> None:
-        manifest = REPO_ROOT / "data" / "00_reference" / "vector_index_manifest.csv"
+        manifest = config.VECTOR_INDEX_MANIFEST_CSV
         lock = REPO_ROOT / "tmp" / "esg_pipeline_fast.lock"
         before_manifest = file_digest(manifest)
         before_lock = file_digest(lock)

@@ -45,6 +45,7 @@ import requests
 # vars across the whole pipeline; do not re-invent env var names here)
 # ---------------------------------------------------------------------------
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import config
 from config import SEC_USER_AGENT
 
 USER_AGENT = SEC_USER_AGENT
@@ -57,10 +58,10 @@ BACKOFF_BASE_SECONDS = 2  # 2s, 4s, 8s
 
 YEARS_TO_KEEP = 3  # most recent fiscal years per company
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-COMPANIES_CSV = REPO_ROOT / "data" / "00_reference" / "companies.csv"
-FILINGS_CSV = REPO_ROOT / "data" / "00_reference" / "filings.csv"
-LOG_PATH = REPO_ROOT / "logs" / "download_errors.log"
+REPO_ROOT = config.REPO_ROOT
+COMPANIES_CSV = config.COMPANIES_CSV
+FILINGS_CSV = config.FILINGS_CSV
+LOG_PATH = config.DOWNLOAD_ERRORS_LOG
 
 SUBMISSIONS_URL_TMPL = "https://data.sec.gov/submissions/CIK{cik10}.json"
 

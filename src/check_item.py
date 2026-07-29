@@ -1,7 +1,9 @@
 from pathlib import Path
 
+import config
+
 # Check Item_15 first 500 chars
-files = list(Path('data/03_sections').rglob('*24-000048*Item_15*'))
+files = list(config.SECTIONS_DIR.rglob('*24-000048*Item_15*'))
 if files:
     text = files[0].read_text(encoding='utf-8')
     print(f"Item_15 total chars: {len(text)}")

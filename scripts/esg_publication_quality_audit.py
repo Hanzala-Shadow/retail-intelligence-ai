@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,13 +12,16 @@ import pandas as pd
 
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "src"))
+
+import config  # noqa: E402
 DB = (
     REPO
     / "backups"
     / "esg_sqlite_share_20260713_160005"
     / "esg_local_audit_2026-07-13.sqlite"
 )
-OUT = REPO / "reports" / "esg_publication_quality_audit_2026-07-13"
+OUT = config.REPORTS_DIR / "esg_publication_quality_audit_2026-07-13"
 
 CANONICAL_CODES = {
     "ceo_letter",

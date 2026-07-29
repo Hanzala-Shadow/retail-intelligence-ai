@@ -13,7 +13,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_ROOT"
 
 LIMIT="${1:-3}"
-LOG_DIR="$REPO_ROOT/logs"
+# Layout comes from src/config.py so this runner does not fork it.
+LOG_DIR="$(python3 -c 'import sys; sys.path.insert(0, "src"); import config; print(config.LOGS_DIR)')"
 mkdir -p "$LOG_DIR"
 RUN_LOG="$LOG_DIR/run_pipeline_$(date +%Y%m%d_%H%M).log"
 
@@ -50,17 +51,15 @@ python3 src/sec_discovery.py $LIMIT_FLAG >> "$RUN_LOG" 2>&1 || fail "sec_discove
 log "Step 2/5: SEC download + Drive upload (sec_downloader.py $LIMIT_FLAG)"
 python3 src/sec_downloader.py $LIMIT_FLAG >> "$RUN_LOG" 2>&1 || fail "sec_downloader.py"
 
+# Input/output roots come from src/config.py. Passing them here again would
+# fork the layout into a second place, so only run-shape flags are set.
 log "Step 3/5: HTML parsing of downloaded 10-Ks (html_parser.py)"
 python3 src/html_parser.py \
-    --root data/01_raw/10k \
-    --out data/02_interim/html_text \
-    --tables data/tables/html_table \
     --num-companies "$([ "$LIMIT" = "full" ] && echo 999 || echo "$LIMIT")" \
     >> "$RUN_LOG" 2>&1 || fail "html_parser.py"
 
 log "Step 4/5: PDF parsing of sustainability reports (pdf_parser.py)"
 python3 src/pdf_parser.py \
-    --root data/01_raw/sustainability \
     --num-companies "$([ "$LIMIT" = "full" ] && echo 999 || echo "$LIMIT")" \
     --workers 2 \
     >> "$RUN_LOG" 2>&1 || fail "pdf_parser.py"

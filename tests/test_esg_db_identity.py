@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+import config
 import drive_to_db
 
 
@@ -37,7 +38,7 @@ class EsgDbIdentityTests(unittest.TestCase):
         )
 
     def test_migration_is_idempotent_and_preserves_legacy_rows(self):
-        sql = (ROOT / "data/05_db/migrations/V6__Source_Identity_And_Lineage.sql").read_text(encoding="utf-8")
+        sql = (config.MIGRATIONS_DIR / "V6__Source_Identity_And_Lineage.sql").read_text(encoding="utf-8")
         for table in ("logical_sources", "source_versions", "file_aliases", "extraction_artifacts", "source_approvals"):
             self.assertIn(f"CREATE TABLE IF NOT EXISTS {table}", sql)
         self.assertIn("ON CONFLICT DO NOTHING", sql)

@@ -21,6 +21,7 @@ from sqlalchemy import create_engine, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import sessionmaker
 
+import config
 from models import Company, AnnualFiling, Document, Section
 
 load_dotenv()
@@ -29,8 +30,8 @@ DB_URL = os.getenv("DB_URL") or os.getenv("DATABASE_URL")
 if not DB_URL:
     raise EnvironmentError("DB_URL or DATABASE_URL is not set.")
 
-REFERENCE_DIR = Path("data/00_reference")
-SECTIONS_DIR = Path("data/03_sections/10k")
+REFERENCE_DIR = config.REFERENCE_DIR
+SECTIONS_DIR = config.SECTIONS_10K_DIR
 MIN_SECTION_TOKENS = 50
 ENCODER = tiktoken.get_encoding("cl100k_base")
 
@@ -186,7 +187,9 @@ def load_documents(company_map, sections_dir=SECTIONS_DIR):
         doc_type_norm = doc_type.lower().replace("-", "")
         raw_dir = "10k" if doc_type_norm == "10k" else doc_type
         ext = "htm" if doc_type_norm == "10k" else "pdf"
-        filepath = f"data/01_raw/{raw_dir}/{company}/{accession}.{ext}"
+        # Stored in documents.filepath, so it stays repo-relative rather than
+        # absolute — a row must stay meaningful on another machine.
+        filepath = f"{config.RAW_DIR_REL.as_posix()}/{raw_dir}/{company}/{accession}.{ext}"
 
         triple_to_filepath[(company, doc_type, accession)] = filepath
 

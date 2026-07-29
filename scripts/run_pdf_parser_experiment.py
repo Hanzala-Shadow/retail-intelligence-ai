@@ -15,6 +15,11 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
+
 
 TARGETS = {
     "PVH": ["PVH-PVH CORP-2016.pdf"],
@@ -77,7 +82,12 @@ def main() -> int:
     args = parser.parse_args()
 
     repo = args.repo.resolve()
-    input_root = (args.input_root or repo / "data" / "01_raw" / "esg_archive_pilot").resolve()
+    # Joined against --repo, which may point at another checkout, so the
+    # config path is reduced to its repo-relative form first.
+    input_root = (
+        args.input_root
+        or repo / config.as_repo_relative(config.RAW_DIR) / "esg_archive_pilot"
+    ).resolve()
     source_src = repo / "src"
     parser_file = source_src / args.parser
     if not parser_file.is_file():
@@ -140,7 +150,7 @@ def main() -> int:
             )
         write_json(run_root / "pdf_manifest.json", pdf_manifest)
 
-        overrides = repo / "data" / "00_reference" / "esg_parser_overrides.csv"
+        overrides = repo / config.as_repo_relative(config.ESG_PARSER_OVERRIDES_CSV)
         run_overrides = run_root / "esg_parser_overrides.csv"
         if overrides.is_file():
             shutil.copy2(overrides, run_overrides)

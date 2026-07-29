@@ -10,6 +10,7 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup, Comment
 
+import config
 from base_parser import BaseParser, ParsedDocument, TableRef
 
 ITEM_HEADING_RE = re.compile(
@@ -206,9 +207,9 @@ def dedupe_files(
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="data/01_raw/10-K filings")
-    ap.add_argument("--out", default="data/raw_text/html_text")
-    ap.add_argument("--tables", default="data/tables/html_table")
+    ap.add_argument("--root", default=str(config.RAW_10K_DIR))
+    ap.add_argument("--out", default=str(config.HTML_TEXT_DIR))
+    ap.add_argument("--tables", default=str(config.HTML_TABLE_DIR))
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--min-companies", type=int, default=5)
     ap.add_argument("--num-companies", type=int, default=5)
@@ -220,7 +221,7 @@ def main():
 
     out_dir.mkdir(parents=True, exist_ok=True)
     table_dir.mkdir(parents=True, exist_ok=True)
-    log_dir = Path("logs")
+    log_dir = config.LOGS_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
     error_log = log_dir / "parse_errors.log"
 

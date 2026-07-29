@@ -18,6 +18,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import sessionmaker
 
+import config
 from models import Chunk
 
 load_dotenv()
@@ -26,8 +27,8 @@ DB_URL = os.getenv("DB_URL") or os.getenv("DATABASE_URL")
 if not DB_URL:
     raise EnvironmentError("DB_URL or DATABASE_URL is not set.")
 
-REFERENCE_DIR = Path("data/00_reference")
-LOGS_DIR = Path("logs")
+REFERENCE_DIR = config.REFERENCE_DIR
+LOGS_DIR = config.LOGS_DIR
 LOGS_DIR.mkdir(exist_ok=True)
 
 BATCH_SIZE = 5000

@@ -68,8 +68,16 @@ doc_quality_status = exclude_from_esg_rag
 rag_action = exclude_from_esg_index
 ```
 
+## Paths
+
+Every `data/`, `reports/`, and `logs/` path is defined once in
+`src/config.py`. Python imports the constants; the PowerShell and bash
+runners read them via `python src/config.py --json`. See
+`docs/PIPELINE_PATHS.md`.
+
 ## Key Documentation
 
+- `docs/PIPELINE_PATHS.md`
 - `docs/ESG_PIPELINE.md`
 - `docs/AI_RAG_ARCHITECTURE.md`
 - `docs/RAG_EVALUATION_PLAN.md`

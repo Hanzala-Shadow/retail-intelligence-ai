@@ -1,7 +1,9 @@
 from pathlib import Path
 
+import config
+
 # Read the parsed text
-files = list(Path('data/02_interim').rglob('*24-000048*'))
+files = list(config.INTERIM_DIR.rglob('*24-000048*'))
 if files:
     text = files[0].read_text(encoding='utf-8')
     lines = text.split('\n')

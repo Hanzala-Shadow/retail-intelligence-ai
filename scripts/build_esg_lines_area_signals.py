@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import sys
 import time
 from pathlib import Path
 
@@ -34,8 +35,12 @@ import pandas as pd
 import pdfplumber
 
 ROOT = Path(__file__).resolve().parents[1]
-QA_PATH = ROOT / "data/00_reference/esg_page_layout_qa.csv"
-DEFAULT_OUT = ROOT / "data/00_reference/esg_lines_area_signals.csv"
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
+
+QA_PATH = config.ESG_PAGE_LAYOUT_QA_CSV
+DEFAULT_OUT = config.ESG_LINES_AREA_SIGNALS_CSV
 
 LINES_SETTINGS = {
     "vertical_strategy": "lines",

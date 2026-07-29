@@ -36,22 +36,36 @@ import sys
 import unicodedata
 from collections import Counter, defaultdict
 
+import config
+
 # Rule-set versions. Bump when a rule changes so downstream runs stay traceable.
 YEAR_RULE_VERSION = "esg_year_v1"
 TIER_RULE_VERSION = "esg_tier_v1"
 NORMALIZATION_VERSION = "esg_embed_norm_v1"
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = str(config.REPO_ROOT)
 
-CHUNKS_INDEX = "data/00_reference/esg_chunks_index.csv"
-COMPANY_MANIFEST = "data/00_reference/esg_accepted_company_manifest.csv"
-COMPANIES = "data/00_reference/companies.csv"
-SOURCE_REGISTRY = "data/00_reference/esg_source_registry.csv"
 
-OUT_INDEX = "data/00_reference/esg_chunks_index_enriched.csv"
-EMBED_ROOT = "data/05_embedding/esg"
-QA_REPORT = "reports/esg_p1_enrichment_qa.csv"
-SUMMARY_REPORT = "reports/esg_p1_enrichment_summary.md"
+def _rel(path) -> str:
+    """Repo-relative POSIX form of a config path.
+
+    This module joins every path against ``--repo-root`` and writes
+    ``rel_embed`` into the output index, so its constants must stay
+    relative. They are still derived from config so the layout lives in
+    exactly one place.
+    """
+    return config.as_repo_relative(path).as_posix()
+
+
+CHUNKS_INDEX = _rel(config.ESG_CHUNKS_INDEX_CSV)
+COMPANY_MANIFEST = _rel(config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV)
+COMPANIES = _rel(config.COMPANIES_CSV)
+SOURCE_REGISTRY = _rel(config.ESG_SOURCE_REGISTRY_CSV)
+
+OUT_INDEX = _rel(config.ESG_CHUNKS_INDEX_ENRICHED_CSV)
+EMBED_ROOT = _rel(config.ESG_EMBEDDING_DIR)
+QA_REPORT = _rel(config.ESG_P1_ENRICHMENT_QA_CSV)
+SUMMARY_REPORT = _rel(config.ESG_P1_ENRICHMENT_SUMMARY_MD)
 
 NEW_COLUMNS = [
     "report_year",

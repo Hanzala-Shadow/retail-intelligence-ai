@@ -9,7 +9,8 @@ param(
     [ValidateRange(1, 8)]
     [int]$Workers = 4,
 
-    [string]$DocList = "data/00_reference/esg_sample_docs.csv"
+    # Resolved from src/config.py once $Paths is loaded.
+    [string]$DocList
 )
 
 # One-shot sample pipeline: draws N random corpus PDFs, force re-parses them,
@@ -24,7 +25,16 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location -LiteralPath $repoRoot
 
-$pdfs = @(Get-ChildItem -LiteralPath "data/01_raw/sustainability" -Recurse -File |
+# The pipeline layout lives in src/config.py; this runner reads it rather
+# than restating it. See scripts/PipelinePaths.ps1.
+. (Join-Path $PSScriptRoot "PipelinePaths.ps1")
+$Paths = Import-PipelinePaths -RepoRoot $repoRoot -Python (Join-Path $repoRoot "venv\Scripts\python.exe")
+
+if (-not $DocList) {
+    $DocList = $Paths.ESG_SAMPLE_DOCS_CSV
+}
+
+$pdfs = @(Get-ChildItem -LiteralPath $Paths.RAW_SUSTAINABILITY_DIR -Recurse -File |
     Where-Object { $_.Extension -in ".pdf", ".PDF" })
 if ($pdfs.Count -lt $Count) {
     throw "Corpus has only $($pdfs.Count) PDFs; cannot sample $Count."

@@ -39,6 +39,8 @@ from pdf_parser import (
 )
 from esg_reading_order import canonical_order_text, reconstruct_column_order
 
+import config
+
 
 # v7 auto-passes ambiguous navigation/contents-layout pages instead of
 # holding them, since they have no defensible prose order and no retrieval
@@ -786,8 +788,8 @@ def _audit_complete(existing_rows: list[dict], parse_row: dict) -> bool:
 
 def run(
     *,
-    parse_index: str | Path = "data/00_reference/esg_parse_index.csv",
-    out: str | Path = "data/00_reference/esg_page_layout_qa.csv",
+    parse_index: str | Path = config.ESG_PARSE_INDEX_CSV,
+    out: str | Path = config.ESG_PAGE_LAYOUT_QA_CSV,
     ticker: str | None = None,
     pdf_file: str | None = None,
     workers: int = 4,
@@ -868,8 +870,8 @@ def run(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Audit ESG PDF page layouts and fail closed on ambiguous reading order.")
-    parser.add_argument("--parse-index", default="data/00_reference/esg_parse_index.csv")
-    parser.add_argument("--out", default="data/00_reference/esg_page_layout_qa.csv")
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
+    parser.add_argument("--out", default=str(config.ESG_PAGE_LAYOUT_QA_CSV))
     parser.add_argument("--ticker", default=None)
     parser.add_argument("--pdf-file", default=None)
     parser.add_argument("--workers", type=int, default=4)

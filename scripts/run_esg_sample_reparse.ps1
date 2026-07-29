@@ -3,7 +3,8 @@ param(
     [ValidateRange(1, 8)]
     [int]$Workers = 4,
 
-    [string]$DocList = "data/00_reference/esg_sample_docs.csv"
+    # Resolved from src/config.py once $Paths is loaded.
+    [string]$DocList
 )
 
 # Re-parses only the layout-QA sample documents (scoped, forced), so a parser
@@ -29,6 +30,16 @@ $python = Join-Path $repoRoot "venv\Scripts\python.exe"
 if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw "Project Python was not found at $python"
 }
+
+# The pipeline layout lives in src/config.py; this runner reads it rather
+# than restating it. See scripts/PipelinePaths.ps1.
+. (Join-Path $PSScriptRoot "PipelinePaths.ps1")
+$Paths = Import-PipelinePaths -RepoRoot $repoRoot -Python $python
+
+if (-not $DocList) {
+    $DocList = $Paths.ESG_SAMPLE_DOCS_CSV
+}
+
 if (-not (Test-Path -LiteralPath $DocList -PathType Leaf)) {
     throw "Document list not found at $DocList (columns: ticker,pdf_file)."
 }

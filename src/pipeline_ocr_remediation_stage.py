@@ -20,6 +20,8 @@ from typing import Callable, Sequence
 import pypdfium2 as pdfium
 import pytesseract
 
+import config
+
 
 # One row per inspected page, and the stage's only audit record. It carries the
 # page-level hashes for the override itself plus the parsed-document hashes the
@@ -313,12 +315,12 @@ def run(
     ticker: str | None = None,
     pdf_stem: str | None = None,
     pdf_file: str | None = None,
-    parsed_root: str | Path = "data/02_interim/esg_text",
-    sections_root: str | Path = "data/03_sections/esg",
-    chunks_root: str | Path = "data/04_chunks/esg",
-    source_registry: str | Path = "data/00_reference/esg_source_registry.csv",
-    override_index: str | Path = "data/00_reference/esg_page_ocr_overrides.csv",
-    chunk_history: str | Path = "data/00_reference/esg_chunk_history.csv",
+    parsed_root: str | Path = config.ESG_TEXT_DIR,
+    sections_root: str | Path = config.ESG_SECTIONS_DIR,
+    chunks_root: str | Path = config.ESG_CHUNKS_DIR,
+    source_registry: str | Path = config.ESG_SOURCE_REGISTRY_CSV,
+    override_index: str | Path = config.ESG_PAGE_OCR_OVERRIDES_CSV,
+    chunk_history: str | Path = config.ESG_CHUNK_HISTORY_CSV,
     ocr_function: Callable[[object, int], str] = ocr_page,
 ) -> list[dict]:
     if not (ticker or pdf_stem or pdf_file):
@@ -406,9 +408,9 @@ def run(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run scoped page-level ESG OCR remediation and rebuild downstream objects.")
-    parser.add_argument("--parse-index", default="data/00_reference/esg_parse_index.csv")
-    parser.add_argument("--sections-index", default="data/00_reference/esg_sections_index.csv")
-    parser.add_argument("--chunks-index", default="data/00_reference/esg_chunks_index.csv")
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
+    parser.add_argument("--sections-index", default=str(config.ESG_SECTIONS_INDEX_CSV))
+    parser.add_argument("--chunks-index", default=str(config.ESG_CHUNKS_INDEX_CSV))
     parser.add_argument("--ticker"); parser.add_argument("--pdf-stem"); parser.add_argument("--pdf-file")
     parser.add_argument("--force", action="store_true", help="Accepted for fast-run symmetry; remediation is always scoped and stale-aware.")
     args = parser.parse_args()

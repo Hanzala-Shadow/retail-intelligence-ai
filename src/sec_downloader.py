@@ -37,6 +37,7 @@ load_dotenv()
 
 import requests
 
+import config
 from sec_discovery import USER_AGENT, RateLimitedSession, REPO_ROOT, FILINGS_CSV, FILINGS_CSV_FIELDS
 
 # drive_uploader pulls in google-api-python-client / google-auth, which may
@@ -53,9 +54,9 @@ except ImportError:
 # Config
 # ---------------------------------------------------------------------------
 
-RAW_10K_DIR = REPO_ROOT / "data" / "01_raw" / "10k"
-FILING_STATE_CSV = REPO_ROOT / "data" / "00_reference" / "filing_state.csv"
-LOG_PATH = REPO_ROOT / "logs" / "download_errors.log"
+RAW_10K_DIR = config.RAW_10K_DIR
+FILING_STATE_CSV = config.FILING_STATE_CSV
+LOG_PATH = config.DOWNLOAD_ERRORS_LOG
 
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 3

@@ -9,9 +9,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+import config
 
-REFERENCE_DIR = Path("data/00_reference")
-RAW_ESG_ROOT = Path("data/01_raw/sustainability")
+
+REFERENCE_DIR = config.REFERENCE_DIR
+RAW_ESG_ROOT = config.RAW_SUSTAINABILITY_DIR
 VALID_TRACKER_STATUSES = {"downloaded", "not_found"}
 VALID_PARSE_STATUSES = {"parsed", "ocr_required", "failed"}
 MIN_CHUNK_TOKENS = 100

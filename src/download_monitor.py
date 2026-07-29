@@ -5,14 +5,16 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 
+import config
+
 # Load environment variables from .env file
 load_dotenv()
 SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL')
 
 def generate_report():
     # Load the filing state
-    df = pd.read_csv('data/00_reference/filing_state.csv')
-    companies = pd.read_csv('data/00_reference/companies.csv')
+    df = pd.read_csv(config.FILING_STATE_CSV)
+    companies = pd.read_csv(config.COMPANIES_CSV)
 
     # Group by ticker
     status_table = df.groupby('ticker').agg(
@@ -28,7 +30,7 @@ def generate_report():
     incomplete = status_table[status_table['filings_found'] < 3]
 
     # Save report
-    status_table.to_csv('data/00_reference/download_status_report.csv', index=False)
+    status_table.to_csv(config.DOWNLOAD_STATUS_REPORT_CSV, index=False)
 
     # Print to terminal
     print(f"\n{'='*50}")

@@ -1,6 +1,8 @@
 from pathlib import Path
 
-files = list(Path('data/03_sections').rglob('*.txt'))
+import config
+
+files = list(config.SECTIONS_DIR.rglob('*.txt'))
 print(f'Total section files: {len(files)}')
 print()
 print('Sections for AAP 2024:')

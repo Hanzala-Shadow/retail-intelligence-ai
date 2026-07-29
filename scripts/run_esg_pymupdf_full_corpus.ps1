@@ -27,14 +27,21 @@ if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
     throw "Fast pipeline runner was not found at $runner"
 }
 
+# The pipeline layout lives in src/config.py; this runner reads it rather
+# than restating it. See scripts/PipelinePaths.ps1.
+. (Join-Path $PSScriptRoot "PipelinePaths.ps1")
+$Paths = Import-PipelinePaths -RepoRoot $repoRoot -Python $python
+
 & $python -c "import fitz; print('PyMuPDF', fitz.VersionBind)"
 if ($LASTEXITCODE -ne 0) {
     throw "PyMuPDF is missing. Run: venv\Scripts\python.exe -m pip install -r requirements-pymupdf.txt"
 }
 
 $rawRoots = @(
-    (Join-Path $repoRoot "data\01_raw\sustainability"),
-    (Join-Path $repoRoot "data\01_raw\sustainability_other")
+    $Paths.Absolute.RAW_SUSTAINABILITY_DIR,
+    # NOTE: the Python intake deliberately excludes this folder. Scanning it
+    # here only widens the ticker list; see config.RAW_SUSTAINABILITY_OTHER_DIR.
+    $Paths.Absolute.RAW_SUSTAINABILITY_OTHER_DIR
 )
 $tickerNames = [System.Collections.Generic.HashSet[string]]::new(
     [System.StringComparer]::OrdinalIgnoreCase
@@ -73,9 +80,9 @@ if (-not $preview) {
     New-Item -ItemType Directory -Path $backupRoot | Out-Null
 
     $backupTargets = @(
-        @{ Source = "data\02_interim\esg_text"; Parent = "data\02_interim" },
-        @{ Source = "data\03_sections\esg"; Parent = "data\03_sections" },
-        @{ Source = "data\04_chunks\esg"; Parent = "data\04_chunks" }
+        @{ Source = $Paths.ESG_TEXT_DIR;     Parent = $Paths.INTERIM_DIR },
+        @{ Source = $Paths.ESG_SECTIONS_DIR; Parent = $Paths.SECTIONS_DIR },
+        @{ Source = $Paths.ESG_CHUNKS_DIR;   Parent = $Paths.CHUNKS_DIR }
     )
     foreach ($target in $backupTargets) {
         $source = Join-Path $repoRoot $target.Source
@@ -87,7 +94,7 @@ if (-not $preview) {
         Copy-Item -LiteralPath $source -Destination $destinationParent -Recurse
     }
 
-    $referenceBackup = Join-Path $backupRoot "data\00_reference"
+    $referenceBackup = Join-Path $backupRoot $Paths.REFERENCE_DIR
     New-Item -ItemType Directory -Force -Path $referenceBackup | Out-Null
     foreach ($name in @(
         "esg_parse_index.csv",
@@ -97,7 +104,7 @@ if (-not $preview) {
         "esg_pipeline_qa.csv",
         "vector_index_manifest.csv"
     )) {
-        $source = Join-Path $repoRoot "data\00_reference\$name"
+        $source = Join-Path $Paths.Absolute.REFERENCE_DIR $name
         if (Test-Path -LiteralPath $source -PathType Leaf) {
             Copy-Item -LiteralPath $source -Destination $referenceBackup
         }

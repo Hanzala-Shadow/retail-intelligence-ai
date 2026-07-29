@@ -30,6 +30,7 @@ try:
 except ImportError:
     psutil = None
 
+import config
 from base_parser import ParsedDocument
 from esg_reading_order import reconstruct_column_order
 from esg_intake_catalog import (
@@ -51,9 +52,9 @@ TEXT_FALLBACK_MIN_PAGE_COVERAGE = 0.50
 TEXT_FALLBACK_MIN_GAIN_RATIO = 1.50
 TEXT_FALLBACK_MIN_CHAR_GAIN = 2000
 DEFAULT_OCR_ROOT = None
-DEFAULT_FILE_CATALOG = "data/00_reference/esg_file_catalog.csv"
-DEFAULT_OCR_APPROVAL = "data/00_reference/esg_ocr_approval.csv"
-DEFAULT_PARSER_OVERRIDES = "data/00_reference/esg_parser_overrides.csv"
+DEFAULT_FILE_CATALOG = str(config.ESG_FILE_CATALOG_CSV)
+DEFAULT_OCR_APPROVAL = str(config.ESG_OCR_APPROVAL_CSV)
+DEFAULT_PARSER_OVERRIDES = str(config.ESG_PARSER_OVERRIDES_CSV)
 DEFAULT_AUTO_LAYOUT_PDFIUM = False
 # v3 preserves one page-map row per physical page and separates high-risk
 # numeric/grid layouts from ordinary ambiguous reading order. v2 rows must be
@@ -3098,9 +3099,9 @@ def run(
 
 def main():
     ap = argparse.ArgumentParser(description="Parse ESG/sustainability PDFs to text.")
-    ap.add_argument("--root", default="data/01_raw/sustainability")
-    ap.add_argument("--out", default="data/02_interim/esg_text")
-    ap.add_argument("--index", default="data/00_reference/esg_parse_index.csv")
+    ap.add_argument("--root", default=str(config.RAW_SUSTAINABILITY_DIR))
+    ap.add_argument("--out", default=str(config.ESG_TEXT_DIR))
+    ap.add_argument("--index", default=str(config.ESG_PARSE_INDEX_CSV))
     ap.add_argument(
         "--ocr-root",
         default=DEFAULT_OCR_ROOT,

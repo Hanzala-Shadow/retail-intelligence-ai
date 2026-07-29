@@ -54,12 +54,15 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
-CHUNKS_INDEX = ROOT / "data/00_reference/esg_chunks_index_enriched.csv"
-SECTIONS_INDEX = ROOT / "data/00_reference/esg_sections_index.csv"
-OUT_TEXT_ROOT = ROOT / "data/05_embedding/esg_ctx"
-OUT_INDEX = ROOT / "data/00_reference/esg_chunk_embedding_context.csv"
-OUT_SUMMARY = ROOT / "reports/esg_embedding_context_summary.md"
+import config  # noqa: E402
+
+CHUNKS_INDEX = config.ESG_CHUNKS_INDEX_ENRICHED_CSV
+SECTIONS_INDEX = config.ESG_SECTIONS_INDEX_CSV
+OUT_TEXT_ROOT = config.ESG_EMBEDDING_CTX_DIR
+OUT_INDEX = config.ESG_CHUNK_EMBEDDING_CONTEXT_CSV
+OUT_SUMMARY = config.ESG_EMBEDDING_CONTEXT_SUMMARY_MD
 
 EMBEDDING_CONTEXT_VERSION = "esg_embed_ctx_v1"
 CONTENT_TYPE_RULE_VERSION = "esg_content_type_v1"
@@ -264,7 +267,12 @@ def main(argv: list[str] | None = None) -> int:
         if embedding_text.partition("\n\n")[2] != chunk_text:
             invariant_failures.append(chunk_id)
 
-        rel_path = Path("data/05_embedding/esg_ctx") / row["ticker"] / f"{safe_name(chunk_id)}.txt"
+        # Recorded in embedding_text_ctx_file, so it stays repo-relative.
+        rel_path = (
+            config.as_repo_relative(OUT_TEXT_ROOT)
+            / row["ticker"]
+            / f"{safe_name(chunk_id)}.txt"
+        )
         if not args.dry_run:
             abs_path = ROOT / rel_path
             abs_path.parent.mkdir(parents=True, exist_ok=True)

@@ -29,11 +29,12 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+import config  # noqa: E402
 import esg_vlm_stage as vlm  # noqa: E402
 
-DATA = ROOT / "data" / "04_vlm"
+DATA = config.VLM_DIR
 RENDERS = DATA / "renders"
-QA_PATH = ROOT / "data" / "00_reference" / "esg_page_layout_qa.csv"
+QA_PATH = config.ESG_PAGE_LAYOUT_QA_CSV
 
 
 def log(msg: str) -> None:

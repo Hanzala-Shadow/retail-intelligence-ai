@@ -29,9 +29,11 @@ import os
 import re
 from collections import Counter
 
-PARSE_INDEX = "data/00_reference/esg_parse_index.csv"
-RAW_ROOT = "data/01_raw/sustainability"
-OUT = "reports/esg_stem_remap_audit.csv"
+import config
+
+PARSE_INDEX = str(config.ESG_PARSE_INDEX_CSV)
+RAW_ROOT = str(config.RAW_SUSTAINABILITY_DIR)
+OUT = str(config.ESG_STEM_REMAP_AUDIT_CSV)
 
 _YEARS = re.compile(r"(?<!\d)((?:19|20)\d{2})(?!\d)")
 _TICKER = re.compile(r"^([A-Z][A-Z0-9.\-]*?)-")

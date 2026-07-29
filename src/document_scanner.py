@@ -1,8 +1,10 @@
 import csv
 from pathlib import Path
 
-root = Path('data/01_raw/10k')
-output_path = Path('data/00_reference/document_scan.csv')
+import config
+
+root = config.RAW_10K_DIR
+output_path = config.DOCUMENT_SCAN_CSV
 
 results = []
 

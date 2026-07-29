@@ -21,10 +21,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+import config  # noqa: E402
 import esg_year  # noqa: E402
 
+# Every path here is joined against --repo, so these stay repo-relative
+# (they must keep working when --repo points at a different checkout).
 DEFAULT_ROOTS = [
-    "data/01_raw/sustainability",
+    config.as_repo_relative(config.RAW_SUSTAINABILITY_DIR).as_posix(),
 ]
 
 
@@ -51,8 +54,8 @@ def main() -> int:
         dest="roots",
         help="Raw PDF root, relative to --repo (repeatable). Defaults to the Sustainability Reports root.",
     )
-    parser.add_argument("--out", default="data/02_interim/esg_text")
-    parser.add_argument("--index", default="data/00_reference/esg_parse_index.csv")
+    parser.add_argument("--out", default=config.as_repo_relative(config.ESG_TEXT_DIR).as_posix())
+    parser.add_argument("--index", default=config.as_repo_relative(config.ESG_PARSE_INDEX_CSV).as_posix())
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--force", action="store_true", help="Reparse even if current outputs are complete.")
     parser.add_argument("--prefer-pdfium", action="store_true")

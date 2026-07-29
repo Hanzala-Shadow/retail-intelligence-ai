@@ -7,6 +7,8 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+import config
+
 
 QA_FIELDS = [
     "company_id",
@@ -548,14 +550,14 @@ def print_priority_fixes(rows: list[dict], cleanup_tickers: list[str]) -> None:
 
 def run(
     out: str | Path,
-    tracker_path: str | Path = "data/00_reference/sustainability_report_tracker.csv",
-    companies_path: str | Path = "data/00_reference/companies.csv",
-    parse_index_path: str | Path = "data/00_reference/esg_parse_index.csv",
-    sections_index_path: str | Path = "data/00_reference/esg_sections_index.csv",
-    chunks_index_path: str | Path = "data/00_reference/esg_chunks_index.csv",
-    source_registry_path: str | Path = "data/00_reference/esg_source_registry.csv",
-    layout_audit_path: str | Path = "data/00_reference/esg_page_layout_qa.csv",
-    raw_root: str | Path = "data/01_raw/sustainability",
+    tracker_path: str | Path = config.SUSTAINABILITY_TRACKER_CSV,
+    companies_path: str | Path = config.COMPANIES_CSV,
+    parse_index_path: str | Path = config.ESG_PARSE_INDEX_CSV,
+    sections_index_path: str | Path = config.ESG_SECTIONS_INDEX_CSV,
+    chunks_index_path: str | Path = config.ESG_CHUNKS_INDEX_CSV,
+    source_registry_path: str | Path = config.ESG_SOURCE_REGISTRY_CSV,
+    layout_audit_path: str | Path = config.ESG_PAGE_LAYOUT_QA_CSV,
+    raw_root: str | Path = config.RAW_SUSTAINABILITY_DIR,
     ticker: str | None = None,
     pdf_stem: str | None = None,
 ) -> list[dict]:
@@ -878,15 +880,15 @@ def run(
 
 def main():
     parser = argparse.ArgumentParser(description="Create ESG pipeline QA summary CSV.")
-    parser.add_argument("--out", default="data/00_reference/esg_pipeline_qa.csv")
-    parser.add_argument("--tracker", default="data/00_reference/sustainability_report_tracker.csv")
-    parser.add_argument("--companies", default="data/00_reference/companies.csv")
-    parser.add_argument("--parse-index", default="data/00_reference/esg_parse_index.csv")
-    parser.add_argument("--sections-index", default="data/00_reference/esg_sections_index.csv")
-    parser.add_argument("--chunks-index", default="data/00_reference/esg_chunks_index.csv")
-    parser.add_argument("--source-registry", default="data/00_reference/esg_source_registry.csv")
-    parser.add_argument("--layout-audit", default="data/00_reference/esg_page_layout_qa.csv")
-    parser.add_argument("--raw-root", default="data/01_raw/sustainability")
+    parser.add_argument("--out", default=str(config.ESG_PIPELINE_QA_CSV))
+    parser.add_argument("--tracker", default=str(config.SUSTAINABILITY_TRACKER_CSV))
+    parser.add_argument("--companies", default=str(config.COMPANIES_CSV))
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
+    parser.add_argument("--sections-index", default=str(config.ESG_SECTIONS_INDEX_CSV))
+    parser.add_argument("--chunks-index", default=str(config.ESG_CHUNKS_INDEX_CSV))
+    parser.add_argument("--source-registry", default=str(config.ESG_SOURCE_REGISTRY_CSV))
+    parser.add_argument("--layout-audit", default=str(config.ESG_PAGE_LAYOUT_QA_CSV))
+    parser.add_argument("--raw-root", default=str(config.RAW_SUSTAINABILITY_DIR))
     parser.add_argument("--ticker", default=None)
     parser.add_argument("--pdf-file", default=None)
     parser.add_argument("--pdf-stem", default=None)

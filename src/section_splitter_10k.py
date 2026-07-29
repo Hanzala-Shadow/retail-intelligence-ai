@@ -3,8 +3,10 @@ from pathlib import Path
 import csv
 import logging
 
+import config
+
 # Set up logging to catch parsing anomalies cleanly
-log_dir = Path('logs')
+log_dir = config.LOGS_DIR
 log_dir.mkdir(exist_ok=True)
 logging.basicConfig(
     filename=log_dir / 'parse_errors.log',
@@ -372,8 +374,8 @@ def process_company(txt_file, output_dir):
 
 def main():
     # Input and output directory reflecting repository folder conventions
-    input_dir = Path('data/02_interim/html_text')
-    output_dir = Path('data/03_sections/10k')
+    input_dir = config.HTML_TEXT_DIR
+    output_dir = config.SECTIONS_10K_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
 
     txt_files = [
@@ -389,7 +391,7 @@ def main():
         print(f"  Processed {txt_file.stem}: Generated {len(results)} distinct text sections.")
 
     # Save tracking summary table
-    index_path = Path('data/00_reference/sections_index.csv')
+    index_path = config.SECTIONS_INDEX_CSV
     index_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(index_path, 'w', newline='', encoding='utf-8') as f:

@@ -5,9 +5,15 @@ import csv
 import json
 import os
 import re
+import sys
 import uuid
 from collections import Counter
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+import config  # noqa: E402
 
 
 MANIFEST_FIELDS = [
@@ -51,7 +57,7 @@ MANIFEST_FIELDS = [
 ]
 
 VERIFIED_CITATION_STATUSES = {"verified_exact", "verified_whitespace_normalized"}
-LAYOUT_AUDIT_DEFAULT = "data/00_reference/esg_page_layout_qa.csv"
+LAYOUT_AUDIT_DEFAULT = str(config.ESG_PAGE_LAYOUT_QA_CSV)
 LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
 # Must equal esg_layout_qa.AUDIT_VERSION. It is duplicated rather than imported
 # so this script stays free of the parser's pdfplumber/pypdfium dependencies;
@@ -560,9 +566,9 @@ def build_manifest(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build deterministic ESG vector manifest from chunk metadata.")
-    parser.add_argument("--chunks-index", default="data/00_reference/esg_chunks_index.csv")
-    parser.add_argument("--source-registry", default="data/00_reference/esg_source_registry.csv")
-    parser.add_argument("--out", default="data/00_reference/vector_index_manifest.csv")
+    parser.add_argument("--chunks-index", default=str(config.ESG_CHUNKS_INDEX_CSV))
+    parser.add_argument("--source-registry", default=str(config.ESG_SOURCE_REGISTRY_CSV))
+    parser.add_argument("--out", default=str(config.VECTOR_INDEX_MANIFEST_CSV))
     parser.add_argument("--layout-audit", default=LAYOUT_AUDIT_DEFAULT)
     parser.add_argument(
         "--allow-missing-layout-audit",

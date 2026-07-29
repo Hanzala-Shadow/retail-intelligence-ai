@@ -26,7 +26,9 @@ param(
 
     [switch]$EnablePyMuPdfParser,
 
-    [string]$VlmDir = "data/04_vlm",
+    # Resolved from src/config.py once $Paths is loaded -- param defaults are
+    # evaluated before the script body, so it cannot be set here.
+    [string]$VlmDir,
 
     [switch]$Force,
     [switch]$WhatIf
@@ -58,6 +60,15 @@ Set-Location -LiteralPath $repoRoot
 $python = Join-Path $repoRoot "venv\Scripts\python.exe"
 if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw "Project Python was not found at $python"
+}
+
+# The pipeline layout lives in src/config.py; this runner reads it rather
+# than restating it. See scripts/PipelinePaths.ps1.
+. (Join-Path $PSScriptRoot "PipelinePaths.ps1")
+$Paths = Import-PipelinePaths -RepoRoot $repoRoot -Python $python
+
+if (-not $VlmDir) {
+    $VlmDir = $Paths.VLM_DIR
 }
 
 if ($Ticker) {
@@ -166,13 +177,13 @@ try {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("src/esg_intake_catalog.py")
         $arguments.Add("--raw-root")
-        $arguments.Add("data/01_raw/sustainability")
+        $arguments.Add($Paths.RAW_SUSTAINABILITY_DIR)
         $arguments.Add("--ocr-root")
-        $arguments.Add("data/02_interim/ocr_staging")
+        $arguments.Add($Paths.OCR_STAGING_DIR)
         $arguments.Add("--catalog")
-        $arguments.Add("data/00_reference/esg_file_catalog.csv")
+        $arguments.Add($Paths.ESG_FILE_CATALOG_CSV)
         $arguments.Add("--ocr-approval")
-        $arguments.Add("data/00_reference/esg_ocr_approval.csv")
+        $arguments.Add($Paths.ESG_OCR_APPROVAL_CSV)
         Add-ScopedArguments -Arguments $arguments
         if ($PdfFile) {
             $arguments.Add("--pdf-file")
@@ -190,13 +201,13 @@ try {
         $arguments.Add("src/pdf_parser.py")
         $arguments.Add("--resume")
         $arguments.Add("--root")
-        $arguments.Add("data/01_raw/sustainability")
+        $arguments.Add($Paths.RAW_SUSTAINABILITY_DIR)
         $arguments.Add("--ocr-root")
-        $arguments.Add("data/02_interim/ocr_staging")
+        $arguments.Add($Paths.OCR_STAGING_DIR)
         $arguments.Add("--out")
-        $arguments.Add("data/02_interim/esg_text")
+        $arguments.Add($Paths.ESG_TEXT_DIR)
         $arguments.Add("--index")
-        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add($Paths.ESG_PARSE_INDEX_CSV)
         $arguments.Add("--workers")
         $arguments.Add([string]$ParserWorkers)
         $arguments.Add("--checkpoint-every")
@@ -223,11 +234,11 @@ try {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("src/pipeline_ocr_remediation_stage.py")
         $arguments.Add("--parse-index")
-        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add($Paths.ESG_PARSE_INDEX_CSV)
         $arguments.Add("--sections-index")
-        $arguments.Add("data/00_reference/esg_sections_index.csv")
+        $arguments.Add($Paths.ESG_SECTIONS_INDEX_CSV)
         $arguments.Add("--chunks-index")
-        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add($Paths.ESG_CHUNKS_INDEX_CSV)
         Add-ScopedArguments -Arguments $arguments
         if ($PdfFile) {
             $arguments.Add("--pdf-file")
@@ -252,11 +263,11 @@ try {
         $arguments.Add("src/section_splitter_esg.py")
         $arguments.Add("--resume")
         $arguments.Add("--input")
-        $arguments.Add("data/02_interim/esg_text")
+        $arguments.Add($Paths.ESG_TEXT_DIR)
         $arguments.Add("--out")
-        $arguments.Add("data/03_sections/esg")
+        $arguments.Add($Paths.ESG_SECTIONS_DIR)
         $arguments.Add("--index")
-        $arguments.Add("data/00_reference/esg_sections_index.csv")
+        $arguments.Add($Paths.ESG_SECTIONS_INDEX_CSV)
         $arguments.Add("--checkpoint-every")
         $arguments.Add([string]$SectionCheckpointEvery)
         Add-ScopedArguments -Arguments $arguments
@@ -275,11 +286,11 @@ try {
         $arguments.Add("src/esg_chunker.py")
         $arguments.Add("--resume")
         $arguments.Add("--input")
-        $arguments.Add("data/03_sections/esg")
+        $arguments.Add($Paths.ESG_SECTIONS_DIR)
         $arguments.Add("--out")
-        $arguments.Add("data/04_chunks/esg")
+        $arguments.Add($Paths.ESG_CHUNKS_DIR)
         $arguments.Add("--index")
-        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add($Paths.ESG_CHUNKS_INDEX_CSV)
         $arguments.Add("--workers")
         $arguments.Add([string]$ChunkWorkers)
         $arguments.Add("--checkpoint-every")
@@ -300,9 +311,9 @@ try {
         $arguments.Add("src/esg_layout_qa.py")
         $arguments.Add("--resume")
         $arguments.Add("--parse-index")
-        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add($Paths.ESG_PARSE_INDEX_CSV)
         $arguments.Add("--out")
-        $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        $arguments.Add($Paths.ESG_PAGE_LAYOUT_QA_CSV)
         $arguments.Add("--workers")
         $arguments.Add([string]$ParserWorkers)
         Add-ScopedArguments -Arguments $arguments
@@ -334,9 +345,9 @@ try {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("src/esg_pipeline_qa.py")
         $arguments.Add("--out")
-        $arguments.Add("data/00_reference/esg_pipeline_qa.csv")
+        $arguments.Add($Paths.ESG_PIPELINE_QA_CSV)
         $arguments.Add("--layout-audit")
-        $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        $arguments.Add($Paths.ESG_PAGE_LAYOUT_QA_CSV)
         Add-ScopedArguments -Arguments $arguments
         if ($PdfFile) {
             $arguments.Add("--pdf-file")
@@ -353,13 +364,13 @@ try {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("scripts/build_esg_vector_manifest.py")
         $arguments.Add("--chunks-index")
-        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add($Paths.ESG_CHUNKS_INDEX_CSV)
         $arguments.Add("--source-registry")
-        $arguments.Add("data/00_reference/esg_source_registry.csv")
+        $arguments.Add($Paths.ESG_SOURCE_REGISTRY_CSV)
         $arguments.Add("--layout-audit")
-        $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        $arguments.Add($Paths.ESG_PAGE_LAYOUT_QA_CSV)
         $arguments.Add("--out")
-        $arguments.Add("data/00_reference/vector_index_manifest.csv")
+        $arguments.Add($Paths.VECTOR_INDEX_MANIFEST_CSV)
         Add-ScopedArguments -Arguments $arguments
         if ($PdfFile) {
             $arguments.Add("--pdf-file")
@@ -390,13 +401,13 @@ try {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("scripts/validate_esg_provenance.py")
         $arguments.Add("--parse-index")
-        $arguments.Add("data/00_reference/esg_parse_index.csv")
+        $arguments.Add($Paths.ESG_PARSE_INDEX_CSV)
         $arguments.Add("--sections-index")
-        $arguments.Add("data/00_reference/esg_sections_index.csv")
+        $arguments.Add($Paths.ESG_SECTIONS_INDEX_CSV)
         $arguments.Add("--chunks-index")
-        $arguments.Add("data/00_reference/esg_chunks_index.csv")
+        $arguments.Add($Paths.ESG_CHUNKS_INDEX_CSV)
         $arguments.Add("--json-out")
-        $arguments.Add("reports/esg_provenance_validation_fast_$stamp.json")
+        $arguments.Add("$($Paths.REPORTS_DIR)/esg_provenance_validation_fast_$stamp.json")
         Add-ScopedArguments -Arguments $arguments
         if ($PdfFile) {
             $arguments.Add("--pdf-file")

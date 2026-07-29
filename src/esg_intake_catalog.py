@@ -11,6 +11,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Iterable
 
+import config
+
 
 CATALOG_FIELDS = [
     "logical_source_id",
@@ -55,7 +57,7 @@ OCR_APPROVAL_FIELDS = [
 APPROVED_STATUSES = {"approved", "approve"}
 ACTIVE_STATES = {"active", "current"}
 
-BANNED_COMPANIES_PATH = Path("data/00_reference/banned_companies.csv")
+BANNED_COMPANIES_PATH = config.BANNED_COMPANIES_CSV
 
 
 def load_banned_tickers(path: str | Path | None = None) -> set[str]:
@@ -349,11 +351,11 @@ def main() -> None:
         default=None,
         help="Original report root; repeat for global deduplication across roots.",
     )
-    parser.add_argument("--ocr-root", default="data/02_interim/ocr_staging")
-    parser.add_argument("--catalog", default="data/00_reference/esg_file_catalog.csv")
-    parser.add_argument("--ocr-approval", default="data/00_reference/esg_ocr_approval.csv")
-    parser.add_argument("--source-registry", default="data/00_reference/esg_source_registry.csv")
-    parser.add_argument("--parse-index", default="data/00_reference/esg_parse_index.csv")
+    parser.add_argument("--ocr-root", default=str(config.OCR_STAGING_DIR))
+    parser.add_argument("--catalog", default=str(config.ESG_FILE_CATALOG_CSV))
+    parser.add_argument("--ocr-approval", default=str(config.ESG_OCR_APPROVAL_CSV))
+    parser.add_argument("--source-registry", default=str(config.ESG_SOURCE_REGISTRY_CSV))
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
     parser.add_argument("--ticker")
     parser.add_argument("--pdf-file")
     parser.add_argument("--pdf-stem")
@@ -364,7 +366,7 @@ def main() -> None:
     # Only the primary "Sustainability Reports" mirror is catalogued.
     # "Other Sustainability Related Reports" is a separate source class and is
     # not ingested by this pipeline (see docs/ESG_PIPELINE.md).
-    args.raw_root = args.raw_root or ["data/01_raw/sustainability"]
+    args.raw_root = args.raw_root or [str(config.RAW_SUSTAINABILITY_DIR)]
     run(args)
 
 

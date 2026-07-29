@@ -9,6 +9,8 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
+import config
+
 
 CANONICAL_SECTION_CODES = {
     "ceo_letter",
@@ -1627,9 +1629,9 @@ def _positive_int(value: str) -> int:
 
 def main():
     parser = argparse.ArgumentParser(description="Split parsed ESG report text into canonical sections.")
-    parser.add_argument("--input", default="data/02_interim/esg_text")
-    parser.add_argument("--out", default="data/03_sections/esg")
-    parser.add_argument("--index", default="data/00_reference/esg_sections_index.csv")
+    parser.add_argument("--input", default=str(config.ESG_TEXT_DIR))
+    parser.add_argument("--out", default=str(config.ESG_SECTIONS_DIR))
+    parser.add_argument("--index", default=str(config.ESG_SECTIONS_INDEX_CSV))
     parser.add_argument("--ticker", default=None)
     parser.add_argument(
         "--pdf-stem",
