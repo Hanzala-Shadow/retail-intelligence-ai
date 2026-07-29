@@ -36,10 +36,10 @@ import sys
 import unicodedata
 from collections import Counter, defaultdict
 
-# The year rule lives in exactly one module. This name is re-exported so callers
-# and tests can keep using p1.extract_report_year, but it IS esg_year's function
-# -- not a copy that can drift from it.
-from esg_year import extract_report_year  # noqa: F401
+# The year rule lives in exactly one module. These names are re-exported so
+# callers and tests can keep using p1.extract_report_year/YEAR_MIN/YEAR_MAX,
+# but they ARE esg_year's -- not copies that can drift from it.
+from esg_year import YEAR_MAX, YEAR_MIN, extract_report_year  # noqa: F401
 
 # Rule-set versions. Bump when a rule changes so downstream runs stay traceable.
 YEAR_RULE_VERSION = "esg_year_v1"
