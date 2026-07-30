@@ -49,6 +49,7 @@ REF = ROOT / "data/00_reference"
 # to rebuild from source rather than merge into stale rows.
 # --------------------------------------------------------------------------
 DERIVED = {
+    "esg_file_catalog.csv": "intake catalog (upserts and retains inactive history; rebuilt from the raw tree)",
     "esg_parse_index.csv": "parser (upserts -- ghost rows survive without this)",
     "esg_sections_index.csv": "sectioner (upserts)",
     "esg_chunks_index.csv": "chunker (upserts)",
@@ -68,6 +69,7 @@ DERIVED = {
 CURATED = {
     "esg_source_registry.csv": "curated duplicates/exclusions/supplements",
     "esg_parser_overrides.csv": "per-document parser overrides",
+    "esg_ocr_approval.csv": "OCR approval decisions (reviewer/approval_status); intake only creates the header",
     "esg_accepted_company_manifest.csv": "accepted company manifest",
     "companies.csv": "company master",
     "sustainability_report_tracker.csv": "coverage tracker",

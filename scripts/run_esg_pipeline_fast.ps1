@@ -349,6 +349,21 @@ try {
         Invoke-PythonStage -Name "qa" -Arguments $arguments.ToArray()
     }
 
+    # Enrichment runs BEFORE the manifest on purpose. The manifest's eligibility
+    # gate consults chunk_quality_tier to keep noise (large tables of contents
+    # and navigation text, which the chunker's 150-token navigation detector
+    # cannot see) out of the vector index. That column only exists once
+    # enrichment has written the enriched index. Enrichment itself reads only
+    # the parse/sections/chunks indexes, so it has no dependency on the manifest.
+    if ($runEnrich) {
+        # P1 metadata enrichment: additive-only, deterministic. Rebuilds the
+        # enriched chunk index and embedding_text_plain copies from the current
+        # chunks index; the base index and chunk files are never modified.
+        Invoke-PythonStage -Name "enrich" -Arguments @(
+            "src/esg_p1_enrichment.py"
+        )
+    }
+
     if ($runManifest) {
         $arguments = [System.Collections.Generic.List[string]]::new()
         $arguments.Add("scripts/build_esg_vector_manifest.py")
@@ -358,6 +373,8 @@ try {
         $arguments.Add("data/00_reference/esg_source_registry.csv")
         $arguments.Add("--layout-audit")
         $arguments.Add("data/00_reference/esg_page_layout_qa.csv")
+        $arguments.Add("--enriched-index")
+        $arguments.Add("data/00_reference/esg_chunks_index_enriched.csv")
         $arguments.Add("--out")
         $arguments.Add("data/00_reference/vector_index_manifest.csv")
         Add-ScopedArguments -Arguments $arguments
@@ -374,15 +391,6 @@ try {
             $arguments.Add($VlmDir)
         }
         Invoke-PythonStage -Name "manifest" -Arguments $arguments.ToArray()
-    }
-
-    if ($runEnrich) {
-        # P1 metadata enrichment: additive-only, deterministic. Rebuilds the
-        # enriched chunk index and embedding_text_plain copies from the current
-        # chunks index; the base index and chunk files are never modified.
-        Invoke-PythonStage -Name "enrich" -Arguments @(
-            "src/esg_p1_enrichment.py"
-        )
     }
 
     if ($runValidate) {

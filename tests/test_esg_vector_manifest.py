@@ -43,6 +43,43 @@ def test_superseded_chunk_is_excluded_from_manifest_eligibility() -> None:
     assert "lifecycle_state=superseded" in reason
 
 
+def test_noise_tier_chunk_is_excluded_from_manifest_eligibility() -> None:
+    # The chunker's navigation detector only inspects sections at or below
+    # NAVIGATION_TRACE_MAX_TOKENS, so a large table of contents arrives here
+    # unflagged. The enriched tier is what keeps it out of the index.
+    decision, reason = manifest.eligibility_for_chunk(
+        _chunk(), _policy(), quality_tier="noise"
+    )
+    assert decision == "excluded"
+    assert "chunk_quality_tier=noise" in reason
+
+
+def test_non_noise_tier_is_not_excluded_by_the_tier_gate() -> None:
+    for tier in ("narrative", "layout_sensitive", "", "pending_text"):
+        _, reason = manifest.eligibility_for_chunk(
+            _chunk(), _policy(), quality_tier=tier
+        )
+        assert "chunk_quality_tier=noise" not in reason, tier
+
+
+def test_noise_tier_chunk_reports_excluded_noise_retrieval_state() -> None:
+    row = manifest.manifest_row(
+        _chunk(),
+        {},
+        None,
+        None,
+        {"chunk-1": "noise"},
+    )
+    assert row["retrieval_state"] == "excluded_noise"
+
+
+def test_missing_enriched_index_yields_no_tier_signal() -> None:
+    # The manifest must still build when enrichment has not run yet, so an
+    # absent enriched index degrades to "no tier information", never an error.
+    assert manifest.load_quality_tiers(None) == {}
+    assert manifest.load_quality_tiers(ROOT / "does_not_exist.csv") == {}
+
+
 def test_missing_layout_hashes_fail_closed() -> None:
     chunk = _chunk()
     audit = {

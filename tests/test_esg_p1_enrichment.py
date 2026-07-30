@@ -455,3 +455,67 @@ def test_enrichment_is_byte_deterministic(tmp_path):
     p1.run(REPO_ROOT, write_embeddings=False)
     after = p1.sha256_file(ENRICHED_INDEX)
     assert before == after, "enrichment output is not reproducible"
+
+
+# ---------------------------------------------------------------------------
+# embedding heading prefix
+# ---------------------------------------------------------------------------
+
+
+def _prefix_row(**changes):
+    row = {
+        "company_name": "APPLE INC",
+        "ticker": "AAPL",
+        "cik": "0000320193",
+        "doc_type": "sustainability",
+        "report_year": "2024",
+        "report_year_status": "parsed",
+        "report_year_span": "",
+        "section_code": "about_this_report",
+        "section_title_original": "Introduction Environmental Data",
+    }
+    row.update(changes)
+    return row
+
+
+def test_embedding_prefix_precedes_text_and_leaves_it_intact():
+    body = "Scope 1 emissions fell 12% year over year."
+    out = p1.build_embedding_text(_prefix_row(), body)
+    header, _, kept = out.partition("\n\n")
+    assert kept == body, "chunk text must survive the prefix untouched"
+    assert header.splitlines()[0] == "Company: APPLE INC"
+    assert "Ticker: AAPL" in header
+    assert "Section: Introduction Environmental Data" in header
+
+
+def test_embedding_prefix_omits_empty_fields_entirely():
+    out = p1.build_embedding_text(
+        _prefix_row(section_title_original="", cik=""), "body"
+    )
+    header = out.partition("\n\n")[0]
+    assert "Section:" not in header, "an empty value must not leave a dangling label"
+    assert "CIK:" not in header
+    for line in header.splitlines():
+        assert line.split(": ", 1)[1].strip(), f"blank value emitted: {line!r}"
+
+
+def test_embedding_prefix_uses_the_span_for_unresolved_years():
+    out = p1.build_embedding_text(
+        _prefix_row(report_year_status="multi_year_range", report_year_span="2024-2025"),
+        "body",
+    )
+    assert "Reporting year: 2024-2025" in out
+
+
+def test_embedding_prefix_excludes_the_quality_tier():
+    # chunk_quality_tier is a quality signal, not a description of the content;
+    # emitting it would put non-semantic tokens into the embedding space.
+    out = p1.build_embedding_text(
+        _prefix_row() | {"chunk_quality_tier": "layout_sensitive"}, "body"
+    )
+    assert "layout_sensitive" not in out
+    assert "Content type" not in out
+
+
+def test_embedding_prefix_degrades_to_bare_text_without_context():
+    assert p1.build_embedding_text({}, "bare text") == "bare text"

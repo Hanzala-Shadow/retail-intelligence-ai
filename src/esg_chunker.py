@@ -23,6 +23,14 @@ MIN_CHUNK_TOKENS = 100
 MAX_CHUNK_TOKENS = 600
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
+# Large tables of contents sit far above NAVIGATION_TRACE_MAX_TOKENS, so the
+# short-section navigation heuristic never inspects them. They are recognised
+# instead by how much of their character budget is spent on dot leaders.
+# Calibrated against the live corpus (2026-07-29): a TJX appendix index measured
+# 0.134 and is genuine navigation, while prose chunks containing incidental dot
+# runs measured 0.108 and 0.101. The cut sits between those observations.
+NAVIGATION_DOT_LEADER_CHAR_RATIO = 0.12
+DOT_LEADER_RUN = re.compile(r"\.{6,}")
 CHUNK_TYPE_NORMAL = "normal"
 CHUNK_TYPE_SHORT_EVIDENCE = "short_evidence"
 SHORT_SECTION_ACTION_PRESERVED = "preserved"
@@ -30,6 +38,10 @@ SHORT_SECTION_ACTION_EXCLUDED = "excluded"
 QUALITY_FLAG_SHORT_SECTION_EXCLUDED = "short_section_excluded_from_retrieval"
 DOC_TYPE = "sustainability"
 CITATION_VALIDATION_VERSION = "semantic_v1"
+# Versions the chunking rule set: CHUNK_SIZE, OVERLAP, MAX_CHUNK_TOKENS, the
+# short-section and navigation-trace classifiers, and the source-alignment
+# logic. Bump when any of those change.
+CHUNKER_VERSION = "esg_chunk_v2"
 VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
@@ -76,6 +88,7 @@ CHUNKS_INDEX_FIELDS = [
     "source_sha256",
     "parsed_text_sha256",
     "section_text_sha256",
+    "chunk_text_sha256",
     "source_start_char",
     "source_end_char",
     "page_start",
@@ -176,6 +189,27 @@ def valid_token_count_for_chunk_type(
     if (chunk_type or CHUNK_TYPE_NORMAL).strip() == CHUNK_TYPE_SHORT_EVIDENCE:
         return SHORT_EVIDENCE_MIN_TOKENS <= token_count < MIN_CHUNK_TOKENS
     return MIN_CHUNK_TOKENS <= token_count <= MAX_CHUNK_TOKENS
+
+
+def dot_leader_char_ratio(text: str) -> float:
+    """Share of characters spent on dot-leader runs (the '......' of a TOC)."""
+    if not text:
+        return 0.0
+    return sum(len(match.group()) for match in DOT_LEADER_RUN.finditer(text)) / len(text)
+
+
+def is_large_navigation_trace_section(text: str, token_count: int) -> bool:
+    """Recognise tables of contents too large for the short-section heuristic.
+
+    Deliberately does NOT reuse that heuristic's `has_prose_tail` guard. Dot
+    leaders create `[.!?]\\s` matches, so a table of contents inflates the
+    sentence-mark count and its headings supply enough lowercase words to look
+    like prose: measured against the live corpus, that guard suppressed
+    detection on 13 of 22 genuine navigation chunks.
+    """
+    if token_count <= NAVIGATION_TRACE_MAX_TOKENS:
+        return False  # already covered by classify_navigation_trace_section
+    return dot_leader_char_ratio(text) >= NAVIGATION_DOT_LEADER_CHAR_RATIO
 
 
 def classify_navigation_trace_section(text: str, token_count: int) -> str:
@@ -912,6 +946,10 @@ def build_chunk_output(
         **source_fingerprint.as_index_fields(),
         "parsed_text_sha256": parsed_text_sha256,
         "section_text_sha256": source_fingerprint.sha256,
+        # Identity of this chunk's own citation text. The section and parsed-text
+        # hashes above cover its ancestors, not the chunk itself, which the ESG
+        # Chunk Management Contract requires recalculated after any text change.
+        "chunk_text_sha256": hashlib.sha256(chunk_text.encode("utf-8")).hexdigest(),
         "source_start_char": source_start if source_start is not None else "",
         "source_end_char": source_end if source_end is not None else "",
         "page_start": page_start,
@@ -964,6 +1002,14 @@ def build_section_plan(
     ).strip()
 
     navigation_reason = classify_navigation_trace_section(text, source_token_count)
+    # A large table of contents is chunked normally -- splitting it is harmless
+    # and keeps every chunk inside the token bounds the validators enforce --
+    # but every chunk it produces is marked excluded, so none reaches the index.
+    if is_large_navigation_trace_section(text, source_token_count):
+        doc_meta = doc_meta_for_excluded_short_section(
+            doc_meta,
+            "table_of_contents_or_navigation",
+        )
     if MIN_CHUNK_TOKENS <= source_token_count <= NAVIGATION_TRACE_MAX_TOKENS and navigation_reason:
         outputs = [
             build_chunk_output(
@@ -1386,6 +1432,7 @@ def section_rows_are_complete(
             "section_instance_id",
             "parsed_text_sha256",
             "section_text_sha256",
+            "chunk_text_sha256",
             "citation_validation_status",
             "citation_validation_version",
             "citation_ready",

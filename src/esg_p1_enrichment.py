@@ -7,6 +7,17 @@ Implements the four P1 items from the 2026-07-23 pilot audit (section 9):
   3. chunk_quality_tier   - narrative / layout_sensitive / noise, deterministic rule
   4. embedding_text_plain - normalized copy for embedding; source text untouched
 
+Also implements Task 3 (2026-07-29, ESG Chunk Management Contract Principle 9
+and field_dictionary.csv line 26): frozen processing versions and a
+deterministic dataset_id.
+
+  5. parser_version / sectioner_version / chunker_version / dataset_id
+     - the first two are joined per-document from the parse and sections
+       indexes; chunker_version is a constant imported from esg_chunker.py;
+       dataset_id is a SHA256 over the versions plus the input index's own
+       hash and row count, so re-running on an unchanged corpus reproduces
+       the same id.
+
 Design constraints taken directly from the audit:
 
   * The rule set must be deterministic. Same input -> byte-identical output.
@@ -41,10 +52,17 @@ from collections import Counter, defaultdict
 # but they ARE esg_year's -- not copies that can drift from it.
 from esg_year import YEAR_MAX, YEAR_MIN, extract_report_year  # noqa: F401
 
+# Same reasoning for CHUNKER_VERSION: it versions the chunking rule set and
+# lives next to those rules in esg_chunker.py, not as a second copy here.
+from esg_chunker import CHUNKER_VERSION  # noqa: F401
+
 # Rule-set versions. Bump when a rule changes so downstream runs stay traceable.
 YEAR_RULE_VERSION = "esg_year_v1"
 TIER_RULE_VERSION = "esg_tier_v1"
-NORMALIZATION_VERSION = "esg_embed_norm_v1"
+NORMALIZATION_VERSION = "esg_embed_norm_v2"
+# Versions the shape of the embedding heading prefix (which labels appear, in
+# what order). Bump when the prefix changes so old embeddings stay traceable.
+EMBEDDING_PREFIX_VERSION = "esg_embed_prefix_v1"
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -52,6 +70,9 @@ CHUNKS_INDEX = "data/00_reference/esg_chunks_index.csv"
 COMPANY_MANIFEST = "data/00_reference/esg_accepted_company_manifest.csv"
 COMPANIES = "data/00_reference/companies.csv"
 SOURCE_REGISTRY = "data/00_reference/esg_source_registry.csv"
+PARSE_INDEX = "data/00_reference/esg_parse_index.csv"
+SECTIONS_INDEX = "data/00_reference/esg_sections_index.csv"
+DRIVE_MANIFEST = "data/00_reference/esg_drive_manifest.csv"
 
 OUT_INDEX = "data/00_reference/esg_chunks_index_enriched.csv"
 EMBED_ROOT = "data/05_embedding/esg"
@@ -69,6 +90,16 @@ NEW_COLUMNS = [
     "embedding_text_plain_file",
     "embedding_text_plain_sha256",
     "embedding_normalization_version",
+    "parser_version",
+    "sectioner_version",
+    "chunker_version",
+    "company_id",
+    "cik",
+    "source_url",
+    "source_retrieved_at_utc",
+    "section_title_original",
+    "embedding_prefix_version",
+    "dataset_id",
 ]
 
 # ---------------------------------------------------------------------------
@@ -238,11 +269,82 @@ def read_csv(path: str):
 
 
 # ---------------------------------------------------------------------------
+# 5. dataset_id -- deterministic release identity
+# ---------------------------------------------------------------------------
+#
+# Derived, not stamped: re-running on an unchanged corpus must reproduce the
+# same id. The six inputs are, in order, the sorted distinct parser_version
+# and sectioner_version values actually present in the run, CHUNKER_VERSION,
+# the three P1 rule-set versions, the SHA256 of the input chunk index bytes,
+# and the row count. Returns (payload, full_hash, dataset_id) so the payload
+# and untruncated hash can be recorded for audit rather than left opaque.
+
+
+DOC_TYPE_LABELS = {
+    "sustainability": "Sustainability report",
+    "10-K": "Form 10-K",
+}
+
+
+def build_embedding_text(row: dict, normalized_text: str) -> str:
+    """Prepend controlled heading context to the text sent to the embedder.
+
+    `chunk_text` is never touched: the contract keeps readable citation text
+    separate from any embedding-only prefix, and allows controlled heading
+    context to be added here. This is the mitigation for chunks that are
+    ambiguous once separated from their heading.
+
+    Deliberately excludes a 'Content type' line. The nearest column we have is
+    chunk_quality_tier, which is a quality signal rather than a description of
+    the content, and emitting the literal token 'layout_sensitive' into ~22% of
+    chunks would put non-semantic text into the embedding space.
+
+    Lines whose value is empty are omitted entirely rather than emitted blank,
+    so the prefix never contains a dangling label.
+    """
+    year = (row.get("report_year") or "").strip()
+    if (row.get("report_year_status") or "").strip() == "multi_year_range":
+        # Say the honest thing for the spans we could not resolve to one year.
+        year = (row.get("report_year_span") or "").strip() or year
+
+    doc_type = (row.get("doc_type") or "").strip()
+    topic = (row.get("section_code") or "").strip().replace("_", " ")
+
+    fields = (
+        ("Company", (row.get("company_name") or "").strip()),
+        ("Ticker", (row.get("ticker") or "").strip()),
+        ("CIK", (row.get("cik") or "").strip()),
+        ("Document", DOC_TYPE_LABELS.get(doc_type, doc_type)),
+        ("Reporting year", year),
+        ("ESG topic", topic[:1].upper() + topic[1:] if topic else ""),
+        ("Section", (row.get("section_title_original") or "").strip()),
+    )
+    header = "\n".join(f"{label}: {value}" for label, value in fields if value)
+    return f"{header}\n\n{normalized_text}" if header else normalized_text
+
+
+def compute_dataset_id(parser_versions, sectioner_versions,
+                        chunks_index_sha256: str, row_count: int):
+    lines = [
+        ",".join(sorted(set(parser_versions))),
+        ",".join(sorted(set(sectioner_versions))),
+        CHUNKER_VERSION,
+        ",".join([YEAR_RULE_VERSION, TIER_RULE_VERSION, NORMALIZATION_VERSION]),
+        chunks_index_sha256,
+        str(row_count),
+    ]
+    payload = "\n".join(lines)
+    full_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return payload, full_hash, f"esg_{full_hash[:12]}"
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
 
-def run(repo_root: str, write_embeddings: bool = True) -> dict:
+def run(repo_root: str, write_embeddings: bool = True,
+        dataset_id_override: str | None = None) -> dict:
     join = lambda rel: os.path.join(repo_root, rel)
 
     fieldnames, chunks = read_csv(join(CHUNKS_INDEX))
@@ -255,6 +357,43 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
             "index -- it must be hand-authored, not regenerated."
         )
     _, registry = read_csv(join(SOURCE_REGISTRY))
+    _, parse_index = read_csv(join(PARSE_INDEX))
+    _, sections_index = read_csv(join(SECTIONS_INDEX))
+    drive_manifest_path = join(DRIVE_MANIFEST)
+    # Optional: the Drive manifest is an intake artifact, so a repo that has not
+    # synced yet still enriches -- those rows simply carry no source URL.
+    _, drive_manifest = (
+        read_csv(drive_manifest_path) if os.path.exists(drive_manifest_path) else ([], [])
+    )
+
+    # parser_version is a per-document policy, not a corpus-wide constant --
+    # different documents were parsed under different policies. Join it from
+    # esg_parse_index.csv, keyed on pdf_stem (pdf_file minus its extension).
+    parser_version_by_stem = {
+        os.path.splitext(r["pdf_file"])[0]: r["parser_policy"]
+        for r in parse_index
+    }
+    # sectioner_version already exists as provenance_version on every sections
+    # row; read it from the index rather than importing PROVENANCE_VERSION
+    # directly, so a future sectioner bump propagates without a second edit.
+    sectioner_version_by_stem = {
+        r["pdf_stem"]: r["provenance_version"] for r in sections_index
+    }
+
+    chunk_stems = {r["pdf_stem"] for r in chunks}
+    missing_parser = sorted(chunk_stems - parser_version_by_stem.keys())
+    missing_sectioner = sorted(chunk_stems - sectioner_version_by_stem.keys())
+    if missing_parser or missing_sectioner:
+        rows_affected = sum(
+            1 for r in chunks
+            if r["pdf_stem"] in missing_parser or r["pdf_stem"] in missing_sectioner
+        )
+        raise SystemExit(
+            "cannot join parser_version/sectioner_version for all rows: "
+            f"{rows_affected} rows affected. "
+            f"stems missing parser_version ({len(missing_parser)}): {missing_parser}; "
+            f"stems missing sectioner_version ({len(missing_sectioner)}): {missing_sectioner}"
+        )
 
     collision = set(fieldnames) & set(NEW_COLUMNS)
     if collision:
@@ -263,6 +402,29 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
     # --- 2. company_name lookup -------------------------------------------
     manifest_name = {r["ticker"]: r["company_name"].strip() for r in manifest}
     companies_name = {r["ticker"]: r["name"].strip() for r in companies}
+    # company_id is the foreign key to the company master. The contract warns
+    # against treating the ticker as permanent identity, so carry the id too.
+    companies_id = {r["ticker"]: (r.get("company_id") or "").strip() for r in companies}
+    # Retained where known, per the contract: ESG issuers that also file with
+    # the SEC keep the same CIK, which is what joins the two corpora.
+    companies_cik = {r["ticker"]: (r.get("cik") or "").strip() for r in companies}
+    # Source URL and retrieval time. drive_file_name is the raw PDF filename, so
+    # its stem is the join key; drive_file_id builds the canonical Drive URL.
+    source_url_by_stem: dict[str, str] = {}
+    source_retrieved_by_stem: dict[str, str] = {}
+    for r in drive_manifest:
+        stem_key = os.path.splitext((r.get("drive_file_name") or "").strip())[0]
+        file_id = (r.get("drive_file_id") or "").strip()
+        if not stem_key or not file_id:
+            continue
+        source_url_by_stem[stem_key] = f"https://drive.google.com/file/d/{file_id}/view"
+        source_retrieved_by_stem[stem_key] = (r.get("updated_at_utc") or "").strip()
+    # The original heading, kept alongside the normalized section_code. Keyed on
+    # (pdf_stem, section_instance_id) because a stem holds many sections.
+    section_title_by_instance = {
+        (r["pdf_stem"], r["section_instance_id"]): (r.get("section_title") or "").strip()
+        for r in sections_index
+    }
 
     # --- registry cross-check for year ------------------------------------
     # The registry holds 26 exception rows (duplicates, exclusions, supplements),
@@ -288,6 +450,11 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
         new = dict(row)
         stem = row["pdf_stem"]
         ticker = row["canonical_ticker"] or row["ticker"]
+
+        # 5. processing versions -- frozen per contract Principle 9
+        new["parser_version"] = parser_version_by_stem[stem]
+        new["sectioner_version"] = sectioner_version_by_stem[stem]
+        new["chunker_version"] = CHUNKER_VERSION
 
         # 1. report_year
         year, ystatus, yspan = stem_year[stem]
@@ -323,6 +490,28 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
         new["company_name_status"] = nstatus
         stats[f"name:{nstatus}"] += 1
 
+        # 2b. contract fields: company_id, source URL + retrieval time, heading
+        new["company_id"] = companies_id.get(ticker, "")
+        new["cik"] = companies_cik.get(ticker, "")
+        new["source_url"] = source_url_by_stem.get(stem, "")
+        new["source_retrieved_at_utc"] = source_retrieved_by_stem.get(stem, "")
+        new["section_title_original"] = section_title_by_instance.get(
+            (stem, row.get("section_instance_id", "")), ""
+        )
+        for field, issue in (
+            ("company_id", "company_id_unresolved"),
+            ("source_url", "source_url_unresolved"),
+            ("section_title_original", "section_title_unresolved"),
+        ):
+            if not new[field]:
+                stats[f"{field}:unresolved"] += 1
+                qa_rows.append({
+                    "chunk_id": row["chunk_id"], "issue": issue,
+                    "detail": f"ticker={ticker} stem={stem}",
+                })
+            else:
+                stats[f"{field}:resolved"] += 1
+
         # 3 + 4 require the chunk text on disk.
         chunk_path = join(row["chunk_file"])
         if os.path.exists(chunk_path):
@@ -334,27 +523,42 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
                 tier, reason = "noise", "excluded_by_pipeline"
 
             normalized = normalize_for_embedding(text)
+            embedding_text = build_embedding_text(new, normalized)
             rel_embed = os.path.join(EMBED_ROOT, ticker,
                                      os.path.basename(row["chunk_file"]))
             if write_embeddings:
                 dest = join(rel_embed)
                 os.makedirs(os.path.dirname(dest), exist_ok=True)
                 with open(dest, "w", encoding="utf-8", newline="\n") as fh:
-                    fh.write(normalized)
+                    fh.write(embedding_text)
             new["embedding_text_plain_file"] = rel_embed.replace("\\", "/")
-            new["embedding_text_plain_sha256"] = sha256_text(normalized)
+            new["embedding_text_plain_sha256"] = sha256_text(embedding_text)
             new["embedding_normalization_version"] = NORMALIZATION_VERSION
+            new["embedding_prefix_version"] = EMBEDDING_PREFIX_VERSION
         else:
             tier, reason = "pending_text", "chunk_file_absent"
             new["embedding_text_plain_file"] = ""
             new["embedding_text_plain_sha256"] = ""
             new["embedding_normalization_version"] = ""
+            new["embedding_prefix_version"] = ""
 
         new["chunk_quality_tier"] = tier
         new["chunk_quality_tier_reason"] = reason
         stats[f"tier:{tier}"] += 1
         tier_by_doc[stem][tier] += 1
         out_rows.append(new)
+
+    # --- 5. dataset_id: computed once per run, identical on every row ------
+    chunks_index_sha256 = sha256_file(join(CHUNKS_INDEX))
+    dataset_payload, dataset_full_hash, derived_dataset_id = compute_dataset_id(
+        parser_versions=(r["parser_version"] for r in out_rows),
+        sectioner_versions=(r["sectioner_version"] for r in out_rows),
+        chunks_index_sha256=chunks_index_sha256,
+        row_count=len(out_rows),
+    )
+    dataset_id = dataset_id_override or derived_dataset_id
+    for new in out_rows:
+        new["dataset_id"] = dataset_id
 
     # --- write enriched index ---------------------------------------------
     out_fields = fieldnames + NEW_COLUMNS
@@ -411,11 +615,53 @@ def run(repo_root: str, write_embeddings: bool = True) -> dict:
         "",
         f"- QA exceptions written: {len(qa_rows)}",
     ]
+
+    parser_counts = Counter(r["parser_version"] for r in out_rows)
+    sectioner_counts = Counter(r["sectioner_version"] for r in out_rows)
+    lines += [
+        "",
+        "## Dataset release",
+        "",
+        f"- dataset_id: `{dataset_id}`",
+    ]
+    if dataset_id_override:
+        lines.append(f"- derived dataset_id (for comparison): `{derived_dataset_id}`")
+        if dataset_id_override != derived_dataset_id:
+            lines.append("  - **mismatch**: override does not match the derived value")
+    lines += [
+        f"- full hash (untruncated): `{dataset_full_hash}`",
+        f"- esg_chunks_index.csv sha256: `{chunks_index_sha256}`",
+        f"- row count: {len(out_rows)}",
+        "",
+        "Derivation inputs, in order, joined by `\\n` and SHA256'd (first 12 hex",
+        "chars of the digest become the `esg_<hex>` id):",
+        "",
+        f"1. distinct parser_version values: `{dataset_payload.splitlines()[0]}`",
+        f"2. distinct sectioner_version values: `{dataset_payload.splitlines()[1]}`",
+        f"3. chunker_version: `{CHUNKER_VERSION}`",
+        f"4. rule-set versions: `{dataset_payload.splitlines()[3]}`",
+        f"5. esg_chunks_index.csv sha256: `{chunks_index_sha256}`",
+        f"6. row count: `{len(out_rows)}`",
+        "",
+        "### parser_version",
+    ]
+    for key in sorted(parser_counts):
+        lines.append(f"- {key}: {parser_counts[key]}")
+    lines += ["", "### sectioner_version"]
+    for key in sorted(sectioner_counts):
+        lines.append(f"- {key}: {sectioner_counts[key]}")
+
     with open(join(SUMMARY_REPORT), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(lines) + "\n")
 
-    return {"rows": total, "stats": dict(stats), "qa": len(qa_rows),
-            "out_index": out_path}
+    return {
+        "rows": total, "stats": dict(stats), "qa": len(qa_rows),
+        "out_index": out_path,
+        "dataset_id": dataset_id,
+        "derived_dataset_id": derived_dataset_id,
+        "dataset_full_hash": dataset_full_hash,
+        "chunks_index_sha256": chunks_index_sha256,
+    }
 
 
 def main(argv=None):
@@ -423,12 +669,18 @@ def main(argv=None):
     ap.add_argument("--repo-root", default=REPO_ROOT)
     ap.add_argument("--no-embeddings", action="store_true",
                     help="compute tiers and hashes without writing text files")
+    ap.add_argument("--dataset-id", default=None,
+                    help="human-assigned dataset_id override; the derived "
+                         "value is still computed and reported so a "
+                         "mismatch is visible")
     args = ap.parse_args(argv)
 
-    result = run(args.repo_root, write_embeddings=not args.no_embeddings)
+    result = run(args.repo_root, write_embeddings=not args.no_embeddings,
+                 dataset_id_override=args.dataset_id)
     print(f"rows={result['rows']} qa_exceptions={result['qa']}")
     for key in sorted(result["stats"]):
         print(f"  {key}: {result['stats'][key]}")
+    print(f"dataset_id={result['dataset_id']} (derived={result['derived_dataset_id']})")
     print(f"wrote {result['out_index']}")
     return 0
 

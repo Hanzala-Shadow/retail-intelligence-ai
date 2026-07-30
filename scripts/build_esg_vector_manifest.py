@@ -361,12 +361,34 @@ def vlm_manifest_row(v: dict, registry: dict[tuple[str, str], dict]) -> dict:
     }
 
 
+def load_quality_tiers(path: str | Path | None) -> dict[str, str]:
+    """Map chunk_id -> chunk_quality_tier from the P1 enriched index.
+
+    Optional by design. The enriched index is produced by a later pipeline
+    stage than the manifest, so a run that has not enriched yet must still
+    build a manifest -- it simply gets no tier signal. Returns {} when the
+    file is absent.
+    """
+    if not path:
+        return {}
+    enriched = Path(path)
+    if not enriched.exists():
+        return {}
+    tiers: dict[str, str] = {}
+    for row in read_csv(enriched):
+        chunk_id = (row.get("chunk_id") or "").strip()
+        if chunk_id:
+            tiers[chunk_id] = (row.get("chunk_quality_tier") or "").strip()
+    return tiers
+
+
 def eligibility_for_chunk(
     chunk: dict,
     policy: dict,
     layout_status: str = "not_run",
     layout_reason: str = "layout_audit_not_run",
     vlm_hold_reason: str | None = None,
+    quality_tier: str = "",
 ) -> tuple[str, str]:
     reasons: list[str] = []
     include = parse_bool(policy.get("include_in_esg_index"))
@@ -388,6 +410,12 @@ def eligibility_for_chunk(
         or "short_section_excluded_from_retrieval" in quality_flags
     ):
         reasons.append("navigation_trace_chunk")
+    # The chunker's own navigation detector only inspects sections at or below
+    # NAVIGATION_TRACE_MAX_TOKENS (150), so large tables of contents reach the
+    # index unflagged. P1 enrichment already tiers those as noise; honour that
+    # here rather than re-implementing the classifier a second time.
+    if (quality_tier or "").strip() == "noise":
+        reasons.append("chunk_quality_tier=noise")
     if not include:
         reasons.append("include_in_esg_index_false")
     if rag_action != "index_as_esg":
@@ -411,17 +439,20 @@ def manifest_row(
     registry: dict[tuple[str, str], dict],
     layout_audit: dict[tuple[str, str], dict[int, dict]] | None = None,
     vlm_flagged: dict[tuple[str, str], set[int]] | None = None,
+    quality_tiers: dict[str, str] | None = None,
 ) -> dict:
     ticker = (chunk.get("ticker") or "").strip().upper()
     pdf_stem = (chunk.get("pdf_stem") or "").strip()
     policy = registry_overlay(chunk, registry.get((ticker, pdf_stem)))
     layout_status, layout_reason = layout_policy_for_chunk(chunk, layout_audit)
+    quality_tier = (quality_tiers or {}).get((chunk.get("chunk_id") or "").strip(), "")
     decision, reason = eligibility_for_chunk(
         chunk,
         policy,
         layout_status=layout_status,
         layout_reason=layout_reason,
         vlm_hold_reason=vlm_hold_reason_for_chunk(chunk, vlm_flagged or {}),
+        quality_tier=quality_tier,
     )
 
     if decision == "eligible":
@@ -430,6 +461,10 @@ def manifest_row(
         retrieval_state = "superseded"
     elif "duplicate_of=" in reason:
         retrieval_state = "excluded_duplicate"
+    # Noise outranks the VLM hold: there is no point queueing navigation and
+    # table-of-contents text for expensive page verification.
+    elif "chunk_quality_tier=noise" in reason:
+        retrieval_state = "excluded_noise"
     elif "vlm_" in reason:
         retrieval_state = "held_for_vlm"
     elif "held_for_ocr" in (chunk.get("quality_flags") or ""):
@@ -546,6 +581,7 @@ def build_manifest(
     vlm_dir: str | Path | None = None,
     ticker: str | None = None,
     pdf_stem: str | None = None,
+    enriched_index: str | Path | None = None,
 ) -> list[dict]:
     chunks = read_csv(Path(chunks_index))
     validate_chunk_ids(chunks)
@@ -566,7 +602,11 @@ def build_manifest(
     )
     vlm_flagged, vlm_rows = load_vlm_dir(vlm_dir)
     target_vlm_rows = [row for row in vlm_rows if selected(row)]
-    rows = [manifest_row(chunk, registry, layout_audit, vlm_flagged) for chunk in target_chunks]
+    quality_tiers = load_quality_tiers(enriched_index)
+    rows = [
+        manifest_row(chunk, registry, layout_audit, vlm_flagged, quality_tiers)
+        for chunk in target_chunks
+    ]
     rows.extend(vlm_manifest_row(v, registry) for v in target_vlm_rows)
     if selected_ticker or selected_pdf_stem:
         rows.extend(row for row in read_csv(Path(out)) if not selected(row))
@@ -598,6 +638,13 @@ def main() -> None:
         help="VLM activation (default OFF): exclude parser chunks of classifier-flagged "
              "pages and append verified VLM extraction chunks (e.g. data/04_vlm).",
     )
+    parser.add_argument(
+        "--enriched-index",
+        default="data/00_reference/esg_chunks_index_enriched.csv",
+        help="P1 enriched chunk index, read only for chunk_quality_tier. Chunks "
+             "tiered 'noise' are excluded from the index. Optional: if the file "
+             "is absent the manifest is built without the tier signal.",
+    )
     parser.add_argument("--ticker", default=None)
     parser.add_argument("--pdf-file", default=None)
     parser.add_argument("--pdf-stem", default=None)
@@ -614,6 +661,7 @@ def main() -> None:
         vlm_dir=args.vlm_dir,
         ticker=args.ticker,
         pdf_stem=args.pdf_stem or (Path(args.pdf_file).stem if args.pdf_file else None),
+        enriched_index=args.enriched_index,
     )
     counts = Counter(row["eligibility_decision"] for row in rows)
     _, vlm_rows = load_vlm_dir(args.vlm_dir)
