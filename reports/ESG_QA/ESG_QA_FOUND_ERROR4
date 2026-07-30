@@ -1,0 +1,55 @@
+# ESG QA — Found Error 4
+
+Running log of defects found during manual/statistical QA of the ESG database. Each entry documents one finding: what was found, the evidence, the root cause, and where to look for supporting material. Fixes are tracked and applied separately by engineering.
+
+---
+
+## 4. Layout `auto_hold` gate disproportionately excludes numeric/table-heavy content, concentrated in the `emissions` section (`esg_layout_qa.py`, corpus-wide)
+
+**Status:** Open — documented for engineering follow-up (not fixed)
+**Found by:** Automated QA (`qa5`), Tier 5 (Coverage, Bias, and the Retrieval Gate) checks
+**Date logged:** 2026-07-30
+**Severity:** High — this is a silent retrieval-bias defect: it does not crash or error, but it systematically removes the exact quantitative disclosures ESG questions ask about before those chunks ever reach the searchable index
+**Related automated checks:** Tier 5, Check 29 (Layout `auto_hold` gate exclusion bias)
+**Component:** `esg_layout_qa.py` — the layout QA step that assigns `layout_qa_status` (`auto_hold` vs `auto_pass` / `auto_pass_pdfium_coverage`) per chunk, recorded in `data/00_reference/vector_index_manifest.csv`
+**Example document:** `AAPL-APPLE INC-2015` (Apple Inc., 2015 report), chunk `data/04_chunks/esg/AAPL/AAPL-APPLE INC-2015__emissions__0005__chunk_0000.txt` (page 30) — one of 1,069 held chunks in the `emissions` section alone; the pattern repeats across most companies and years, not just Apple
+
+**Evidence location:**
+Manifest: `data/00_reference/vector_index_manifest.csv` (`layout_qa_status`, `layout_qa_reason` columns)
+Chunk text/tokens: `chunks` table in `data/esg.db` (`chunk_text`, `section_code`, `token_count`), joined to the manifest on `chunk_id` == `external_chunk_id`
+
+### How this was found
+
+Tier 5 QA Check 29 compares the population of chunks the layout gate held back (`auto_hold`) against the population it passed (`auto_pass*`), on token count and on non-alphabetic character ratio (`1 − letters / total characters` — a proxy for "this chunk is mostly numbers/symbols rather than prose"), and additionally breaks the held-rate down per `section_code`.
+
+| | held chunks (n=12,484) | passed chunks (n=44,594) |
+|---|---|---|
+| non-alpha ratio, median | 0.2195 | 0.1917 |
+| token count, median | 499 | 480 |
+
+A Mann-Whitney U test (one-sided: held > passed) on the non-alpha ratio returned p ≈ 0 — held chunks are more numeric/symbolic than passed chunks, and not by chance. Global held rate across the corpus is 21.87%. Broken down by section code (floor: 30+ chunks per code to avoid small-sample noise), one section clears the global rate by more than the 10-point margin the check uses to call out bias:
+
+- **`emissions`: 34.76% held** (3,075 total chunks) — vs. 21.87% corpus-wide
+- `data_summary`: 30.30%, `energy`: 29.37%, `waste`: 27.59%, `water`: 24.86% (all elevated, though only `emissions` clears the formal margin)
+
+### Manual verification
+
+Pulling the actual stored `chunk_text` for held `emissions` chunks confirms what the statistics imply — this is not borderline text, it is literal emissions-data tables:
+
+```
+|  | Scope 1 |  | Scope 2 |  |
+| Location | Default Utility Emissions* | Apple Emissions (incl. Renewable Energy) | Default Utility Emissions* | Apple Emissions (incl. Renewable Energy) |
+| Corporate 59,516 Cupertino, CA 39,428 Elk Grove, CA 0 Austin, TX 0 Other U.S. 2141 Cork, Ireland 0 Singapore 3...
+```
+
+### Summary of the defect
+
+The layout gate is meant to catch broken/garbled extraction (multi-column reading-order corruption, OCR failure, etc.) and hold those chunks back from the index. In practice, it cannot distinguish "this text is broken" from "this text is a well-formed table" — tables never read like normal sentences (irregular spacing, numeric grids, pipe-delimited cells), so the gate flags them as suspect regardless of whether the extraction was actually correct. Because ESG emissions disclosures are reported almost entirely as tables (Scope 1/2/3 by location, by year), this section gets held at a rate 13 points above the corpus average, and the effect is measurably tied to numeric/symbolic density, not randomness (p ≈ 0).
+
+### Why this is a problem for retrieval
+
+This is the single most consequential finding in Tier 5: the content being excluded is precisely the content ESG questions are asked about — "how many tons of CO2 did this company emit." Nothing errors or logs a failure; the chatbot will simply come up empty or vague on emissions questions for any report where the real numbers landed in a held chunk, and there is no visible signal to an end user (or a developer not running this QA tier) that data was ever available and then silently dropped before indexing.
+
+### Scope / how widespread this might be
+
+This is a **corpus-wide measurement** (12,484 held vs. 44,594 passed chunks, all documents), not a single-document estimate. The `emissions` section is the only one that clears the check's formal bias margin (global + 10 points), but `data_summary`, `energy`, `waste`, and `water` all show elevated held rates in the same direction and are worth the same manual-sample scrutiny before assuming the defect is confined to `emissions` alone.

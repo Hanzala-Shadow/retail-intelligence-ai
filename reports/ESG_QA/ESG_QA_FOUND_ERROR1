@@ -1,0 +1,72 @@
+# ESG QA — Found Error 1
+
+Running log of defects found during manual/statistical QA of the ESG database. Each entry documents one finding: what was found, the evidence, the root cause, and where to look for supporting material. Fixes are tracked and applied separately by engineering.
+
+---
+
+## 1. Section-splitter fragmentation via repeating page header (`environmental`, PVH-2021)
+
+**Status:** Open — documented for engineering follow-up (not fixed)
+**Found by:** Manual QA review, Tier 2 (Sectioning Quality) checks
+**Date logged:** 2026-07-30
+**Severity:** High — affects section labeling accuracy and retrieval-relevant document structure
+**Related automated checks:** Tier 2, Check 12 (Repeated section instances) and Check 13 (Section code order consistency)
+**Component:** `section_splitter_esg.py`
+**Example document:** `PVH-PVH CORP-2021` (PVH Corp, 2021 Corporate Responsibility Report), 99 pages
+
+**Evidence location:** :
+Section file: "\data\03_sections\esg\PVH\PVH-PVH CORP-2021__environmental__0030.txt"
+pdf: "PVH-PVH CORP-2021.pdf"  // page: 88
+
+### How this was found
+
+Tier 2 QA Check 12 ("Repeated section instances") flagged 577 `(document, section_code)` pairs across the corpus where the same section code repeats with an instance ordinal ≥ 10 — i.e., the splitter created 10 or more separate section rows for what should logically be one continuous section. The most extreme example in the corpus is:
+
+- **Ticker:** PVH
+- **Document:** `PVH-PVH CORP-2021`
+- **Section code:** `environmental`
+- **Max instance ordinal:** **33**
+
+This document was pulled for manual inspection (source PDF + extracted text of all 33 fragments, see evidence location above) to determine the root cause.
+
+Tier 2 Check 13 ("Section code order consistency") was flagged in the same QA run: 104 of 153 section-code pairs disagreed on relative ordering in more than a quarter of the documents they co-occur in (e.g. `energy`/`waste` agree only 50.5% of the time — statistically indistinguishable from random ordering). This finding is a plausible mechanism behind that result; see below.
+
+### Summary of the defect
+
+The splitter produced **33 separate section rows**, all labeled `environmental`, for a single PVH document. In reality:
+
+1. Most of these 33 fragments are not separate sections at all — they are artifacts of a **recurring page-header/breadcrumb line** that PVH prints near the top of nearly every page of the PDF, which the splitter appears to be misreading as a heading and using as a section-break trigger.
+2. Several of the fragments are not `environmental` content at all. Their actual body text covers **Human Rights, Associates/Community, and Reference/Frameworks** topics — meaning the section **label**, not just the section **count**, is wrong for a meaningful share of this document's true structure.
+
+In short: the splitter is both (a) over-fragmenting on a false heading signal, and (b) failing to detect the real heading transitions that would have re-labeled those fragments correctly.
+
+### Evidence: the false heading signal
+
+Every fragment boundary lines up with a recurring line of this form, which repeats — with only the page number changing — across nearly the entire document:
+
+```
+P.3   ABOUT / ENVIRONMENT / HUMAN RIGHTS / ASSOCIATES / COMMUNITY / GOVERNANCE / REFERENCE / FRAMEWORKS
+      2021 HONORS / EXECUTIVE LETTERS / FORWARD FASHION / OUR COMMITMENTS / OUR BRANDS / OUR PARTNERS
+```
+
+This is PVH's on-page navigation bar (a breadcrumb listing every top-level section of the report), not a section heading. It appears at or near the top of the majority of the report's 99 pages. In the underlying PDF, the "current" section in this breadcrumb is presumably visually highlighted (bold/colored), but that visual distinction is lost in plain-text extraction — every occurrence of the breadcrumb looks textually identical regardless of which page/section it actually sits on.
+
+The splitter appears to treat this repeating boilerplate line as a heading candidate. Each time it recurs, the splitter starts a new section instance — which is why one logical chapter becomes dozens of small fragments.
+
+### Evidence: fragments extend across the whole document, and cross unrelated real headings
+
+The 33 fragments are not confined to the true Environmental chapter of the report — they span from page 3 to page 98 of a 99-page document (essentially the entire report). Notably:
+
+- Fragments **0019–0022** (pages 40–45): body text is "Living Wages", "Ethical Recruitment", sub-nav shows WORKER VOICES / LIVING WAGES / SAFE WORKPLACES / ETHICAL RECRUITMENT → this is **Human Rights** content, not Environmental.
+- Fragments **0023–0025** (pages 51–61): sub-nav shows WORKFORCE / INCLUSION & DIVERSITY / TALENT DEVELOPMENT, then GIVING & PHILANTHROPY / EDUCATION / INCLUSION → this is **Associates/Community** content.
+- Fragments **0026–0033** (pages 78–98): sub-nav shows SASB / TCFD / GRI / UNGC PRINCIPLES / UNGP / UN SDG, i.e. the disclosure index/appendix → this is **Reference/Frameworks** content, including the single largest fragment (15,015 bytes, fragment 0030).
+
+All of the above are nonetheless stored under `section_code = environmental`. Full per-fragment detail (page, byte size, first-line content) is available in the extracted `.txt` files at the evidence location above.
+
+### Why this also explains the Check 13 (order consistency) warning
+
+Because `environmental`-labeled fragments are scattered from page 3 through page 98 — i.e., interleaved with the document's real Human Rights, Associates, Community, and Reference sections rather than confined to one contiguous block — any pairwise comparison of "does code A reliably come before code B" will be corrupted for this document and any others with the same failure mode. This is a plausible structural explanation for why Tier 2 Check 13 found close-to-50/50 (effectively random) ordering agreement for several section-code pairs corpus-wide. The two warnings likely share a single root cause rather than being independent issues.
+
+### Scope / how widespread this might be
+
+This finding is a **single-document deep dive**, not a corpus-wide measurement. It demonstrates a plausible mechanism for the Check 12 and Check 13 statistical warnings but has only been manually verified against one document (`PVH-PVH CORP-2021`). The Check 12 output lists 577 `(document, section_code)` pairs at ordinal ≥ 10 corpus-wide, including other high-ordinal examples worth checking against the same mechanism: DELL-2016 `environmental` at 30, DELL-2024 `about_this_report` at 29, MELI-2025 `about_this_report` at 29, DECK-2023 `supply_chain_ethics` at 27. Whether all of these share the same "repeating nav-bar mistaken for heading" cause, versus some other cause, has not been verified and should not be assumed.

@@ -364,15 +364,26 @@ def check_16(con, docs, examples_wanted):
     quantile_edges = np.quantile(char_counts, np.linspace(0, 1, n_bins + 1))
     bin_idx = np.clip(np.digitize(char_counts, quantile_edges[1:-1], right=True), 0, n_bins - 1)
 
+    # A single OLS line fit across the full char_count range is systematically
+    # biased within any one decile (short sections' chunk counts are
+    # under-predicted, long sections' are over-predicted -- the true
+    # chunks-vs-char_count relationship isn't linear over this range). That
+    # per-bin bias must be subtracted before dividing by the local SD, or the
+    # "z-score" is just (bias / noise) and flags entire deciles wholesale --
+    # e.g. every single-chunk section in the smallest decile scored |z| > 20
+    # even though every section in that bin behaves identically to its peers.
+    local_mean = np.zeros(n_bins)
     local_sd = np.zeros(n_bins)
     for b in range(n_bins):
         bin_residuals = residuals[bin_idx == b]
+        local_mean[b] = bin_residuals.mean() if len(bin_residuals) > 0 else 0.0
         local_sd[b] = bin_residuals.std(ddof=1) if len(bin_residuals) > 1 else 0.0
     # A bin with zero local spread (e.g. every section in it takes exactly
     # the same chunk count) would otherwise divide by zero; fall back to the
     # global SD so such a bin is merely conservative, never a crash.
     local_sd_for_section = np.where(local_sd[bin_idx] > 0, local_sd[bin_idx], resid_sd)
-    z_scores = np.where(local_sd_for_section > 0, residuals / local_sd_for_section, 0.0)
+    centered_residuals = residuals - local_mean[bin_idx]
+    z_scores = np.where(local_sd_for_section > 0, centered_residuals / local_sd_for_section, 0.0)
 
     outliers = []
     for section, z, pred, resid, b in zip(meta, z_scores, predicted, residuals, bin_idx):
@@ -400,8 +411,10 @@ def check_16(con, docs, examples_wanted):
             "slope_p_value": round(float(regression.pvalue), 6),
         },
         "global_residual_sd": round(resid_sd, 4),
+        "residual_mean_by_char_count_decile": [round(float(m), 4) for m in local_mean],
         "residual_sd_by_char_count_decile": [round(float(s), 4) for s in local_sd],
-        "outlier_gate": "|residual / local decile SD| > 3 (see note above on heteroscedasticity)",
+        "outlier_gate": "|(residual - local decile mean) / local decile SD| > 3 "
+                        "(see note above on per-decile OLS bias)",
         "sections_beyond_3sd_residual": len(outliers),
     }
     result.examples = outliers[:examples_wanted]

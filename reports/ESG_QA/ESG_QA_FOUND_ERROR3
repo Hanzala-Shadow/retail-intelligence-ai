@@ -1,0 +1,68 @@
+# ESG QA — Found Error 3
+
+Running log of defects found during manual/statistical QA of the ESG database. Each entry documents one finding: what was found, the evidence, the root cause, and where to look for supporting material. Fixes are tracked and applied separately by engineering.
+
+---
+
+## 3. Sliding-window chunker cuts mid-sentence at a uniform, corpus-wide rate, independent of source-text quality (`esg_chunker.py`, corpus-wide)
+
+**Status:** Open — documented for engineering follow-up (not fixed)
+**Found by:** Automated QA (`qa3`), Tier 3 (Chunking Quality) checks
+**Date logged:** 2026-07-30
+**Severity:** Medium — degrades embedding/retrieval quality by handing the model incomplete sentence fragments at chunk seams; does not corrupt citations or violate the documented token bounds
+**Related automated checks:** Tier 3, Check 19 (Sentence-boundary integrity of chunk boundaries)
+**Component:** `esg_chunker.py` — `chunk_token_ranges()` (esg/src/esg_chunker.py:511-536); the window advances purely on token counts (`CHUNK_SIZE=500`, `OVERLAP=50`) with no sentence-boundary awareness
+**Example document:** `AAP-ADVANCE AUTO PARTS INC-2017-2018` and `AAP-ADVANCE AUTO PARTS INC-2019` (Advance Auto Parts)
+
+**Evidence location:**
+Chunk files: `data/04_chunks/esg/AAP/AAP-ADVANCE AUTO PARTS INC-2017-2018__community__0002__chunk_0001.txt`, `..._community__0002__chunk_0003.txt`, `..._supply_chain_ethics__0002__chunk_0002.txt`
+Index rows: `data/00_reference/esg_chunks_index.csv` (same `pdf_stem`/`section_instance_id` keys)
+
+### How this was found
+
+Tier 3 QA Check 19 measures, at every chunk boundary the *chunker itself* introduced (i.e. excluding a section's own first/last chunk, which is a natural text edge, not a chunking artefact), whether the chunk starts lowercase (mid-sentence start) or ends without terminal punctuation (mid-sentence cut). It compares that rate against the same measurement at natural section edges, to control for this corpus's already-messy prose (bullets, numeric callouts):
+
+| | chunker-introduced seam | natural section edge (baseline) |
+|---|---|---|
+| starts lowercase | 56.1% (13,744 / 24,497) | 0.08% |
+| ends without terminal punctuation | 96.7% (23,692 / 24,497) | 78.6% |
+
+The lowercase-start gap (56.1% vs 0.08%) is unambiguous — natural section starts are essentially never lowercase, but chunker seams are lowercase over half the time. The no-terminal-punctuation gap is smaller in relative terms (the baseline is already high, at 78.6%, because this corpus's prose is full of bullet fragments and headers even without any chunking involved) but is still a real ~18-point lift attributable to the chunker.
+
+### Initial hypothesis, and why it was rejected
+
+Five example chunk-boundary snippets were reviewed manually. They split into two visibly different patterns:
+
+- **Clean sentences cut mid-stream** — e.g. `"aded company"` (cut mid-word from "tr**aded** company"), or `"...At the time, he was looking to\nmake some"`. Ordinary, well-formed prose sliced by the token window.
+- **Text that doesn't read in sentence order at all, regardless of where it's cut** — e.g. `"or accident promote a sustainable  and learn from our\nwork environment. incidents,"` (from `supply_chain_ethics__0002` chunk 2, AAP-2017-2018, page 16).
+
+The second pattern looked like the same multi-column reading-order corruption documented in [Error 1](ESG_QA_FOUND_ERROR1) (PVH). This document lent itself to that hypothesis: `data/00_reference/esg_parse_index.csv` confirms `AAP-ADVANCE AUTO PARTS INC-2017-2018` carries `quality_flags = layout_numeric_risk|complex_reading_order` and lists page 16 explicitly under `reading_order_unresolved_pages` (`2;11;15;16;18;22`) — and pulling the full chunk confirms genuine column interleaving at the source-text level, independent of chunking:
+
+```
+We're encouraged by the progress we've
+of injury, occupational illness and adverse
+are committed to doing more in the coming
+```
+
+Two unrelated sentences are running in parallel, line by line — a real, separate defect in that section's underlying text, consistent with Error 1's mechanism.
+
+**However**, cross-referencing this hypothesis against the *full* corpus refuted it as an explanation for Check 19's aggregate numbers. Every chunk's page range was checked against its own document's `reading_order_unresolved_pages` list (the pages the parser flagged as still-broken after its column-order repair; `reading_order_repaired_pages` was deliberately excluded from this comparison, since those pages were successfully fixed and shouldn't be treated as corrupted):
+
+| seam location | seam-starts (n) | lowercase-start rate | seam-ends (n) | no-terminal rate |
+|---|---|---|---|---|
+| on an unresolved reading-order page | 4,046 | 53.8% | 4,023 | 96.3% |
+| on a clean (unflagged) page | 20,451 | 56.6% | 20,474 | 96.8% |
+
+The violation rate is statistically indistinguishable between the two — if anything, marginally *lower* on the flagged pages. Only 16.5% of all chunker seams even touch a page carrying the reading-order-unresolved flag. **Reading-order corruption does not explain Check 19's finding.** The AAP `supply_chain_ethics__0002` example above is a real instance of Error 1's defect, but it is a coincidental overlap, not representative of the broader pattern — most of the 56.1%/96.7% comes from clean, well-parsed text being cut mid-sentence by the token window itself.
+
+### Summary of the defect
+
+`chunk_token_ranges()` advances a fixed 500-token window with no awareness of sentence structure — it decides where a chunk starts and ends purely by token count, never by looking for a nearby period or capital letter. As a result, roughly half of all chunk boundaries land inside a sentence rather than between two sentences, uniformly across the corpus regardless of how clean the underlying parsed text is. This is a distinct defect from [Error 2](ESG_QA_FOUND_ERROR2) (the short/duplicated terminal-chunk effect) — that one is about a chunk's *size* being unpredictable at a section's tail; this one is about the *content* at every interior seam being severed mid-sentence, which happens throughout a section, not just at its end.
+
+### Why this is a problem for retrieval
+
+A chunk that starts mid-sentence or ends before a sentence finishes hands the embedding model (and, downstream, a human reading a citation) an incomplete thought. At a 56%/97% rate, this is not an edge case — it's closer to the corpus norm for interior chunk boundaries. This degrades embedding quality (a truncated sentence embeds differently than its complete form) and readability of any chunk surfaced on its own in a retrieval result.
+
+### Scope / how widespread this might be
+
+The 56.1%/96.7% figures and the reading-order cross-reference are **corpus-wide** measurements (24,497 chunker-introduced seams; 32,581 sections), not single-document estimates. The manual walkthrough (AAP, two documents) was used only to characterize *what a violation looks like*, not to establish the rate — the rate itself is already a full-corpus statistic. The one caveat: this analysis used the `reading_order_unresolved_pages` column specifically; documents where reading-order corruption is more pervasive than what that column captures (e.g. undetected cases) aren't ruled out, but the scale of the effect (uniform ~55%/~97% regardless of flag status) makes it unlikely that a parsing-stage defect is hiding behind these numbers at any meaningful scale.

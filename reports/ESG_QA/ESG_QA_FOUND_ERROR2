@@ -1,0 +1,77 @@
+# ESG QA — Found Error 2
+
+Running log of defects found during manual/statistical QA of the ESG database. Each entry documents one finding: what was found, the evidence, the root cause, and where to look for supporting material. Fixes are tracked and applied separately by engineering.
+
+---
+
+## 2. Sliding-window overlap produces short, largely duplicated final chunks (`esg_chunker.py`, corpus-wide)
+
+**Status:** Open — documented for engineering follow-up (not fixed)
+**Found by:** Automated QA (`qa3`), Tier 3 (Chunking Quality) checks
+**Date logged:** 2026-07-30
+**Severity:** Medium — inflates the index with near-duplicate text and can starve retrieval of new content at section tails; does not corrupt citations or violate the documented token bounds
+**Related automated checks:** Tier 3, Check 15 (Terminal-chunk effect: token count by position)
+**Component:** `esg_chunker.py` — specifically `chunk_token_ranges()` (esg/src/esg_chunker.py:511-536), constants `CHUNK_SIZE = 500`, `OVERLAP = 50`, `MIN_CHUNK_TOKENS = 100`, `MAX_CHUNK_TOKENS = 600` (esg/src/esg_chunker.py:23-26)
+**Example document:** `CRMT-AMERICA'S CAR-MART INC-2023` (America's Car-Mart, 2023 Responsibility Report), section `community__0001`
+
+**Evidence location:**
+Chunk files: `data/04_chunks/esg/CRMT/CRMT-AMERICA'S CAR-MART INC-2023__community__0001__chunk_0004.txt` and `..._chunk_0005.txt`
+Index row: `data/00_reference/esg_chunks_index.csv`, `chunk_id = CRMT__CRMT_AMERICA_S_CAR_MART_INC_2023__community__0001__chunk_0005`
+
+### How this was found
+
+Tier 3 QA Check 15 ("terminal-chunk effect") compares mean token count by a chunk's position within its section (first / middle / last / only). Across the whole corpus (32,581 sections with 2+ chunks):
+
+| position | n | min | p05 | median | mean | p95 | max |
+|---|---|---|---|---|---|---|---|
+| first | 10,777 | 498 | 499 | 500 | 499.89 | 500 | 500 |
+| middle | 13,720 | 497 | 499 | 500 | 499.92 | 501 | 503 |
+| last | 10,777 | 149 | 166 | 330 | 345.51 | 567 | 600 |
+
+Welch's t-test on last vs. middle: t = −124.41, p ≈ 0 (mean 345.5 vs. 499.9 tokens). The effect size and sample size (n=10,777 on both sides) rule out sampling noise — this is a systematic property of every multi-chunk section, not an occasional glitch.
+
+One of the flagged examples (`token_count = 149`, the minimum observed for a "normal" last chunk) was pulled for manual inspection: CRMT's `community__0001` section, chunk index 5.
+
+### Summary of the defect
+
+`chunk_token_ranges()` builds chunks with a fixed-size sliding window: each chunk spans 500 tokens, and the window advances by only `500 − OVERLAP(50) = 450` tokens per step, so consecutive chunks intentionally share ~50 tokens of context. This produces exact, tightly-clustered 500-token chunks for every `first` and `middle` position — confirmed by the table above (min 497, max 503 across both).
+
+The **last** chunk of a section is different: it is whatever is left over once the window can no longer advance a full step before hitting the end of the section. That leftover has no fixed size — it is a function of `section_length mod 450` (roughly), which is why its size is smeared uniformly from 100 up to 600 tokens rather than clustering anywhere.
+
+Manual inspection of the CRMT example shows the practical consequence: the 149-token final chunk is **not** 149 tokens of new content. Its opening ~100 tokens are a verbatim repeat of chunk 4's tail (the 50-token overlap plus the fact that the "new" step distance was small relative to the window), and only its last few sentences are text that chunk 4 didn't already contain:
+
+```
+chunk_0004 (tail):
+  ...Economics Arkansas / SOAR Northwest Arkansas / Springdale Public
+  School Foundation / Various community food banks / Athletic programs /
+  Financial literacy efforts / Teacher appreciation events / Corporate
+  Citizenship / Members of our management team, including local deal[ers...]
+
+chunk_0005 (full, 149 tokens):
+  Economics Arkansas / SOAR Northwest Arkansas / Springdale Public
+  School Foundation / Various community food banks / Athletic programs /
+  Financial literacy efforts / Teacher appreciation events / Corporate
+  Citizenship / Members of our management team, including local
+  dealerships, also serve as volunteers or board members for various
+  nonprofit groups. Our Chief Executive Officer Emeritus, Jeff Williams,
+  currently serves on the boards of directors for Mercy Health Northwest
+  Arkansas Communities since 2019 and the Jones Center and Jones Trust
+  since 2021. Jeff is passionate about the Company's vision of improving
+  the communities we serve.
+
+  America's Car-Mart Responsibility Report
+  24
+  Environmental: Respecting our Footprint
+```
+
+Everything before "dealerships, also serve as volunteers..." is a duplicate of chunk 4. In this example, roughly two-thirds of a 149-token chunk is recycled overlap text, not new evidence.
+
+### Why this is a problem for retrieval
+
+- **Index bloat / near-duplication:** a meaningful fraction of `last`-position chunks are mostly restatements of the immediately preceding chunk, inflating the index without adding retrievable information.
+- **Thin evidence at section tails:** when a `last` chunk *is* retrieved on its own, the model may see mostly text it would also see from the preceding chunk, with only a small amount of genuinely new tail content — the opposite of what chunking is meant to provide.
+- **Not fixable by simple merging:** a `last` chunk near the low end (e.g., 149 tokens) plus its preceding `middle` chunk (~500 tokens) would total ~650 tokens, which exceeds the chunker's own `MAX_CHUNK_TOKENS = 600` ceiling (esg/src/esg_chunker.py:26). So "just glue the tail onto the previous chunk" is not a valid fix under the current bounds — this would need a rebalancing strategy (e.g., splitting the final ~600–1000 tokens of a section into two more evenly sized chunks instead of greedy 500-token windows plus a leftover), not a one-line patch.
+
+### Scope / how widespread this might be
+
+The distributional evidence (t-test, full quantile table) is **corpus-wide**, not a single-document estimate — it covers all 10,777 sections in the corpus that produced a `last` chunk. The manual walkthrough above verifies the mechanism against exactly one example (CRMT `community__0001`, chunk 5); the other four examples surfaced by the same check (DECK `environmental__0008` chunk 3, T `community__0001` chunk 2, BBBY `waste__0002` chunk 2, CVS `environmental__0001` chunk 1 — all at or near 149-150 tokens) have not yet been individually opened to confirm they show the same overlap-heavy pattern, and should not be assumed identical without checking. Note also `short_evidence_share_at_last_position = 0.0` in the same check output — none of these short `last` chunks are being caught by the existing `short_evidence` classification, because 149+ tokens is still above the `MIN_CHUNK_TOKENS = 100` floor used to define that category. This defect is invisible to every check that only looks at whether token counts fall inside [100, 600].
