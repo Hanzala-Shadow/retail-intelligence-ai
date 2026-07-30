@@ -13,10 +13,12 @@ Checks
     1  sections tile their parent document   (coverage / gaps / overlap)
     1b section_text == parsed_text[start:end] (the documented span invariant)
     2  section intervals are disjoint within a document
-    3  chunks tile their parent section
+    3  chunks tile their parent section (no gaps; overlap within the
+       chunker's declared sliding window -- see CHUNK_OVERLAP_TOKENS)
     4  chunk spans are contained in their section's span
     5  page ranges are ordered and within the document's page count
-    6  char-offset order agrees with page order (Kendall's tau-b)
+    6  char-offset order agrees with page order (zero discordant pairs;
+       cross-page only -- within-page reading order is out of scope)
     7  provenance cardinalities and identity fan-out
 
 Checks 1, 1b, 5 and 6 need the parsed text and page maps under
@@ -25,9 +27,9 @@ parsed-document ground truth the offsets are defined against. Documents whose
 parsed text is missing are reported as SKIPPED, never silently passed.
 
 Usage
-    python esg/scripts/qa_tier1_invariants.py
-    python esg/scripts/qa_tier1_invariants.py --checks 1,2,3
-    python esg/scripts/qa_tier1_invariants.py --json-out reports/qa_tier1.json
+    python esg/scripts/esg_database_tiers/qa_tier1_invariants.py
+    python esg/scripts/esg_database_tiers/qa_tier1_invariants.py --checks 1,2,3
+    python esg/scripts/esg_database_tiers/qa_tier1_invariants.py --json-out reports/qa_tier1.json
 """
 
 from __future__ import annotations
@@ -53,6 +55,28 @@ ALL_CHECKS = ["1", "1b", "2", "3", "4", "5", "6", "7"]
 # coverage ratio below 1.0 is reported rather than failed. Below this floor the
 # splitter has almost certainly lost real content and the doc is flagged.
 LOW_COVERAGE_FLOOR = 0.50
+
+# Chunks are cut with a deliberate sliding window: esg_chunker steps back
+# OVERLAP tokens at every boundary (esg_chunker.py, `start = max(end - OVERLAP,
+# start + 1)`) so that a sentence straddling a boundary survives intact in at
+# least one chunk. Overlap between sibling chunks is therefore the designed
+# behaviour, not a defect, and check 3 must not assert its absence -- doing so
+# fails on every healthy corpus. What check 3 can still assert is that the
+# overlap stays within the window the chunker asked for.
+try:  # single source of truth; fall back if the pipeline src is unavailable
+    from esg_chunker import OVERLAP as CHUNK_OVERLAP_TOKENS  # noqa: E402
+except Exception:  # pragma: no cover - keeps QA runnable without tiktoken
+    CHUNK_OVERLAP_TOKENS = 50
+
+# Overlap is declared in tokens but stored as character offsets, so the budget
+# is converted per boundary using the following chunk's own characters-per-token
+# ratio. That estimate is loose where tokenisation is unusually dense (contents
+# pages with dot leaders pack ~13 chars/token), so the budget carries a
+# tolerance. Measured over the 24,497 overlapping boundaries in the corpus the
+# ratio of actual overlap to budget has median 1.005, p99 1.50 and max 2.49; a
+# 3x tolerance clears every legitimate boundary while still catching runaway
+# overlap such as a wholly duplicated chunk, which lands near 10x.
+OVERLAP_TOLERANCE = 3.0
 
 
 # ---------------------------------------------------------------------------
@@ -156,15 +180,20 @@ class _Fenwick:
         return total
 
 
-def kendall_tau_b(xs: list[int], ys: list[int]) -> tuple[float | None, int]:
-    """Kendall's tau-b with tie correction, plus the raw discordant-pair count.
+def kendall_tau_b(xs: list[int], ys: list[int]) -> tuple[float | None, int, int, int]:
+    """Kendall's tau-b, the raw discordant-pair count, and the pair census.
 
-    Ties matter here: many chunks share a page_start, so the uncorrected tau-a
-    would understate agreement badly.
+    Returns (tau_b, discordant, n0, n2) where n0 is the total pair count and n2
+    the number tied on y. The caller needs the census because tau-b alone is not
+    interpretable here: chunks share a page_start constantly, and when the
+    discordant count is zero and x carries no ties -- both true of this corpus --
+    tau-b algebraically reduces to sqrt(1 - n2/n0). That is a re-encoding of the
+    tie density and says nothing whatever about ordering, so a low tau-b must
+    never be read as disorder without checking `discordant` first.
     """
     n = len(xs)
     if n < 2:
-        return None, 0
+        return None, 0, 0, 0
 
     order = sorted(range(n), key=lambda i: (xs[i], ys[i]))
     ranks = {value: i for i, value in enumerate(sorted(set(ys)))}
@@ -197,7 +226,7 @@ def kendall_tau_b(xs: list[int], ys: list[int]) -> tuple[float | None, int]:
 
     denominator = math.sqrt((n0 - n1) * (n0 - n2))
     tau = (concordant - discordant) / denominator if denominator > 0 else None
-    return tau, discordant
+    return tau, discordant, n0, n2
 
 
 # ---------------------------------------------------------------------------
@@ -279,6 +308,9 @@ def check_1_and_1b(con, docs, text_root, examples_wanted):
 
     coverage_ratios: list[float] = []
     overlap_docs, low_coverage_docs, skipped = [], [], []
+    # Counted independently of the example lists: an example list is capped at
+    # `examples_wanted`, so len() of it is a cap, never a population count.
+    n_overlap_docs = n_low_coverage_docs = n_mismatches = 0
     null_offsets = 0
     mismatches, checked_sections = [], 0
 
@@ -303,6 +335,7 @@ def check_1_and_1b(con, docs, text_root, examples_wanted):
             # 1b: the documented half-open span invariant.
             checked_sections += 1
             if text[int(start):int(end)] != (section["section_text"] or ""):
+                n_mismatches += 1
                 if len(mismatches) < examples_wanted:
                     mismatches.append(
                         {
@@ -321,41 +354,45 @@ def check_1_and_1b(con, docs, text_root, examples_wanted):
         ratio = union / parsed_len
         coverage_ratios.append(ratio)
 
-        if overlap > 0 and len(overlap_docs) < examples_wanted:
-            overlap_docs.append(
-                {
-                    "ticker": doc["ticker"],
-                    "stem": doc["stem"],
-                    "overlap_chars": overlap,
-                    "summed_spans": total,
-                    "union_spans": union,
-                }
-            )
-        if ratio < LOW_COVERAGE_FLOOR and len(low_coverage_docs) < examples_wanted:
-            low_coverage_docs.append(
-                {
-                    "ticker": doc["ticker"],
-                    "stem": doc["stem"],
-                    "coverage_ratio": round(ratio, 4),
-                    "uncovered_chars": parsed_len - union,
-                }
-            )
+        if overlap > 0:
+            n_overlap_docs += 1
+            if len(overlap_docs) < examples_wanted:
+                overlap_docs.append(
+                    {
+                        "ticker": doc["ticker"],
+                        "stem": doc["stem"],
+                        "overlap_chars": overlap,
+                        "summed_spans": total,
+                        "union_spans": union,
+                    }
+                )
+        if ratio < LOW_COVERAGE_FLOOR:
+            n_low_coverage_docs += 1
+            if len(low_coverage_docs) < examples_wanted:
+                low_coverage_docs.append(
+                    {
+                        "ticker": doc["ticker"],
+                        "stem": doc["stem"],
+                        "coverage_ratio": round(ratio, 4),
+                        "uncovered_chars": parsed_len - union,
+                    }
+                )
 
     tiling.stats = {
         "documents_measured": len(coverage_ratios),
         "documents_skipped_missing_parsed_text": len(skipped),
         "sections_with_null_offsets": null_offsets,
         "coverage_ratio": describe(coverage_ratios),
-        "documents_with_overlap": len(overlap_docs),
-        "documents_below_coverage_floor": len(low_coverage_docs),
+        "documents_with_overlap": n_overlap_docs,
+        "documents_below_coverage_floor": n_low_coverage_docs,
         "coverage_floor": LOW_COVERAGE_FLOOR,
     }
     tiling.examples = {"overlapping": overlap_docs, "low_coverage": low_coverage_docs,
                        "skipped": skipped[:examples_wanted]}
-    if overlap_docs:
-        tiling.fail(f"{len(overlap_docs)}+ documents have overlapping section spans")
-    elif low_coverage_docs:
-        tiling.warn(f"{len(low_coverage_docs)}+ documents below {LOW_COVERAGE_FLOOR:.0%} coverage")
+    if n_overlap_docs:
+        tiling.fail(f"{n_overlap_docs} documents have overlapping section spans")
+    elif n_low_coverage_docs:
+        tiling.warn(f"{n_low_coverage_docs} documents below {LOW_COVERAGE_FLOOR:.0%} coverage")
     elif not coverage_ratios:
         tiling.status = "SKIP"
         tiling.headline = "no document had readable parsed text"
@@ -364,11 +401,12 @@ def check_1_and_1b(con, docs, text_root, examples_wanted):
 
     fidelity.stats = {
         "sections_checked": checked_sections,
-        "mismatches_found": len(mismatches),
+        "mismatches_found": n_mismatches,
+        "examples_shown": len(mismatches),
         "note": "examples capped; rerun with --examples for more",
     }
     fidelity.examples = mismatches
-    if mismatches:
+    if n_mismatches:
         fidelity.fail("section_text does not equal its declared parsed-text slice")
     elif checked_sections == 0:
         fidelity.status = "SKIP"
@@ -467,20 +505,30 @@ def check_3(con, docs, examples_wanted):
         )
     }
 
-    by_section: dict[int, list[tuple[int, int]]] = defaultdict(list)
+    by_section: dict[int, list[tuple[int, int, int | None, int]]] = defaultdict(list)
     null_offsets = 0
     for row in con.execute(
-        "SELECT section_id, source_start_char, source_end_char FROM chunks"
+        """
+        SELECT section_id, source_start_char, source_end_char,
+               token_count, LENGTH(chunk_text) AS text_len
+        FROM chunks
+        """
     ):
         if row["source_start_char"] is None or row["source_end_char"] is None:
             null_offsets += 1
             continue
         by_section[row["section_id"]].append(
-            (int(row["source_start_char"]), int(row["source_end_char"]))
+            (int(row["source_start_char"]), int(row["source_end_char"]),
+             row["token_count"], row["text_len"] or 0)
         )
 
-    ratios, overlaps, low_coverage = [], [], []
+    ratios: list[float] = []
+    boundary_overlaps: list[float] = []
+    gap_examples, excess_examples, low_coverage = [], [], []
     sections_without_chunks = 0
+    sections_with_gaps = sections_with_overlap = sections_over_budget = 0
+    total_gap_chars = total_overlap_chars = 0
+    boundaries_total = boundaries_with_overlap = boundaries_over_budget = 0
 
     for section_id, section in sections.items():
         spans = by_section.get(section_id)
@@ -490,45 +538,128 @@ def check_3(con, docs, examples_wanted):
         char_count = section["char_count"] or 0
         if char_count <= 0:
             continue
-        total, union, overlap = span_metrics(spans)
-        ratios.append(union / char_count)
+        spans.sort()
         doc = docs.get(section["doc_id"], {})
-        if overlap > 0 and len(overlaps) < examples_wanted:
-            overlaps.append(
-                {
-                    "ticker": doc.get("ticker"),
-                    "stem": doc.get("stem"),
-                    "section_instance_id": section["section_instance_id"],
-                    "overlap_chars": overlap,
-                }
-            )
-        if union / char_count < LOW_COVERAGE_FLOOR and len(low_coverage) < examples_wanted:
+
+        # -- invariant A: the chunks must leave no part of the section uncovered.
+        # Nothing in the chunker intends to drop text, so any gap is a defect.
+        _, union, overlap = span_metrics([(s, e) for s, e, _, _ in spans])
+        ratio = union / char_count
+        ratios.append(ratio)
+        gap = char_count - union
+        if gap > 0:
+            sections_with_gaps += 1
+            total_gap_chars += gap
+            if len(gap_examples) < examples_wanted:
+                gap_examples.append(
+                    {
+                        "ticker": doc.get("ticker"),
+                        "stem": doc.get("stem"),
+                        "section_instance_id": section["section_instance_id"],
+                        "section_chars": char_count,
+                        "uncovered_chars": gap,
+                        "coverage_ratio": round(ratio, 6),
+                    }
+                )
+        if ratio < LOW_COVERAGE_FLOOR and len(low_coverage) < examples_wanted:
             low_coverage.append(
                 {
                     "ticker": doc.get("ticker"),
                     "stem": doc.get("stem"),
                     "section_instance_id": section["section_instance_id"],
-                    "coverage_ratio": round(union / char_count, 4),
-                    "uncovered_chars": char_count - union,
+                    "coverage_ratio": round(ratio, 4),
+                    "uncovered_chars": gap,
                 }
             )
+
+        # -- invariant B: overlap is expected, but only up to the sliding window
+        # the chunker declares. Excess means a boundary was not stepped back by
+        # OVERLAP tokens but by something larger -- a genuine chunker fault.
+        if overlap > 0:
+            sections_with_overlap += 1
+            total_overlap_chars += overlap
+        section_over_budget = False
+        for before, after in zip(spans, spans[1:]):
+            boundaries_total += 1
+            overlap_chars = before[1] - after[0]
+            if overlap_chars <= 0:
+                continue
+            boundaries_with_overlap += 1
+            boundary_overlaps.append(float(overlap_chars))
+            tokens, text_len = after[2], after[3]
+            if not tokens or not text_len:
+                continue
+            chars_per_token = text_len / tokens
+            overlap_tokens = overlap_chars / chars_per_token
+            if overlap_tokens > CHUNK_OVERLAP_TOKENS * OVERLAP_TOLERANCE:
+                boundaries_over_budget += 1
+                section_over_budget = True
+                if len(excess_examples) < examples_wanted:
+                    excess_examples.append(
+                        {
+                            "ticker": doc.get("ticker"),
+                            "stem": doc.get("stem"),
+                            "section_instance_id": section["section_instance_id"],
+                            "spans": [[before[0], before[1]], [after[0], after[1]]],
+                            "overlap_chars": overlap_chars,
+                            "overlap_tokens_est": round(overlap_tokens, 1),
+                            "budget_tokens": CHUNK_OVERLAP_TOKENS * OVERLAP_TOLERANCE,
+                        }
+                    )
+        if section_over_budget:
+            sections_over_budget += 1
+
+    chunk_chars = con.execute("SELECT SUM(LENGTH(chunk_text)) FROM chunks").fetchone()[0] or 0
 
     result.stats = {
         "sections_with_chunks": len(ratios),
         "sections_without_chunks": sections_without_chunks,
         "chunks_with_null_offsets": null_offsets,
         "coverage_ratio": describe(ratios),
-        "sections_with_overlap": len(overlaps),
+        "sections_with_gaps": sections_with_gaps,
+        "total_uncovered_chars": total_gap_chars,
         "sections_below_coverage_floor": len(low_coverage),
+        "coverage_floor": LOW_COVERAGE_FLOOR,
+        # Designed overlap: reported for downstream tiers, never failed on.
+        "designed_overlap_tokens": CHUNK_OVERLAP_TOKENS,
+        "overlap_tolerance": OVERLAP_TOLERANCE,
+        "sections_with_overlap": sections_with_overlap,
+        "adjacent_boundaries": boundaries_total,
+        "boundaries_with_overlap": boundaries_with_overlap,
+        "total_overlap_chars": total_overlap_chars,
+        "overlap_share_of_chunk_text": (
+            round(total_overlap_chars / chunk_chars, 6) if chunk_chars else None
+        ),
+        "overlap_chars_per_boundary": describe(boundary_overlaps),
+        "boundaries_exceeding_overlap_budget": boundaries_over_budget,
+        "sections_exceeding_overlap_budget": sections_over_budget,
     }
-    result.examples = {"overlapping": overlaps, "low_coverage": low_coverage}
-    if overlaps:
-        result.fail(f"{len(overlaps)}+ sections have overlapping chunk spans")
+    result.examples = {
+        "gaps": gap_examples,
+        "excess_overlap": excess_examples,
+        "low_coverage": low_coverage,
+    }
+    if sections_with_gaps:
+        result.fail(
+            f"{sections_with_gaps} sections leave {total_gap_chars:,} chars uncovered "
+            "by any chunk"
+        )
+    elif boundaries_over_budget:
+        result.fail(
+            f"{boundaries_over_budget} boundaries overlap by more than "
+            f"{CHUNK_OVERLAP_TOKENS * OVERLAP_TOLERANCE:.0f} tokens "
+            f"across {sections_over_budget} sections"
+        )
     elif low_coverage:
-        result.warn(f"{len(low_coverage)}+ sections below {LOW_COVERAGE_FLOOR:.0%} chunk coverage")
+        result.warn(f"{len(low_coverage)} sections below {LOW_COVERAGE_FLOOR:.0%} chunk coverage")
+    elif ratios:
+        result.ok(
+            f"no gaps; median coverage {percentile(ratios, 0.5):.3f}; "
+            f"{boundaries_with_overlap:,} boundaries carry the designed "
+            f"{CHUNK_OVERLAP_TOKENS}-token overlap"
+        )
     else:
-        result.ok(f"no overlaps; median coverage {percentile(ratios, 0.5):.3f}"
-                  if ratios else "no measurable sections")
+        result.ok("no measurable sections")
     return result
 
 
@@ -619,6 +750,7 @@ def check_5(con, docs, text_root, examples_wanted):
             page_counts[doc_id] = count
 
     beyond_end = []
+    n_beyond_end = 0          # counted independently; beyond_end is capped
     spans = []
     for row in con.execute(
         """
@@ -630,6 +762,7 @@ def check_5(con, docs, text_root, examples_wanted):
         limit = page_counts.get(row["doc_id"])
         spans.append(row["page_end"] - row["page_start"] + 1)
         if limit is not None and row["page_end"] > limit:
+            n_beyond_end += 1
             if len(beyond_end) < examples_wanted:
                 doc = docs.get(row["doc_id"], {})
                 beyond_end.append(
@@ -647,15 +780,15 @@ def check_5(con, docs, text_root, examples_wanted):
         "chunks_with_null_pages": null_pages,
         "inverted_page_ranges": inverted,
         "non_positive_page_start": non_positive,
-        "chunks_beyond_document_end": len(beyond_end),
+        "chunks_beyond_document_end": n_beyond_end,
         "documents_missing_page_map": missing_maps,
         "pages_spanned_per_chunk": describe([float(s) for s in spans]),
     }
     result.examples = beyond_end
-    if inverted or non_positive or beyond_end:
+    if inverted or non_positive or n_beyond_end:
         result.fail(
             f"{inverted} inverted, {non_positive} non-positive, "
-            f"{len(beyond_end)}+ beyond document end"
+            f"{n_beyond_end} beyond document end"
         )
     else:
         result.ok("all page ranges ordered, positive, and within bounds")
@@ -668,7 +801,24 @@ def check_5(con, docs, text_root, examples_wanted):
 
 
 def check_6(con, docs, examples_wanted):
-    result = CheckResult("6", "Char-offset order agrees with page order (tau-b)")
+    """Assert that no chunk starts later in the text but earlier in the document.
+
+    The invariant is `total_discordant_pairs == 0`. tau-b is reported alongside
+    it but is NOT the gate: because chunks constantly share a page_start, tau-b
+    is dragged below 1.0 by ties alone, and the effect is strongest in small
+    documents where tie density is highest. Gating on a tau-b floor therefore
+    fails on healthy corpora -- it flags the shortest documents, not the corrupt
+    ones -- which is exactly what an earlier `min(tau) < 0.90` condition did.
+
+    SCOPE. This compares char offsets against *page numbers*, so it only sees
+    reading-order faults that cross a page boundary. The two-column parser bug
+    interleaves columns *within* one page; the chunks it corrupts all carry the
+    same page_start, form ties, and are invisible here. ~40% of adjacent chunk
+    pairs sit on a shared page. A PASS on this check is not evidence that the
+    two-column bug is absent -- that needs a linguistic test (sentence-boundary
+    integrity) or the geometric data from esg_reading_order.py.
+    """
+    result = CheckResult("6", "Char-offset order agrees with page order")
 
     by_doc: dict[int, list[tuple[int, int]]] = defaultdict(list)
     for row in con.execute(
@@ -679,48 +829,65 @@ def check_6(con, docs, examples_wanted):
     ):
         by_doc[row["doc_id"]].append((int(row["source_start_char"]), int(row["page_start"])))
 
-    taus, worst = [], []
+    taus, inverted_docs = [], []
     total_discordant = 0
+    docs_with_discordant = 0
+    pairs_total = pairs_tied = 0
     for doc_id, pairs in by_doc.items():
         if len(pairs) < 2:
             continue
         xs = [p[0] for p in pairs]
         ys = [p[1] for p in pairs]
-        tau, discordant = kendall_tau_b(xs, ys)
+        tau, discordant, n0, n2 = kendall_tau_b(xs, ys)
         total_discordant += discordant
-        if tau is None:
-            continue
-        taus.append(tau)
+        pairs_total += n0
+        pairs_tied += n2
         doc = docs.get(doc_id, {})
-        worst.append(
-            {
-                "ticker": doc.get("ticker"),
-                "stem": doc.get("stem"),
-                "tau_b": round(tau, 4),
-                "discordant_pairs": discordant,
-                "chunks": len(pairs),
-            }
-        )
-
-    worst.sort(key=lambda item: item["tau_b"])
-    below_one = [t for t in taus if t < 0.999]
+        if discordant:
+            docs_with_discordant += 1
+            if len(inverted_docs) < examples_wanted:
+                inverted_docs.append(
+                    {
+                        "ticker": doc.get("ticker"),
+                        "stem": doc.get("stem"),
+                        "discordant_pairs": discordant,
+                        "comparable_pairs": n0 - n2,
+                        "tau_b": round(tau, 4) if tau is not None else None,
+                        "chunks": len(pairs),
+                    }
+                )
+        if tau is not None:
+            taus.append(tau)
 
     result.stats = {
         "documents_measured": len(taus),
+        # The invariant. Everything below this line is descriptive only.
         "total_discordant_pairs": total_discordant,
-        "documents_with_tau_below_1": len(below_one),
-        "tau_b": describe(taus),
+        "documents_with_discordant_pairs": docs_with_discordant,
+        "comparable_pairs": pairs_total - pairs_tied,
+        # Chunks sharing a page_start are neither concordant nor discordant, so
+        # their relative order is outside this check's reach entirely -- see the
+        # scope note in the check's docstring.
+        "pairs_tied_on_page_untested": pairs_tied,
+        "tied_pair_share": round(pairs_tied / pairs_total, 6) if pairs_total else None,
+        # Descriptive: with zero discordant pairs this is sqrt(1 - n2/n0), i.e.
+        # a function of tie density and document size, not of ordering.
+        "tau_b_descriptive": describe(taus),
     }
-    result.examples = worst[:examples_wanted]
-    if taus and min(taus) < 0.90:
-        result.fail(f"lowest tau-b {min(taus):.3f}; reading order likely corrupted")
-    elif below_one:
-        result.warn(f"{len(below_one)} documents have tau-b < 1.0")
+    result.examples = inverted_docs
+    if total_discordant:
+        result.fail(
+            f"{total_discordant} discordant offset/page pairs across "
+            f"{docs_with_discordant} documents; reading order is inverted"
+        )
     elif not taus:
         result.status = "SKIP"
         result.headline = "no document had comparable offset/page pairs"
     else:
-        result.ok("page order perfectly agrees with char offsets everywhere")
+        result.ok(
+            f"no inversions in {pairs_total - pairs_tied:,} comparable pairs across "
+            f"{len(taus)} documents (within-page order not tested)"
+        )
     return result
 
 
