@@ -1,0 +1,1495 @@
+[
+  {
+    "ticker": "AMZN",
+    "pdf_file": "AMZN-AMAZON.COM INC-2023.pdf",
+    "pdf_stem": "AMZN-AMAZON.COM INC-2023",
+    "page": 63,
+    "role": "pilot",
+    "current_decision": "auto_hold",
+    "current_reading_order_status": "ambiguous",
+    "current_text": "Overview Environment Value Chain People Appendix 2023 Amazon Sustainability Report  63\nHuman Rights Responsible Supply Chain Sustainable Products and Materials Supplier Diversity Community Impact\nProcter & Gamble (including its brands Pampers, Oral-B, and  The Sustainability Solutions Hub\nBraun), and Earth Rated\u2014to qualify products that could be\nDiscover Product Sustainability Features\nrecognized by certifications in the Climate Pledge Friendly\nWe launched the Sustainability Solutions Hub\u00a0  in 2023 for\nprogram.\nAmazon selling partners in France, Germany, Italy, Spain,\nHelping customers discover products with sustainability features\nthe UK, and the U.S. The Hub helps them get started with\nthroughout the online shopping experience.\nAmazon\u2019s sustainability programs, including\u00a0Climate Pledge\nFriendly, Amazon Renewed, and Ships in Product Packaging.\nNumber of Products Recognized by One  It includes a curated set of third-party service providers to\nsupport selling partners in designing and certifying more\nor More Certification in Our Climate\nsustainable products and packaging, as well as personalized\nPledge Friendly Program\nreporting dashboards.\nAs part of the Hub, we launched new dashboards that\n1.4M\nprovide selling partners with personalized, relevant data and\ninformation so they can:\n\u2022  Track their monthly sales in Amazon\u2019s sustainability\nprograms over the past 12 months.\n\u2022  Identify their other products that are eligible or\n550K candidates for our sustainability programs.\n\u2022  Highlight products that are currently enrolled in\n250K Amazon\u2019s sustainability programs.\n2021 2022 2023 In 2023, over\u00a0200,000 selling partners participated in\nAmazon\u2019s sustainability programs.\nLooking Forward\nWe continue to evolve the customer shopping experience\nImproving Customer Discovery\nand make the discovery of products with sustainability\nfeatures even easier. In March 2024, we launched a new\nWe have helped nearly 37.6\u00a0million Amazon customers switch\nto products recognized by certifications in the Climate Pledge  online shopping experience that highlights these features\nFriendly program, in part by enabling new online shopping  (see visual, right), such as recycled materials and organic\nfeatures to guide their browsing.  content, in products that are recognized by one or more\nBadging in Search Sustainability Feature Details Product Pages\ncertification in the Climate Pledge Friendly program. We also\nFor our Amazon Business customers, we are partnering with\nThe new sustainability features  With just a click, customers can  While browsing the product page,\nlook forward to expanding and refining the Sustainability\nthem to create procurement policies that place a preference\nbadge makes it easier for customers  see more details about each  customers have access to all of the\nSolutions Hub to support our efforts to welcome our selling\non products recognized by certifications in the Climate\nto discover products from search. sustainability feature and the  product\u2019s sustainability features\nPledge Friendly program. As of December 2023, more than  partners into our sustainability programs and give them the  product\u2019s associated certifications. and associated certifications.\n51,000 businesses had these buying policies in place, up from  resources they need to succeed in sharing more sustainable\n18,000 in 2022. products with our customers.",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "63\n\nProcter & Gamble (including its brands Pampers, Oral-B, and The Sustainability Solutions Hub\nBraun), and Earth Rated\u2014to qualify products that could be\nDiscover Product Sustainability Features\nrecognized by certifications in the Climate Pledge Friendly\nWe launched the Sustainability Solutions Hub in 2023 for\nprogram.\nAmazon selling partners in France, Germany, Italy, Spain,\nHelping customers discover products with sustainability features\nthe UK, and the U.S. The Hub helps them get started with\nthroughout the online shopping experience.\nAmazon\u2019s sustainability programs, including Climate Pledge\nFriendly, Amazon Renewed, and Ships in Product Packaging.\nNumber of Products Recognized by One It includes a curated set of third-party service providers to\nsupport selling partners in designing and certifying more\nor More Certification in Our Climate\nsustainable products and packaging, as well as personalized\nPledge Friendly Program\nreporting dashboards.\nAs part of the Hub, we launched new dashboards that\n1.4M\nprovide selling partners with personalized, relevant data and\ninformation so they can:\n\u2022 Track their monthly sales in Amazon\u2019s sustainability\nprograms over the past 12 months.\n\u2022 Identify their other products that are eligible or\n550K candidates for our sustainability programs.\n\u2022 Highlight products that are currently enrolled in\n250K Amazon\u2019s sustainability programs.\n2021 2022 2023 In 2023, over 200,000 selling partners participated in\nAmazon\u2019s sustainability programs.\nLooking Forward\nWe continue to evolve the customer shopping experience\nImproving Customer Discovery\nand make the discovery of products with sustainability\nfeatures even easier. In March 2024, we launched a new\nWe have helped nearly 37.6 million Amazon customers switch\nto products recognized by certifications in the Climate Pledge online shopping experience that highlights these features\nFriendly program, in part by enabling new online shopping (see visual, right), such as recycled materials and organic\nfeatures to guide their browsing. content, in products that are recognized by one or more\nBadging in Search Sustainability Feature Details Product Pages\ncertification in the Climate Pledge Friendly program. We also\nFor our Amazon Business customers, we are partnering with\nThe new sustainability features With just a click, customers can While browsing the product page,\nlook forward to expanding and refining the Sustainability\nthem to create procurement policies that place a preference\nbadge makes it easier for customers see more details about each customers have access to all of the\nSolutions Hub to support our efforts to welcome our selling\non products recognized by certifications in the Climate\nto discover products from search. sustainability feature and the product\u2019s sustainability features\nPledge Friendly program. As of December 2023, more than partners into our sustainability programs and give them the\nproduct\u2019s associated certifications. and associated certifications.\n51,000 businesses had these buying policies in place, up from resources they need to succeed in sharing more sustainable\n18,000 in 2022. products with our customers.",
+    "navigation_items": [
+      {
+        "text": "Sustainable Products and Materials",
+        "x0": 431.6754,
+        "top": 87.01379999999995,
+        "x1": 699.3147999999998,
+        "bottom": 101.01379999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          75,
+          76,
+          77,
+          78
+        ],
+        "repeated_page_count": 29
+      },
+      {
+        "text": "Responsible Supply Chain",
+        "x0": 205.3182,
+        "top": 86.66951040000004,
+        "x1": 395.2846255999999,
+        "bottom": 100.78711039999996,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          79,
+          80,
+          81
+        ],
+        "repeated_page_count": 29
+      },
+      {
+        "text": "Human Rights",
+        "x0": 72.4338,
+        "top": 86.66929999999991,
+        "x1": 168.76219999999998,
+        "bottom": 100.66929999999991,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          82,
+          83
+        ],
+        "repeated_page_count": 29
+      },
+      {
+        "text": "Community Impact",
+        "x0": 915.7992,
+        "top": 86.82171040000003,
+        "x1": 1045.292886,
+        "bottom": 100.93931039999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          86,
+          87
+        ],
+        "repeated_page_count": 29
+      },
+      {
+        "text": "Supplier Diversity",
+        "x0": 736.8303848,
+        "top": 86.80759280000007,
+        "x1": 877.78191496,
+        "bottom": 100.92519279999999,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          84,
+          85
+        ],
+        "repeated_page_count": 29
+      },
+      {
+        "text": "2023 Amazon Sustainability Report",
+        "x0": 1541.9557,
+        "top": 50.013910399999986,
+        "x1": 1812.6889152,
+        "bottom": 64.13151039999991,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          470,
+          471,
+          472,
+          473
+        ],
+        "repeated_page_count": 95
+      },
+      {
+        "text": "Appendix",
+        "x0": 508.9399,
+        "top": 49.90599999999995,
+        "x1": 573.1523,
+        "bottom": 63.90599999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          479
+        ],
+        "repeated_page_count": 95
+      },
+      {
+        "text": "People",
+        "x0": 423.37190000000004,
+        "top": 49.90599999999995,
+        "x1": 470.9047,
+        "bottom": 63.90599999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          478
+        ],
+        "repeated_page_count": 95
+      },
+      {
+        "text": "Overview",
+        "x0": 72.0,
+        "top": 49.90599999999995,
+        "x1": 135.38500000000002,
+        "bottom": 63.90599999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          474
+        ],
+        "repeated_page_count": 95
+      },
+      {
+        "text": "Environment",
+        "x0": 173.962,
+        "top": 49.90599999999995,
+        "x1": 261.9534,
+        "bottom": 63.90599999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          475
+        ],
+        "repeated_page_count": 95
+      },
+      {
+        "text": "Value Chain",
+        "x0": 299.5553,
+        "top": 50.045900000000074,
+        "x1": 386.7193,
+        "bottom": 64.04590000000007,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          476,
+          477
+        ],
+        "repeated_page_count": 95
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 457,
+    "source_word_count": 457,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 168.0,
+        "bottom": 980.7,
+        "region_type": "row_structured",
+        "column_count": 2,
+        "reason": "p25_fill=0.159"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 2,
+    "image": "assets/AMZN-AMAZON.COM INC-2023/page_0063.png"
+  },
+  {
+    "ticker": "BURL",
+    "pdf_file": "BURL-BURLINGTON STORES INC-2023.pdf",
+    "pdf_stem": "BURL-BURLINGTON STORES INC-2023",
+    "page": 30,
+    "role": "pilot",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "Ethical Sourcing\ncontinued\nS Corrective Action Plans\nE\nR\nU\nS If security or social risks are identified at a\nO\nL factory during a risk assessment, immediate\nC\nS\nI corrective actions must be taken. In cases\nD\nDN of minor violations, the factory must submit\nA\na Corrective Action Plan (CAP) and adhere\nA\nT\nA to a specified remediation date. Failure to\nD\naddress the issue leads to reporting the\nS\nC violation to CBP, CTPAT, the Burlington\nI H\nT merchant, and the vendor.\nE\nDN\nUpon detection of a major violation, the\nA\nE vendor is allowed to find an alternate\nCN\nA supplier; failure to do so results in the\nN\nR cancellation of the purchase order. The\nE\nV\nO manufacturing facility is then placed on a\nG\nbanned list for a minimum of one year, after\nN\nI which it can undergo reassessment by a\nA\nHC\nthird-party auditor selected by us.\nY\nL\nPP If subsequent violations are discovered, the\nU\nS facility will be prohibited from producing\ngoods for Burlington, with no further\nT\nN\nE opportunity for correction. In 2023, no\nM\nN suppliers had their contract terminated\nO\nR due to violations.\nI V\nN\nE\nOur Trade Compliance program supports\nS positive relationships with CBP and the\nE\nI T\nbroader industry by reporting our annual\nI NU\nself-evaluation to CBP. We audit a sample of\nMM\ndirect import shipments based on a\nO\nC\ncombination of internal, external, quantitative,\nS and qualitative risk assessment. This includes\nE\nT any post-summary corrections to the entries,\nA\nI C\nO risks that have been identified based on\nSS\ninternal Burlington risk assessment, or\nA\nexternal risks.\nW\nE\nI V\n\nEntries are chosen to be assessed based\non the number of imports brought in per\ncountry, the country\u2019s risk level, and the\nproduct type and value, as well as ongoing\nrandom samplings.\nSupplier Diversity\nAt Burlington, we strive to create a broad and\ninclusive product assortment that is reflective\nof the diverse needs of our customers. We\nare committed to creating an environment\nthat promotes the opportunity to work with\ndiverse vendors. We recognize that through\na more inclusive vendor and supplier diversity\nprocess, we may increase unique\nperspectives, innovative ideas, and valuable\ncontributions to our business. This approach\nnot only enriches our perspective but also\nenhances our agility in responding to market\nshifts, ultimately resulting in a more diverse\nproduct assortment that can lead to\nincreased profitability.\nIn 2023, we continued to strengthen our\ncommitment to vendor and supplier diversity\nthrough strategic partnerships, including\nworking with the National Minority Supplier\nDevelopment Council. By partnering with\nsuppliers from a wide range of backgrounds,\nincluding women-owned, minority-owned,\nveteran-owned, and LGBTQ-owned\nbusinesses, we strive to tap into unique\nperspectives and ideas that expand our\nsupplier network, differentiate our product\nofferings, and better meet customer\ndemand. Please see our \u201cDoing Business\nwith Burlington\u201d page to learn more about\nour Supplier Diversity efforts.\n\nR\nE\nV\nO 22002233 CCOORRPPOORRAATTEE SSOOCCIIAALL RREESSPPOONNSSIIBBIILLIITTYY RREEPPOORRTT \u2014 \u2014 30 30",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "Corrective Action Plans\nIf security or social risks are identified at a\nfactory during a risk assessment, immediate\ncorrective actions must be taken. In cases\nof minor violations, the factory must submit\na Corrective Action Plan (CAP) and adhere\nto a specified remediation date. Failure to\naddress the issue leads to reporting the\nviolation to CBP, CTPAT, the Burlington\nmerchant, and the vendor.\nUpon detection of a major violation, the\nvendor is allowed to find an alternate\nsupplier; failure to do so results in the\ncancellation of the purchase order. The\nmanufacturing facility is then placed on a\n\nEntries are chosen to be assessed based\non the number of imports brought in per\ncountry, the country\u2019s risk level, and the\nproduct type and value, as well as ongoing\nrandom samplings.\nSupplier Diversity\nAt Burlington, we strive to create a broad and\ninclusive product assortment that is reflective\nof the diverse needs of our customers. We\nare committed to creating an environment\nthat promotes the opportunity to work with\ndiverse vendors. We recognize that through\na more inclusive vendor and supplier diversity\nprocess, we may increase unique\nperspectives, innovative ideas, and valuable\n\nbanned list for a minimum of one year, after contributions to our business. This approach\n\nwhich it can undergo reassessment by a\nthird-party auditor selected by us.\nIf subsequent violations are discovered, the\nfacility will be prohibited from producing\ngoods for Burlington, with no further\nopportunity for correction. In 2023, no\nsuppliers had their contract terminated\ndue to violations.\nOur Trade Compliance program supports\npositive relationships with CBP and the\nbroader industry by reporting our annual\nself-evaluation to CBP. We audit a sample of\ndirect import shipments based on a\ncombination of internal, external, quantitative,\nand qualitative risk assessment. This includes\nany post-summary corrections to the entries,\nrisks that have been identified based on\ninternal Burlington risk assessment, or\nexternal risks.\n\nnot only enriches our perspective but also\nenhances our agility in responding to market\nshifts, ultimately resulting in a more diverse\nproduct assortment that can lead to\nincreased profitability.\nIn 2023, we continued to strengthen our\ncommitment to vendor and supplier diversity\nthrough strategic partnerships, including\nworking with the National Minority Supplier\nDevelopment Council. By partnering with\nsuppliers from a wide range of backgrounds,\nincluding women-owned, minority-owned,\nveteran-owned, and LGBTQ-owned\nbusinesses, we strive to tap into unique\nperspectives and ideas that expand our\nsupplier network, differentiate our product\nofferings, and better meet customer\ndemand. Please see our \u201cDoing Business\nwith Burlington\u201d page to learn more about\nour Supplier Diversity efforts.\n\n22002233 CCOORRPPOORRAATTEE SSOOCCIIAALL RREESSPPOONNSSIIBBIILLIITTYY RREEPPOORRTT \u2014 \u2014 30 30",
+    "navigation_items": [
+      {
+        "text": "OVERVIEW ASSOCIATES COMMUNITIES ENVIRONMENT SUPPLY CHAIN GOVERNANCE AND ETHICS DATA AND DISCLOSURES",
+        "x0": 17.624000000000002,
+        "top": 146.98400000000004,
+        "x1": 25.624000000000002,
+        "bottom": 699.0,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          434,
+          435,
+          436,
+          437,
+          438,
+          439,
+          440,
+          441,
+          442,
+          443,
+          444,
+          445,
+          446,
+          447,
+          448,
+          449,
+          450,
+          451,
+          452,
+          453,
+          454,
+          455,
+          456,
+          457,
+          458,
+          459,
+          460,
+          461,
+          462,
+          463,
+          464,
+          465,
+          466,
+          467,
+          468,
+          469,
+          470,
+          471,
+          472,
+          473,
+          474,
+          475,
+          476,
+          477,
+          478,
+          479,
+          480,
+          481,
+          482,
+          483,
+          484,
+          485,
+          486,
+          487,
+          488,
+          489,
+          490,
+          491,
+          492,
+          493,
+          494,
+          495,
+          496,
+          497,
+          498,
+          499,
+          500,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513
+        ],
+        "repeated_page_count": 45
+      },
+      {
+        "text": "continued",
+        "x0": 84.0,
+        "top": 54.99199999999996,
+        "x1": 145.7428,
+        "bottom": 68.99199999999996,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          9,
+          10,
+          11
+        ],
+        "repeated_page_count": 13
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 431,
+    "source_word_count": 431,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 145.4,
+        "bottom": 366.4,
+        "region_type": "multi_column_prose",
+        "column_count": 2,
+        "reason": "p25_fill=0.868"
+      },
+      {
+        "top": 369.4,
+        "bottom": 380.4,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 383.4,
+        "bottom": 667.4,
+        "region_type": "multi_column_prose",
+        "column_count": 2,
+        "reason": "p25_fill=0.812"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 2,
+    "image": "assets/BURL-BURLINGTON STORES INC-2023/page_0030.png"
+  },
+  {
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2023.pdf",
+    "pdf_stem": "WSM-WILLIAMS-SONOMA INC-2023",
+    "page": 31,
+    "role": "pilot",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "PRODUCT QUALITY, SAFETY & SUSTAINABILITY\nO\nR\nT\nN As we strive to bring\nI\nsustainable furnishings\nin a way that benefits\nT planet, we\u2019re changing\nE\nN\nA\nL\nP about\u2014and make\u2014our\nTESTING\nWe are committed to quality, safe, and\nlong-lasting products. We comply with\nE\nL\nnational and state laws for product\nP\nO\nsafety and testing, and we actively test\nE\nP\nand inspect our products for safety and\nrestricted substances at either our in-\ncountry labs or with independent, third-\nparty labs certified by the U.S. Consumer\nProduct Safety Commission. We also\nhave a network of quality assurance\nES professionals and on-the-ground\nO experts who work directly with our\nP\nR supplier base to establish clear product\nU\nP reviews, develop testing protocols,\nand implement routine inspections.\nAdditionally, we have an internal review\nprocess and work with third-party\ncertifications where needed to ensure\nthe accuracy of product claims.\nX\nI\nD CERTIFICATIONS\nN\nE Across all our brands, we offer a wide\nP\nP array of products with third-party\nA\ncertification that verify the safety,\nquality, and sustainability of select\nproducts. We require all suppliers to\n\nbeautiful, quality,\nto customers\npeople and\nhow we think\nproducts.\nparticipate in fiber and wood surveys and\nprovide chain-of-custody certifications\nand supporting documentation to\nconfirm that they meet our standards.\nWe maintain up-to-date supplier chain-\nof-custody certificates and regularly\ncollect and verify transaction certificates\nto support marketing claims.\nWe spend a significant amount of time\nindoors, where concentrations of indoor\nair pollutants are often higher than\noutdoors. Products with OEKO-TEX\u00ae\nSTANDARD 100 certification mean\nthey are tested for harmful substances.\nGREENGUARD Gold certification\ncontributes to cleaner indoor air for our 3\n2\ncustomers by screening for chemicals 0\n2\nand VOCs. We know our customers value T\nR\nthese certifications, and we continue to O\nP\nintegrate them across our brands. E\nR\nT\nC\nA\nP\nM\nI\nPHOTO: WEST ELM\n\n34 30",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "PRODUCT QUALITY, SAFETY & SUSTAINABILITY\n\nAs we strive to bring beautiful, quality,\nsustainable furnishings to customers\nin a way that benefits people and\nplanet, we\u2019re changing how we think\nabout\u2014and make\u2014our products.\n\nTESTING participate in fiber and wood surveys and\nWe are committed to quality, safe, and provide chain-of-custody certifications\nlong-lasting products. We comply with and supporting documentation to\nnational and state laws for product confirm that they meet our standards.\nsafety and testing, and we actively test We maintain up-to-date supplier chain-\nand inspect our products for safety and of-custody certificates and regularly\nrestricted substances at either our in- collect and verify transaction certificates\ncountry labs or with independent, third- to support marketing claims.\nparty labs certified by the U.S. Consumer\nProduct Safety Commission. We also We spend a significant amount of time\nhave a network of quality assurance indoors, where concentrations of indoor\nprofessionals and on-the-ground air pollutants are often higher than\nexperts who work directly with our outdoors. Products with OEKO-TEX\u00ae\nsupplier base to establish clear product STANDARD 100 certification mean\nreviews, develop testing protocols, they are tested for harmful substances.\nand implement routine inspections. GREENGUARD Gold certification\nAdditionally, we have an internal review contributes to cleaner indoor air for our\nprocess and work with third-party customers by screening for chemicals\ncertifications where needed to ensure and VOCs. We know our customers value\nthe accuracy of product claims. these certifications, and we continue to\nintegrate them across our brands.\nCERTIFICATIONS\nAcross all our brands, we offer a wide\narray of products with third-party\ncertification that verify the safety,\nquality, and sustainability of select\nPHOTO: WEST ELM\nproducts. We require all suppliers to\n\n34 30",
+    "navigation_items": [
+      {
+        "text": "IMPACT REPORT 2023",
+        "x0": 1185.135,
+        "top": 571.761,
+        "x1": 1194.135,
+        "bottom": 684.0,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "INTRO",
+        "x0": 33.0049,
+        "top": 121.53300000000002,
+        "x1": 42.0049,
+        "bottom": 152.466,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          292,
+          293,
+          294,
+          295,
+          296
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "PLANET",
+        "x0": 33.0049,
+        "top": 246.22800000000007,
+        "x1": 42.0049,
+        "bottom": 286.773,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          297,
+          298,
+          299,
+          300,
+          301,
+          302
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "PEOPLE",
+        "x0": 33.0049,
+        "top": 376.161,
+        "x1": 42.0049,
+        "bottom": 415.842,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          303,
+          304,
+          305,
+          306,
+          307,
+          308
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "PURPOSE",
+        "x0": 33.0049,
+        "top": 501.54900000000004,
+        "x1": 42.0049,
+        "bottom": 549.447,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          309,
+          310,
+          311,
+          312,
+          313,
+          314
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "APPENDIX",
+        "x0": 33.0049,
+        "top": 629.169,
+        "x1": 42.0049,
+        "bottom": 680.8199999999999,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          322
+        ],
+        "repeated_page_count": 60
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 277,
+    "source_word_count": 277,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 75.6,
+        "bottom": 93.6,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 139.7,
+        "bottom": 313.7,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "top": 343.9,
+        "bottom": 724.0,
+        "region_type": "row_structured",
+        "column_count": 2,
+        "reason": "p25_fill=0.243"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 2,
+    "image": "assets/WSM-WILLIAMS-SONOMA INC-2023/page_0031.png"
+  },
+  {
+    "ticker": "GES",
+    "pdf_file": "GES-GUESS-2024.pdf",
+    "pdf_stem": "GES-GUESS-2024",
+    "page": 9,
+    "role": "pilot",
+    "current_decision": "auto_pass_region_order_reconstructed",
+    "current_reading_order_status": "ambiguous",
+    "current_text": "GUESS ESG INTERIM REPORT FY2024\n\nENERGY AND EMISSIONS\n\nGUESS\u2019s GHG emissions reduction targets were approved by the Science Based Targets initiative\n(SBTi) , which recognizes our commitment to reducing absolute emissions by 50% across Scope 1 and\n2, and by 30% in Scope 3 (Category 1 \u2013 Purchased Goods and Services) by 2030, from our FY2019\nbaseline.\nOur SBTi goals are based on FY2019 baseline. This base year was chosen in accordance with the GHG\nProtocol guidance for tracking emissions over time, as management believes FY2019 provides an\naccurate reflection of our overall emissions profile, boundaries and current methodology. Scope 2\nindirect emissions for the base year were calculated using the market-based methodology. GUESS\u2019s\nenergy consumption and GHG emissions are reported in the tables below.\n1. Energy Consumption\n\nTable 3: Energy Consumption (Gj)\n\na ll n u m b e r s i n G j - g i g a j o u l e s\nE l e c t r i c i t y c o n s u m p t i o n\nN o n -r e n e a w a b l e E l e c t r i c i t y c o n s u m p t i o n ( e x c l . E A C s )\nR e n e w a b l e E l e c t r i c i t y c o n s u m p t i o n ( o n l y E A C s )\nF u e l c o n s u m p t i o n\nF u e l c o n s u m p t i o n ( f r o m r e n e w a b l e s o u r c e s )\nF u e l c o n s u m p t i o n ( f r o m n o n -r e n e w a b l e s o u r c e s )\nC o o li n g c o n s u m p t i o n\nH e a t i n g c o n s u m p t i o n\nS t e a m c o n s u m p t i o n\nT o t a l e n e r g y s o l d\nT o t a l e n e r g y c o n s u m p t i o n\nT o t a l n o n - r e n e w a b l e e n e r g y c o n s u m p t i o n\nT o t a l r e n e w a b l e e n e r g y c o n s u m p t i o n\nD a t a c o v e r a g e ( a s % o f d e n o m i n a t o r )\nE A C s s t a n d f o r E n e r g y A tt r i b u t e C e r t i f i c a t e s .\n\nF Y 2 0 1 9\n3 4 7 , 9 9 8\n3 4 7 , 9 9 8\n0\n3 0 , 4 2 7\n0\n3 0 , 4 2 7\n5 2 9\n0\n0\n0\n3 7 8 , 9 5 4\n3 7 8 , 9 5 4\n0\n1 0 0 %\n\nF Y 2 0 2 0\n3 8 0 , 5 5 8\n3 8 0 , 5 5 8\n0\n3 1 , 3 0 5\n0\n3 1 , 3 0 5\n2 , 2 0 8\n0\n0\n0\n4 1 4 , 0 7 1\n4 1 4 , 0 7 1\n0\n1 0 0 %\n\nF Y 2 0 2 1\n3 1 8 , 6 6 5\n3 1 8 , 6 6 5\n0\n2 2 , 5 9 0\n0\n2 2 , 5 9 0\n2 , 2 0 0\n0\n0\n0\n3 4 3 , 4 5 5\n3 4 3 , 4 5 5\n0\n1 0 0 %\n\nF Y 2 0 2 2\n3 0 4 , 8 0 1\n2 0 9 , 0 8 0\n9 5 , 7 2 1\n2 2 , 3 1 7\n0\n2 2 , 3 1 7\n1 , 5 1 6\n0\n0\n0\n3 2 8 , 6 3 4\n2 3 2 , 9 1 3\n9 5 , 7 2 1\n1 0 0 %\n\nF Y 2 0 2 3\n3 2 2 , 3 0 0\n2 2 3 , 7 1 7\n9 8 , 5 8 2\n2 4 , 1 5 8\n0\n2 4 , 1 5 8\n1 , 3 0 9\n0\n0\n0\n3 4 7 , 7 6 7\n2 4 9 , 1 8 5\n9 8 , 5 8 2\n1 0 0 %\n\nF Y 2 0 2 4\n3 0 7 , 5 5 6\n2 0 0 , 6 3 6\n1 0 6 , 9 2 0\n2 0 , 9 8 5\n0\n2 0 , 9 8 5\n3 7 4\n0\n0\n0\n3 2 8 , 9 1 5\n2 2 1 , 9 9 5\n1 0 6 , 9 2 0\n1 0 0 %\n\n2. Direct GHG Emissions (Scope 1) and Indirect GHG Emissions (Scope 2)\n\na ll n u m b e r s i n m T C O 2 e - m e t r i c t o n s\nc a r b o n d i o x i d e e q u i v a l e n t\nS c o p e 1 , 2 G H G e m i s s i o n s\nS c o p e 1\nS c o p e 2 ( L o c a t i o n - b a s e d )\nS c o p e 2 ( M a r k e t - b a s e d )\n\nTable 4: Scope 1 and Scope 2 Greenhouse Gas Emissions (mTCO e)\n\n2\n\nF Y 2 0 1 9\n1 , 5 3 9\n3 4 , 9 1 0\n3 9 , 2 4 6\n\nF Y 2 0 2 0\n1 , 5 7 6\n3 7 , 4 9 7\n4 1 , 4 2 5\n\nF Y 2 0 2 1\n1 , 1 3 7\n2 9 , 6 9 4\n3 2 , 3 7 7\n\nF Y 2 0 2 2\n1 , 1 2 4\n2 5 , 6 3 5\n1 9 , 4 2 0\n\nF Y 2 0 2 3\n1 , 2 1 6\n2 6 , 2 1 3\n1 9 , 0 7 9\n\nF Y 2 0 2 4\n1 , 0 5 6\n2 5 , 8 5 4\n1 5 , 5 7 9\n\n8\n\n2024-10-30",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "ENERGY AND EMISSIONS\nGUESS\u2019s GHG emissions reduction targets were approved by the Science Based Targets initiative\n(SBTi) , which recognizes our commitment to reducing absolute emissions by 50% across Scope 1 and\n2, and by 30% in Scope 3 (Category 1 \u2013 Purchased Goods and Services) by 2030, from our FY2019\nbaseline.\nOur SBTi goals are based on FY2019 baseline. This base year was chosen in accordance with the GHG\nProtocol guidance for tracking emissions over time, as management believes FY2019 provides an\naccurate reflection of our overall emissions profile, boundaries and current methodology. Scope 2\nindirect emissions for the base year were calculated using the market-based methodology. GUESS\u2019s\nenergy consumption and GHG emissions are reported in the tables below.\n1. Energy Consumption\nTable 3: Energy Consumption (Gj)\na ll n u m b e r s i n G j - g i g a j o u l e s\nF Y 2 0 1 9 F Y 2 0 2 0 F Y 2 0 2 1 F Y 2 0 2 2 F Y 2 0 2 3 F Y 2 0 2 4\nE l e c t r i c i t y c o n s u m p t i o n 3 4 7 , 9 9 8 3 8 0 , 5 5 8 3 1 8 , 6 6 5 3 0 4 , 8 0 1 3 2 2 , 3 0 0 3 0 7 , 5 5 6\nN o n -r e n e a w a b l e E l e c t r i c i t y c o n s u m p t i o n ( e x c l . E A C s ) 3 4 7 , 9 9 8 3 8 0 , 5 5 8 3 1 8 , 6 6 5 2 0 9 , 0 8 0 2 2 3 , 7 1 7 2 0 0 , 6 3 6\nR e n e w a b l e E l e c t r i c i t y c o n s u m p t i o n ( o n l y E A C s ) 0 0 0 9 5 , 7 2 1 9 8 , 5 8 2 1 0 6 , 9 2 0\nF u e l c o n s u m p t i o n 3 0 , 4 2 7 3 1 , 3 0 5 2 2 , 5 9 0 2 2 , 3 1 7 2 4 , 1 5 8 2 0 , 9 8 5\nF u e l c o n s u m p t i o n ( f r o m r e n e w a b l e s o u r c e s ) 0 0 0 0 0 0\nF u e l c o n s u m p t i o n ( f r o m n o n -r e n e w a b l e s o u r c e s ) 3 0 , 4 2 7 3 1 , 3 0 5 2 2 , 5 9 0 2 2 , 3 1 7 2 4 , 1 5 8 2 0 , 9 8 5\nC o o li n g c o n s u m p t i o n 5 2 9 2 , 2 0 8 2 , 2 0 0 1 , 5 1 6 1 , 3 0 9 3 7 4\nH e a t i n g c o n s u m p t i o n 0 0 0 0 0 0\nS t e a m c o n s u m p t i o n 0 0 0 0 0 0\nT o t a l e n e r g y s o l d 0 0 0 0 0 0\nT o t a l e n e r g y c o n s u m p t i o n 3 7 8 , 9 5 4 4 1 4 , 0 7 1 3 4 3 , 4 5 5 3 2 8 , 6 3 4 3 4 7 , 7 6 7 3 2 8 , 9 1 5\nT o t a l n o n - r e n e w a b l e e n e r g y c o n s u m p t i o n 3 7 8 , 9 5 4 4 1 4 , 0 7 1 3 4 3 , 4 5 5 2 3 2 , 9 1 3 2 4 9 , 1 8 5 2 2 1 , 9 9 5\nT o t a l r e n e w a b l e e n e r g y c o n s u m p t i o n 0 0 0 9 5 , 7 2 1 9 8 , 5 8 2 1 0 6 , 9 2 0\nD a t a c o v e r a g e ( a s % o f d e n o m i n a t o r ) 1 0 0 % 1 0 0 % 1 0 0 % 1 0 0 % 1 0 0 % 1 0 0 %\nE A C s s t a n d f o r E n e r g y A tt r i b u t e C e r t i f i c a t e s .\n\n2. Direct GHG Emissions (Scope 1) and Indirect GHG Emissions (Scope 2)\nTable 4: Scope 1 and Scope 2 Greenhouse Gas Emissions (mTCO e)\n2\na ll n u m b e r s i n m T C O 2 e - m e t r i c t o n s\nc a r b o n d i o x i d e e q u i v a l e n t\nS c o p e 1 , 2 G H G e m i s s i o n s F Y 2 0 1 9 F Y 2 0 2 0 F Y 2 0 2 1 F Y 2 0 2 2 F Y 2 0 2 3 F Y 2 0 2 4\nS c o p e 1 1 , 5 3 9 1 , 5 7 6 1 , 1 3 7 1 , 1 2 4 1 , 2 1 6 1 , 0 5 6\nS c o p e 2 ( L o c a t i o n - b a s e d ) 3 4 , 9 1 0 3 7 , 4 9 7 2 9 , 6 9 4 2 5 , 6 3 5 2 6 , 2 1 3 2 5 , 8 5 4\nS c o p e 2 ( M a r k e t - b a s e d ) 3 9 , 2 4 6 4 1 , 4 2 5 3 2 , 3 7 7 1 9 , 4 2 0 1 9 , 0 7 9 1 5 , 5 7 9\n\n8",
+    "navigation_items": [
+      {
+        "text": "GUESS ESG INTERIM REPORT FY2024",
+        "x0": 375.07,
+        "top": 57.360000000000014,
+        "x1": 541.15504,
+        "bottom": 68.39999999999998,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "repeated_page_count": 19
+      },
+      {
+        "text": "2024-10-30",
+        "x0": 496.66,
+        "top": 794.8499999999999,
+        "x1": 540.694,
+        "bottom": 803.8499999999999,
+        "rotation": 0.0,
+        "item_type": "footer",
+        "source_indices": [
+          5
+        ],
+        "repeated_page_count": 19
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 1253,
+    "source_word_count": 1253,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 88.4,
+        "bottom": 559.5,
+        "region_type": "row_structured",
+        "column_count": 4,
+        "reason": "p25_fill=0.052"
+      },
+      {
+        "top": 593.3,
+        "bottom": 695.3,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "legacy_status": "ambiguous",
+    "legacy_columns": 0,
+    "image": "assets/GES-GUESS-2024/page_0009.png"
+  },
+  {
+    "ticker": "BBY",
+    "pdf_file": "BBY-BEST BUY CO INC-2024.pdf",
+    "pdf_stem": "BBY-BEST BUY CO INC-2024",
+    "page": 5,
+    "role": "pilot",
+    "current_decision": "auto_pass",
+    "current_reading_order_status": "not_applicable",
+    "current_text": "About Best Buy Environmental Employees Community Responsible business practices Appendix Best Buy 2025 CR&S Report 5\nAbout this report\nFounded in 1966 and with global headquarters in Richfield,\nMinn., Best Buy has been reporting yearly on a variety of\nCorporate Responsibility & Sustainability impact areas\ncorporate responsibility and sustainability topics since 2006.\nThis report includes our operations in the U.S. and Canada\n(where noted), reflecting the fiscal year ending Feb. 1, 2025\n(FY25), unless otherwise stated. While most of the report\nfocuses on the performance of our retail business, this report\nalso includes information on the Best Buy Foundation\u00ae,\nTeen Tech Centers\u2122 and Best Buy Health\u2122. The Responsible\nCircular economy\nSourcing section reflects our private-label manufacturing and\nCompany & product carbon footprint\nproducts we directly import.\nData security & privacy\nInclusion & belonging\nThis report has been prepared with reference to the Global  ers Human capital management\nReporting Initiative (GRI) Universal Standards. Best Buy\u2019s  old Human rights\nh Tech opportunity gap\nScope 1, 2 and 3 emissions data is independently verified  e\nk\na\nby Optera at a limited assurance level. Other frameworks  St Business resiliency\nreferenced or taken into account include Sustainability  e to  CCoomrpmoruanteit yg oimveprancatn ce & ethics\nAccounting Standards Board (SASB) and Sustainable  c\nan Healthy communities\nDevelopment Goals (SDGs). Best Buy also reports to CDP and  ort Health & safety\nour disclosures are available within the Resource Library on  mp Product quality & safety\nour corporate website. Feedback about this report is welcome  I Sustainable packaging\nat CorporateResponsibility@BestBuy.com.\nChemicals in products\nEarly childhood education\nThrough a materiality assessment including stakeholder  Environmental justice\nsurveys and interviews, we plotted issues on a matrix based  Public policy engagement\non materiality to Best Buy. All of the issues listed are of high\nimportance to both stakeholders and our business; however,  Impact to Best Buy\nthe issues were scored and ranked by the degree to which\ninternal and external stakeholders believed in the  importance\nof the issue, the potential impact to Best Buy and the potential\nBest Buy had to impact the issue within the retail industry. We\nrevisit this materiality matrix at a regular cadence of 2-3 years\nbased on the constantly evolving retail landscape. For more\ninformation and full financial disclosures, please see the Best\nBuy FY25 Annual Report (Form 10-K) on our investor website.",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "Best Buy 2025 CR&S Report 5\n\nAbout this report\n\nFounded in 1966 and with global headquarters in Richfield,\nMinn., Best Buy has been reporting yearly on a variety of\nCorporate Responsibility & Sustainability impact areas\ncorporate responsibility and sustainability topics since 2006.\nThis report includes our operations in the U.S. and Canada\n(where noted), reflecting the fiscal year ending Feb. 1, 2025\n(FY25), unless otherwise stated. While most of the report\nfocuses on the performance of our retail business, this report\nalso includes information on the Best Buy Foundation\u00ae,\nTeen Tech Centers\u2122 and Best Buy Health\u2122. The Responsible\nCircular economy\nSourcing section reflects our private-label manufacturing and\nCompany & product carbon footprint\nproducts we directly import.\nData security & privacy\nInclusion & belonging\nThis report has been prepared with reference to the Global Human capital management\nReporting Initiative (GRI) Universal Standards. Best Buy\u2019s Human rights\nTech opportunity gap\nScope 1, 2 and 3 emissions data is independently verified\nby Optera at a limited assurance level. Other frameworks Business resiliency\nreferenced or taken into account include Sustainability Community impact\nCorporate governance & ethics\nAccounting Standards Board (SASB) and Sustainable\nHealthy communities\nDevelopment Goals (SDGs). Best Buy also reports to CDP and\nHealth & safety\nour disclosures are available within the Resource Library on Product quality & safety\nour corporate website. Feedback about this report is welcome Sustainable packaging\nat CorporateResponsibility@BestBuy.com.\nChemicals in products\nEarly childhood education\nThrough a materiality assessment including stakeholder Environmental justice\nsurveys and interviews, we plotted issues on a matrix based Public policy engagement\non materiality to Best Buy. All of the issues listed are of high\nimportance to both stakeholders and our business; however, Impact to Best Buy\nthe issues were scored and ranked by the degree to which\ninternal and external stakeholders believed in the importance\nof the issue, the potential impact to Best Buy and the potential\nBest Buy had to impact the issue within the retail industry. We\nrevisit this materiality matrix at a regular cadence of 2-3 years\nbased on the constantly evolving retail landscape. For more\ninformation and full financial disclosures, please see the Best\nBuy FY25 Annual Report (Form 10-K) on our investor website.",
+    "navigation_items": [
+      {
+        "text": "EnvironmentalEmployees",
+        "x0": 111.00390000000004,
+        "top": 15.371999999999957,
+        "x1": 221.11510000000007,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          0,
+          1
+        ],
+        "repeated_page_count": 6
+      },
+      {
+        "text": "Responsible business practicesAppendix",
+        "x0": 305.25190000000003,
+        "top": 15.371999999999957,
+        "x1": 469.7479,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "repeated_page_count": 38
+      },
+      {
+        "text": "Community",
+        "x0": 242.39590000000004,
+        "top": 15.371999999999957,
+        "x1": 283.97190000000006,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          2
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "About Best Buy",
+        "x0": 36.0,
+        "top": 15.393500000000017,
+        "x1": 92.6,
+        "bottom": 23.393500000000017,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          394,
+          395,
+          396
+        ],
+        "repeated_page_count": 26
+      }
+    ],
+    "rotated_content_items": [
+      {
+        "text": "Importance to Stakeholders",
+        "x0": 330.43089999999995,
+        "top": 301.83689999999996,
+        "x1": 338.43089999999995,
+        "bottom": 401.1113,
+        "rotation": 90.0,
+        "item_type": "vertical",
+        "source_indices": [
+          364,
+          365,
+          366,
+          367,
+          368,
+          369,
+          370,
+          371,
+          372,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          380,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387
+        ]
+      }
+    ],
+    "candidate_word_count": 363,
+    "source_word_count": 363,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 91.4,
+        "bottom": 125.4,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 160.3,
+        "bottom": 576.3,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "legacy_status": "not_applicable",
+    "legacy_columns": 0,
+    "image": "assets/BBY-BEST BUY CO INC-2024/page_0005.png"
+  },
+  {
+    "ticker": "W",
+    "pdf_file": "W-WAYFAIR INC-2024.pdf",
+    "pdf_stem": "W-WAYFAIR INC-2024",
+    "page": 6,
+    "role": "pilot",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "About Wayfair Our Communities Our People Our Planet\n\nCorporate Responsibility Governance Structure\nNominating & Corporate Enterprise Risk Management Team\nGovernance Committee\nThe Enterprise Risk Management team identifies potential\nThe Nominating and Corporate business disruptions, analyzing data from all business units to\nGovernance Committee of our Board of provide insights for management and the Audit Committee.\nDirectors periodically reviews Wayfair\u2019s Their work also informs the Risk Factors in our 10-K and\nCorporate Responsibility strategy, initiatives, other Securities and Exchange Commission (SEC) filings,\nand policies. complementing company-wide risk management efforts.\nAudit Committee Sustainability and Purpose & Inclusion Teams\nThe Audit Committee of our Board of Directors These teams lead sustainability and inclusivity at Wayfair,\noversees enterprise risk management, including developing strategies, tools, and best practices, while\nCorporate Responsibility-related risks. supporting risk management.\nLeadership Engagement\nWayfair\u2019s cross-functional leaders drive Corporate Responsibility\nby embedding sustainability, purpose, and inclusion into our\nbusiness. They set goals, guide execution, and track progress to\nturn commitments into meaningful action across our operations,\nproducts, and communities.\n\nCybersecurity &\nCustomer Privacy\nStrong cybersecurity and data privacy are\nfundamental to our e-commerce operations.\nOur cross-functional privacy and security teams\nensure a safe, seamless shopping experience,\nguided by our Privacy Policy and other internal\nsecurity policies.\nWe adhere to industry best practices and global\ndata protection and privacy laws while continuously\ninvesting in privacy tools that enhance visibility,\nefficiency, and data management across\nour systems.\nAdditional corporate governance\ndetails, including charters and\npolicies, can be found on our d\nInvestor Relations webpage.\n\n2024 Wayfair Corporate Responsibility Report 111111",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "Corporate Responsibility Governance Structure\nNominating & Corporate Enterprise Risk Management Team\nGovernance Committee\nThe Enterprise Risk Management team identifies potential\nThe Nominating and Corporate business disruptions, analyzing data from all business units to\nGovernance Committee of our Board of provide insights for management and the Audit Committee.\nDirectors periodically reviews Wayfair\u2019s Their work also informs the Risk Factors in our 10-K and\nCorporate Responsibility strategy, initiatives, other Securities and Exchange Commission (SEC) filings,\nand policies. complementing company-wide risk management efforts.\nAudit Committee Sustainability and Purpose & Inclusion Teams\nThe Audit Committee of our Board of Directors These teams lead sustainability and inclusivity at Wayfair,\noversees enterprise risk management, including developing strategies, tools, and best practices, while\nCorporate Responsibility-related risks. supporting risk management.\n\nCybersecurity &\nCustomer Privacy\nStrong cybersecurity and data privacy are\nfundamental to our e-commerce operations.\nOur cross-functional privacy and security teams\nensure a safe, seamless shopping experience,\nguided by our Privacy Policy and other internal\nsecurity policies.\nWe adhere to industry best practices and global\ndata protection and privacy laws while continuously\ninvesting in privacy tools that enhance visibility,\nefficiency, and data management across\nour systems.\n\nLeadership Engagement\nWayfair\u2019s cross-functional leaders drive Corporate Responsibility Additional corporate governance\nby embedding sustainability, purpose, and inclusion into our\ndetails, including charters and\nbusiness. They set goals, guide execution, and track progress to\nturn commitments into meaningful action across our operations, policies, can be found on our d\nproducts, and communities.\nInvestor Relations webpage.\n\n2024 Wayfair Corporate Responsibility Report 111111",
+    "navigation_items": [
+      {
+        "text": "About Wayfair",
+        "x0": 667.557,
+        "top": 12.205000000000041,
+        "x1": 735.143,
+        "bottom": 22.20500000000004,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          248,
+          249
+        ],
+        "repeated_page_count": 20
+      },
+      {
+        "text": "Our Communities",
+        "x0": 768.7867,
+        "top": 12.205000000000041,
+        "x1": 850.5937,
+        "bottom": 22.20500000000004,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          250,
+          251
+        ],
+        "repeated_page_count": 20
+      },
+      {
+        "text": "Our People",
+        "x0": 886.4489,
+        "top": 12.120499999999993,
+        "x1": 939.0239,
+        "bottom": 22.120499999999993,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          252,
+          253
+        ],
+        "repeated_page_count": 20
+      },
+      {
+        "text": "Our Planet",
+        "x0": 975.1486,
+        "top": 12.205000000000041,
+        "x1": 1025.7495999999999,
+        "bottom": 22.20500000000004,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          254,
+          255
+        ],
+        "repeated_page_count": 20
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 248,
+    "source_word_count": 248,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 94.2,
+        "bottom": 437.1,
+        "region_type": "multi_column_prose",
+        "column_count": 2,
+        "reason": "p25_fill=0.591"
+      },
+      {
+        "top": 512.2,
+        "bottom": 625.0,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 2,
+    "image": "assets/W-WAYFAIR INC-2024/page_0006.png"
+  },
+  {
+    "ticker": "PTRN",
+    "pdf_file": "PTRN-PATTERN GROUP INC-2023.pdf",
+    "pdf_stem": "PTRN-PATTERN GROUP INC-2023",
+    "page": 128,
+    "role": "pilot",
+    "current_decision": "auto_pass",
+    "current_reading_order_status": "not_applicable",
+    "current_text": "CAD\nCAD stands for \"Computer-Aided Design\", which refers to the use of computer software and tools to create, modify, analyze, and optimize\ntechnical drawings and three-dimensional models.\nNFS (NON-FINANCIAL STATEMENT)\nThe NFS (Non-Financial Statement) is a document that provides information on a company or organization's performance concerning sustain-\nability and social responsibility matters. The NFS focuses on non-financial aspects such as environmental, social,\nimpacts.\n, and corporate governance\nSTAKEHOLDERS\nStakeholders are individuals or groups who have an interest or involvement in an organization, project, or\nity and who can influence or\nbe influenced by it. Stakeholders can be internal or external to the organization and include different categories of people, organizations and\nentities.\nCOMMUNICATION ON PROGRESS\nThe \"Communication on Progress\" (COP) is a voluntary document that is submitted by an organization as part\nNations Global Compact (UNGQ).\nits commitment to the United\nThe COP is a public and transparent communication of the\nCompact. Through the COP, a company commits to share information on its strategy, policies, initiatives and me\nand promote the principles of the Global Compact.\nR&D stands for \"Research and Development\" and is a vital function in organizations focused on innovation and t\nservices, or processes. R&D includes activities aimed at acquiring and applying scientific, technological and business knowledge to develop\nnew solutions and improve existing ones.\nIndustrialization is the process of transforming an economic activity or production from a craft or agricultural level to an industrial level.\nINDUSTRIALIZATION\nItregards the adoption of advanced methods and technologies to increase the efficiency, productivity and stan\nprocesses.\nThe term \"biobased\" refers to materials, products or processes that are derived from biological or biomass sources, such as plants, algae,\nBIOBASED\nagricultural or forest residues, and other biodegradable materials. The use of biobased materials is one way to\nable fossil resources and to promote a more sustainable, low-carbon economy.\nBlockchain is an innovative technology that allows digital transactions and information to be securely and transparently recorded, shared and\nBLOCKCHAIN\nverified. It is a distributed and decentralized registry that serves as a public ledger, accessible to all participants\nNotarization is a legal process that lends authenticity and validity to a document or transaction.\nNOTARIZATION\nKPls are key performance measures that are used to assess the progress and success of an organization, project, or activity toward set goals.\nKPIS\nKPls are specific, quantifiable metrics offering an objective representation of performance and results.\ntion's goals and priorities and may vary by industry and context.\nDisclosure is a term that refers to the disclosure of relevant and significant information about a company, organi\nDISCLOSURE\nto ensure transparency and share data and information beneficial for informed decision-making by both internal and external stakeholders.\nGWP (Global Warming Potential) is a measure used to assess the contribution of a greenhouse gas to global warming over a given period of\nGWP (GLOBAL WARMING POTENTIAL)\ntime, usually 100 years. GWP is a comparative indicator that measures the effect of a greenhouse gas against that of carbon dioxide (C02),\nwhich is used as a reference with a GWP of 1.\nF-GAS F-gas is a term that refers to fluorinated greenhouse gases, also known as fluorinated gases or fluorocarbon gases. These gases are used\nin various industrial, commercial and domestic applications as refrigerants, blowing agents in the production of insulating foams, aerosol\npropellants, heat transfer fluids and in other chemical processes.\nMARKET-BASED In the area of environmental and carbon policies, it points to approaches based on market mechanisms.\nDATA-BASED Itindicates approaches, decisions, or analyses that are based on the use and interpretation of accurate and reliable data. The \"data-based\"\napproach involves using information and empirical evidence to make informed, data-driven decisions.\nSPEND-BASED Data obtained on estimated amounts spent\nThese are compounds that, owing to their inherent properties, may pose a significant risk to human health, the environment or safety.\nHAZARDOUS CHEMICALS\n\"Due diligence\" is a process of carefully evaluating, researching, and analyzing relevant information, data, and documents regarding an\nDUE DILIGENCE\nactions and progress in meeting the principles of the Global\ntaken to implement\ne creation of new products,\nof production\nthe use of non-renew-\nin the network.\nare chosen based on the organiza-\nization, or individual. Its aim is\nindividual, company, or operation.",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "CAD\nCAD stands for \"Computer-Aided Design\", which refers to the use of computer software and tools to create, modify, analyze, and optimize\n\ntechnical drawings and three-dimensional models.\nNFS (NON-FINANCIAL STATEMENT)\nThe NFS (Non-Financial Statement) is a document that provides information on a company or organization's performance concerning sustain-\nability and social responsibility matters. The NFS focuses on non-financial aspects such as environmental, social,\nimpacts.\n, and corporate governance\nSTAKEHOLDERS\nStakeholders are individuals or groups who have an interest or involvement in an organization, project, or\nity and who can influence or\nbe influenced by it. Stakeholders can be internal or external to the organization and include different categories of people, organizations and\nentities.\nCOMMUNICATION ON PROGRESS\nThe \"Communication on Progress\" (COP) is a voluntary document that is submitted by an organization as part\nNations Global Compact (UNGQ).\nits commitment to the United\nThe COP is a public and transparent communication of the\nCompact. Through the COP, a company commits to share information on its strategy, policies, initiatives and me\nand promote the principles of the Global Compact.\nR&D stands for \"Research and Development\" and is a vital function in organizations focused on innovation and t\nservices, or processes. R&D includes activities aimed at acquiring and applying scientific, technological and business knowledge to develop\nnew solutions and improve existing ones.\nIndustrialization is the process of transforming an economic activity or production from a craft or agricultural level to an industrial level.\nINDUSTRIALIZATION\nItregards the adoption of advanced methods and technologies to increase the efficiency, productivity and stan\nprocesses.\nThe term \"biobased\" refers to materials, products or processes that are derived from biological or biomass sources, such as plants, algae,\nBIOBASED\nagricultural or forest residues, and other biodegradable materials. The use of biobased materials is one way to\nable fossil resources and to promote a more sustainable, low-carbon economy.\nBlockchain is an innovative technology that allows digital transactions and information to be securely and transparently recorded, shared and\nBLOCKCHAIN\nverified. It is a distributed and decentralized registry that serves as a public ledger, accessible to all participants\nNotarization is a legal process that lends authenticity and validity to a document or transaction.\nNOTARIZATION\nKPls are key performance measures that are used to assess the progress and success of an organization, project, or activity toward set goals.\nKPIS\nKPls are specific, quantifiable metrics offering an objective representation of performance and results.\ntion's goals and priorities and may vary by industry and context.\nDisclosure is a term that refers to the disclosure of relevant and significant information about a company, organi\nDISCLOSURE\nto ensure transparency and share data and information beneficial for informed decision-making by both internal and external stakeholders.\nGWP (Global Warming Potential) is a measure used to assess the contribution of a greenhouse gas to global warming over a given period of\nGWP (GLOBAL WARMING POTENTIAL)\ntime, usually 100 years. GWP is a comparative indicator that measures the effect of a greenhouse gas against that of carbon dioxide (C02),\nwhich is used as a reference with a GWP of 1.\nF-GAS F-gas is a term that refers to fluorinated greenhouse gases, also known as fluorinated gases or fluorocarbon gases. These gases are used\nin various industrial, commercial and domestic applications as refrigerants, blowing agents in the production of insulating foams, aerosol\npropellants, heat transfer fluids and in other chemical processes.\nMARKET-BASED In the area of environmental and carbon policies, it points to approaches based on market mechanisms.\nDATA-BASED Itindicates approaches, decisions, or analyses that are based on the use and interpretation of accurate and reliable data. The \"data-based\"\napproach involves using information and empirical evidence to make informed, data-driven decisions.\nSPEND-BASED Data obtained on estimated amounts spent\nThese are compounds that, owing to their inherent properties, may pose a significant risk to human health, the environment or safety.\nHAZARDOUS CHEMICALS\n\"Due diligence\" is a process of carefully evaluating, researching, and analyzing relevant information, data, and documents regarding an\nDUE DILIGENCE\nactions and progress in meeting the principles of the Global\ntaken to implement\ne creation of new products,\nof production\nthe use of non-renew-\nin the network.\nare chosen based on the organiza-\nization, or individual. Its aim is\nindividual, company, or operation.",
+    "navigation_items": [],
+    "rotated_content_items": [],
+    "candidate_word_count": 701,
+    "source_word_count": 701,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 44.5,
+        "bottom": 656.7,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "legacy_status": "not_applicable",
+    "legacy_columns": 0,
+    "image": "assets/PTRN-PATTERN GROUP INC-2023/page_0128.png"
+  },
+  {
+    "ticker": "KTB",
+    "pdf_file": "KTB-KONTOOR BRANDS INC-2024.pdf",
+    "pdf_stem": "KTB-KONTOOR BRANDS INC-2024",
+    "page": 20,
+    "role": "pilot",
+    "current_decision": "auto_pass_region_order_reconstructed",
+    "current_reading_order_status": "ambiguous",
+    "current_text": "Introduction\n\nApproach\n\nClimate\n\nMaterials\n\nChemicals\n\nWater\n\nOwn workforce\n\nWorkers in the value chain\n\nGovernance\n\nKontoor Brands, Inc.\nSustainability Report 2024\n\n19\n\nENGAGING WITH SUPPLIERS CONTINUED\n\nImproving supplier performance\n\nEach year, we work to increase engagement\nwith suppliers to enhance collective\nunderstanding and collaboration. We engage\nwith suppliers on:\nTransparency: Suppliers are encouraged to\nsubmit a Higg Facility Environmental Module\n(FEM) 8 survey to provide an assessment and\ndisclosure of potential negative environmental\nimpacts in the supply chain.\nMinimizing environmental impact: Suppliers\nmust have policies and procedures in place to\nminimize environmental impacts with respect to\nenergy, air emissions, water, waste, hazardous\nmaterials and other environmental risks.\nCommitment to improvement: Suppliers\nare expected to make improvements in\nenvironmental performance and to require the\nsame from their suppliers and sub-contractors.\nImprovements can include improving/\nredeveloping recipes, replacing chemicals that\ndo not comply with ZDHC MRSL and replacing\nraw materials to improve water, energy and\nland use.\n\n8 Higg FEM is a sustainability assessment tool\nused to measure environmental impact and\nevaluate performance.\n\nIn 2024, we increased the frequency of audits by\neliminating the audit duration extension for three\nconsecutive \u201cGreen\u201d rated factories and started\nauditing Tier 3 yarn suppliers. Additionally, we\nexpanded the scope of factory audits to include\nmigrant worker recruitment practices and\ngas leakage detection requirements. We also\nupgraded the severity level for issues related\nto labor practices and the use of potassium\npermanganate in the production process.\n\nBuilding a transparent\nsupply chain\n\nWorking to eradicate\nforced labor in cotton\n\nBuilding a transparent supply chain is crucial\nfor risk management. Increased traceability\nand transparency means being able to trace\nmaterials back to their source to identify risks\nand opportunities across the value chain, build\nclear policies and standards, ensure responsible\npurchasing decisions and engage designers and\nsuppliers to deliver our goals.\nWe are investing in new tools and evolving our\npolicies and processes to build comprehensive\ntraceability into every step of the supply chain.\nThis will allow us to uncover challenges and\nopportunities and provide more transparent\ninformation to consumers. This includes piloting\na new materials traceability software system\nto allow verifiable monitoring and tracking of\nmaterials to improve the traceability of our\nproducts. In late 2024, we began collecting\nchain of custody records and materials\ncompliance certificates from our Tier 1 suppliers\ninvolved in the pilot program. We plan to deploy\nthe platform to in-scope Tier 1 suppliers in\nearly 2025.\nOur aim is to achieve full transparency from\nthe farm (for cotton) or the manufacturer (for\nsynthetics) all the way to the final product.\nWhile we pilot and transition to the new\nplatform, we continue to rely on manual\nmonitoring and estimates for some of our data.\n\nEnsuring there is no forced labor in the supply\nchain underscores the importance of knowing\nwhere cotton is grown and manufactured.\nThe complex global cotton supply chain involves\nmany stakeholders. This means it can be\nchallenging to track the origin and flow of cotton\nthrough each stage of the apparel value chain.\nKontoor's Cotton Fiber Sourcing Policy\n(\n\nsee page 54) requires suppliers to take\nconcrete steps to ensure there is no forced\nlabor used in the harvesting or production of\ncotton used to make products for our brands.\nSuppliers engaged by Kontoor are prohibited\nfrom using forced labor and any violation\nis subject to penalties up to and including\ntermination of the commercial relationship\n(\nrights outside of raw materials).\n\nsee page 34 for how we address human",
+    "candidate_status": "needs_review",
+    "candidate_reason": "one_or_more_regions_uncertain",
+    "candidate_text": "19\n\nENGAGING WITH SUPPLIERS CONTINUED\n\nImproving supplier performance Building a transparent Working to eradicate\nsupply chain forced labor in cotton\nEach year, we work to increase engagement\nwith suppliers to enhance collective Building a transparent supply chain is crucial Ensuring there is no forced labor in the supply\nunderstanding and collaboration. We engage for risk management. Increased traceability chain underscores the importance of knowing\nwith suppliers on: and transparency means being able to trace where cotton is grown and manufactured.\nmaterials back to their source to identify risks The complex global cotton supply chain involves\nTransparency: Suppliers are encouraged to\nand opportunities across the value chain, build many stakeholders. This means it can be\nsubmit a Higg Facility Environmental Module\nclear policies and standards, ensure responsible challenging to track the origin and flow of cotton\n(FEM) 8 survey to provide an assessment and\npurchasing decisions and engage designers and through each stage of the apparel value chain.\ndisclosure of potential negative environmental\nsuppliers to deliver our goals.\nimpacts in the supply chain. Kontoor's Cotton Fiber Sourcing Policy\nWe are investing in new tools and evolving our ( see page 54) requires suppliers to take\nMinimizing environmental impact: Suppliers\npolicies and processes to build comprehensive concrete steps to ensure there is no forced\nmust have policies and procedures in place to\ntraceability into every step of the supply chain. labor used in the harvesting or production of\nminimize environmental impacts with respect to\nThis will allow us to uncover challenges and cotton used to make products for our brands.\nenergy, air emissions, water, waste, hazardous\nopportunities and provide more transparent Suppliers engaged by Kontoor are prohibited\nmaterials and other environmental risks.\ninformation to consumers. This includes piloting from using forced labor and any violation\nCommitment to improvement: Suppliers a new materials traceability software system is subject to penalties up to and including\nare expected to make improvements in to allow verifiable monitoring and tracking of termination of the commercial relationship\nenvironmental performance and to require the In 2024, we increased the frequency of audits by\nmaterials to improve the traceability of our ( see page 34 for how we address human\nsame from their suppliers and sub-contractors. eliminating the audit duration extension for three\nproducts. In late 2024, we began collecting rights outside of raw materials).\nImprovements can include improving/ consecutive \u201cGreen\u201d rated factories and started\nchain of custody records and materials\nredeveloping recipes, replacing chemicals that auditing Tier 3 yarn suppliers. Additionally, we\ncompliance certificates from our Tier 1 suppliers\ndo not comply with ZDHC MRSL and replacing expanded the scope of factory audits to include\ninvolved in the pilot program. We plan to deploy\nraw materials to improve water, energy and migrant worker recruitment practices and\nthe platform to in-scope Tier 1 suppliers in\nland use. gas leakage detection requirements. We also\nearly 2025.\nupgraded the severity level for issues related\nto labor practices and the use of potassium Our aim is to achieve full transparency from\npermanganate in the production process. the farm (for cotton) or the manufacturer (for\nsynthetics) all the way to the final product.\nWhile we pilot and transition to the new\nplatform, we continue to rely on manual\n8 Higg FEM is a sustainability assessment tool\nmonitoring and estimates for some of our data.\nused to measure environmental impact and\nevaluate performance.",
+    "navigation_items": [
+      {
+        "text": "IntroductionApproachClimate",
+        "x0": 71.3172,
+        "top": 18.11749999999995,
+        "x1": 250.1814,
+        "bottom": 27.11749999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          560,
+          561,
+          562
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "ChemicalsWaterOwn workforceWorkers in the value chainGovernance",
+        "x0": 341.9742,
+        "top": 18.11749999999995,
+        "x1": 749.154,
+        "bottom": 27.11749999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          564,
+          565,
+          566,
+          567,
+          568,
+          569,
+          570,
+          571,
+          572,
+          573
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "Materials",
+        "x0": 275.0591999999999,
+        "top": 18.09949999999992,
+        "x1": 317.0909999999999,
+        "bottom": 27.09949999999992,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          563
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "Kontoor Brands, Inc.",
+        "x0": 814.0511999999999,
+        "top": 12.348499999999945,
+        "x1": 908.0165999999999,
+        "bottom": 21.348499999999945,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          557,
+          558,
+          559
+        ],
+        "repeated_page_count": 59
+      },
+      {
+        "text": "Sustainability Report 2024",
+        "x0": 795.5021999999999,
+        "top": 23.364499999999907,
+        "x1": 908.0228999999998,
+        "bottom": 32.364499999999964,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          574,
+          575,
+          576
+        ],
+        "repeated_page_count": 59
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 558,
+    "source_word_count": 558,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 56.4,
+        "bottom": 68.5,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 113.2,
+        "bottom": 513.5,
+        "region_type": "uncertain",
+        "column_count": 0,
+        "reason": "column_vertical_coverage=0.270"
+      }
+    ],
+    "legacy_status": "ambiguous",
+    "legacy_columns": 0,
+    "image": "assets/KTB-KONTOOR BRANDS INC-2024/page_0020.png"
+  },
+  {
+    "ticker": "KTB",
+    "pdf_file": "KTB-KONTOOR BRANDS INC-2024.pdf",
+    "pdf_stem": "KTB-KONTOOR BRANDS INC-2024",
+    "page": 21,
+    "role": "pilot",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "Kontoor Brands, Inc.\nIntroduction Approach Climate Materials Chemicals Water Own workforce Workers in the value chain Governance 20\nSustainability Report 2024\n\nENGAGING WITH SUPPLIERS CONTINUED\nEnsuring high standards\nof animal welfare\nIn 2024, around 0.01% of our raw materials\nwere animal derived. The animal derived\nmaterials (ADM) we use in our products include\nleather, wool and down. Leather products\ncan raise concerns regarding animal welfare\nand the unethical treatment of animals, water\nconsumption, and use of chemicals in the\ntanning process. We ask suppliers to adopt\nthird-party certifications where feasible and\napplicable. For example, we are working towards\nusing only leather certified by the Leather\nWorking Group (LWG) for our leather trims.\nWe also utilize resources from industry groups,\nsuch as Textile Exchange, to educate our\nsupply chain.\nWe are working to build robust audit and\nverification processes to underpin our ADM\nPolicy ( see page 54). Suppliers must self-\ndeclare compliance with our policy standards\nand any non-compliance must be addressed\nthrough a CAP.\n\nSustainable Forest Derived\nMaterials (FDM)\nWe use forest-derived materials for the\npackaging and ticketing on our products and\nman-made cellulosic (MMC) materials \u2013 such as\nlyocell, modal and viscose \u2013 in our clothing.\nWe address our FDM impacts by prioritizing\nthe use of certified sustainable sources (with a\npreference for materials certified by the Forest\nStewardship Council) to minimize impacts\non forests and forest habitats. This promotes\nresponsible forest management practices,\nreduces virgin material use and increases\nthe use of materials with recycled content by\nsuppliers, including post-consumer recycled\nmaterial and alternative fiber sources like\nagricultural residues.\nMMC fibers represent about 1% of total fibers\nused in our fabrics. Our FDM Policy ( see\npage 54) prohibits the use of MMC fibers\nfrom ancient or endangered forests. We use\nCanopy\u2019s Hot Button Report 9 to analyze our\nsupply chain for MMC.\n9 The Canopy Hot Button Report is a fiber sourcing\nanalysis tool.\n\nPromoting regenerative agriculture\nWe endorse regenerative and climate resilient\nagricultural techniques to reduce the carbon,\nenvironmental and biodiversity impacts of\ncotton production. We recognize that farmers\ncannot be expected to make the transition to\nregenerative and climate-smart agricultural\npractices alone. Brands and retailers must\nsupport them in learning about the benefits of\nregenerative agriculture practices and must also\nshare the financial risks of adopting less carbon-\nintensive techniques.\nWe work with partnerships across the supply\nchain to educate farmers and mill partners about\nthe benefits and techniques of regenerative\nagriculture. Since 2019, Kontoor has maintained\nactive membership and participation in Field\nto Market, supporting its work around climate-\nsmart agriculture and innovative financing for\nfarmers. Additionally, in 2024, we increased our\nuse of regenerative cotton grown in India from\n220 MT in 2023 to 1,758 MT in 2024.",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "20\n\nENGAGING WITH SUPPLIERS CONTINUED\n\nEnsuring high standards\nof animal welfare\nIn 2024, around 0.01% of our raw materials\nwere animal derived. The animal derived\nmaterials (ADM) we use in our products include\nleather, wool and down. Leather products\ncan raise concerns regarding animal welfare\nand the unethical treatment of animals, water\nconsumption, and use of chemicals in the\ntanning process. We ask suppliers to adopt\nthird-party certifications where feasible and\napplicable. For example, we are working towards\nusing only leather certified by the Leather\nWorking Group (LWG) for our leather trims.\nWe also utilize resources from industry groups,\nsuch as Textile Exchange, to educate our\nsupply chain.\nWe are working to build robust audit and\nverification processes to underpin our ADM\nPolicy ( see page 54). Suppliers must self-\ndeclare compliance with our policy standards\nand any non-compliance must be addressed\nthrough a CAP.\n\nSustainable Forest Derived\nMaterials (FDM)\nWe use forest-derived materials for the\npackaging and ticketing on our products and\nman-made cellulosic (MMC) materials \u2013 such as\nlyocell, modal and viscose \u2013 in our clothing.\nWe address our FDM impacts by prioritizing\nthe use of certified sustainable sources (with a\npreference for materials certified by the Forest\nStewardship Council) to minimize impacts\non forests and forest habitats. This promotes\nresponsible forest management practices,\nreduces virgin material use and increases\nthe use of materials with recycled content by\nsuppliers, including post-consumer recycled\nmaterial and alternative fiber sources like\nagricultural residues.\nMMC fibers represent about 1% of total fibers\nused in our fabrics. Our FDM Policy ( see\npage 54) prohibits the use of MMC fibers\nfrom ancient or endangered forests. We use\nCanopy\u2019s Hot Button Report 9 to analyze our\nsupply chain for MMC.\n9 The Canopy Hot Button Report is a fiber sourcing\nanalysis tool.\n\nPromoting regenerative agriculture\nWe endorse regenerative and climate resilient\nagricultural techniques to reduce the carbon,\nenvironmental and biodiversity impacts of\ncotton production. We recognize that farmers\ncannot be expected to make the transition to\nregenerative and climate-smart agricultural\npractices alone. Brands and retailers must\nsupport them in learning about the benefits of\nregenerative agriculture practices and must also\nshare the financial risks of adopting less carbon-\nintensive techniques.\nWe work with partnerships across the supply\nchain to educate farmers and mill partners about\nthe benefits and techniques of regenerative\nagriculture. Since 2019, Kontoor has maintained\nactive membership and participation in Field\nto Market, supporting its work around climate-\nsmart agriculture and innovative financing for\nfarmers. Additionally, in 2024, we increased our\nuse of regenerative cotton grown in India from\n220 MT in 2023 to 1,758 MT in 2024.",
+    "navigation_items": [
+      {
+        "text": "IntroductionApproachClimate",
+        "x0": 71.3172,
+        "top": 18.11749999999995,
+        "x1": 250.1814,
+        "bottom": 27.11749999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          438,
+          439,
+          440
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "ChemicalsWaterOwn workforceWorkers in the value chainGovernance",
+        "x0": 341.9742,
+        "top": 18.11749999999995,
+        "x1": 749.154,
+        "bottom": 27.11749999999995,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          442,
+          443,
+          444,
+          445,
+          446,
+          447,
+          448,
+          449,
+          450,
+          451
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "Materials",
+        "x0": 275.0591999999999,
+        "top": 18.09949999999992,
+        "x1": 317.0909999999999,
+        "bottom": 27.09949999999992,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          441
+        ],
+        "repeated_page_count": 8
+      },
+      {
+        "text": "Kontoor Brands, Inc.",
+        "x0": 814.0511999999999,
+        "top": 12.348499999999945,
+        "x1": 908.0165999999999,
+        "bottom": 21.348499999999945,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          435,
+          436,
+          437
+        ],
+        "repeated_page_count": 59
+      },
+      {
+        "text": "Sustainability Report 2024",
+        "x0": 795.5021999999999,
+        "top": 23.364499999999907,
+        "x1": 908.0228999999998,
+        "bottom": 32.364499999999964,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          452,
+          453,
+          454
+        ],
+        "repeated_page_count": 59
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 436,
+    "source_word_count": 436,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 56.4,
+        "bottom": 68.5,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 113.2,
+        "bottom": 513.5,
+        "region_type": "multi_column_prose",
+        "column_count": 3,
+        "reason": "p25_fill=0.850"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 3,
+    "image": "assets/KTB-KONTOOR BRANDS INC-2024/page_0021.png"
+  },
+  {
+    "ticker": "UPBD",
+    "pdf_file": "UPD-UPBOUND GROUP INC-2023.pdf",
+    "pdf_stem": "UPD-UPBOUND GROUP INC-2023",
+    "page": 46,
+    "role": "pilot",
+    "current_decision": "auto_pass_verified_table_extraction",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "Upbound 2023 Sustainability Disclosure Table\n\n| Topic | Accounting Metric | Unit of Measurement | Code | 2022 Response | 2023 Response |\n| --- | --- | --- | --- | --- | --- |\n| Social |  |  |  |  |  |\n| Labor Practices |  |  |  |  |  |\n| Employee Engagement | Employee engagement as a percentage | Percentage (%) | SASB CG-EC- 330a.1; SASB TC-SI- 330a.2 | Please reference our 2022 Report for information on employee engagement in 2022. | Please see page 24 of this report for information on employee engagement in 2023. |\n|  | (1) Total turnover | Rate | SASB CG-EC- 330a.2; SASB CG-MR- 310a.2 | (1) 90% | (1) 71% |\n|  | (2) Voluntary turnover rate for all employees |  |  | (2) 62.2% | (2) 51% |\n|  | (3) Involuntary turnover rate for all employees |  |  | (3) 27% | (3) 20% |\n| Labor Practices | (1) Average hourly wage | Reporting Currency; Percentage (%) | SASB CG-MR- 310a.1 | (1) The average hourly rate for 2022 as of 12/31 was $17.16. | (1) The average hourly rate for 2023 as of 12/31 was $18.11. |\n|  | (2) Percentage of in-store employees earning minimum wage, by region |  |  | (2) 0% of our coworkers are paid at minimum wage. All of our hourly-paid coworkers located in a Rent- A-Center retail location earn more than the minimum wage. | (2) 0% of our coworkers are paid at minimum wage. All of our hourly-paid coworkers located in a Rent- A-Center retail location earn more than the minimum wage. |\n|  |  |  |  | The data above is specific to US and Puerto Rico based Corporate Rent-A-Center, Get It Now, and Home Choice retail store employees. |  |\n|  | Percentage of technical employees who are H-1B visa holders | Percentage (%) | SASB CG-EC- 330a.4; GRI 405-1 | 11% | Approximately 6% of Upbound\u2019s 186 technical employees are foreign nationals. |\n|  | Percentage of employees that are (1) foreign nationals and (2) located offshore | Percentage (%) | SASB TC-SI- 330a.1 | Approximately 15.7% of employees hired in 2022 were foreign nationals. | Approximately 3% of Upbound's 980 corporate coworkers are foreign nationals. Unlike prior years, this number reflects the total number of foreign nationals among current corporate employees as of December 31, 2023, not just new hires during the year. |\n|  | Total amount of monetary losses as a result of legal proceedings associated with labor law violations | Reporting Currency | SASB CG-MR- 310a.3 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and Quarterly Reports on Form 10-Q in accordance with regulatory requirements. |  |\n| Employee Development |  |  |  |  |  |\n| Training & Education | Type and scope of programs implemented, and assistance provided to upgrade employee skills and transition assistance programs in place | Description | GRI 404-2 | Please reference our 2022 Report for information on employee training and education programs during 2022. | Please see page 25, 26 and 40 of this report for information on employee training and education programs in place during 2023. |\n\n46",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "verified_table_extraction_reused",
+    "candidate_text": "Upbound 2023 Sustainability Disclosure Table\n\n| Topic | Accounting Metric | Unit of Measurement | Code | 2022 Response | 2023 Response |\n| --- | --- | --- | --- | --- | --- |\n| Social |  |  |  |  |  |\n| Labor Practices |  |  |  |  |  |\n| Employee Engagement | Employee engagement as a percentage | Percentage (%) | SASB CG-EC- 330a.1; SASB TC-SI- 330a.2 | Please reference our 2022 Report for information on employee engagement in 2022. | Please see page 24 of this report for information on employee engagement in 2023. |\n|  | (1) Total turnover | Rate | SASB CG-EC- 330a.2; SASB CG-MR- 310a.2 | (1) 90% | (1) 71% |\n|  | (2) Voluntary turnover rate for all employees |  |  | (2) 62.2% | (2) 51% |\n|  | (3) Involuntary turnover rate for all employees |  |  | (3) 27% | (3) 20% |\n| Labor Practices | (1) Average hourly wage | Reporting Currency; Percentage (%) | SASB CG-MR- 310a.1 | (1) The average hourly rate for 2022 as of 12/31 was $17.16. | (1) The average hourly rate for 2023 as of 12/31 was $18.11. |\n|  | (2) Percentage of in-store employees earning minimum wage, by region |  |  | (2) 0% of our coworkers are paid at minimum wage. All of our hourly-paid coworkers located in a Rent- A-Center retail location earn more than the minimum wage. | (2) 0% of our coworkers are paid at minimum wage. All of our hourly-paid coworkers located in a Rent- A-Center retail location earn more than the minimum wage. |\n|  |  |  |  | The data above is specific to US and Puerto Rico based Corporate Rent-A-Center, Get It Now, and Home Choice retail store employees. |  |\n|  | Percentage of technical employees who are H-1B visa holders | Percentage (%) | SASB CG-EC- 330a.4; GRI 405-1 | 11% | Approximately 6% of Upbound\u2019s 186 technical employees are foreign nationals. |\n|  | Percentage of employees that are (1) foreign nationals and (2) located offshore | Percentage (%) | SASB TC-SI- 330a.1 | Approximately 15.7% of employees hired in 2022 were foreign nationals. | Approximately 3% of Upbound's 980 corporate coworkers are foreign nationals. Unlike prior years, this number reflects the total number of foreign nationals among current corporate employees as of December 31, 2023, not just new hires during the year. |\n|  | Total amount of monetary losses as a result of legal proceedings associated with labor law violations | Reporting Currency | SASB CG-MR- 310a.3 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and Quarterly Reports on Form 10-Q in accordance with regulatory requirements. |  |\n| Employee Development |  |  |  |  |  |\n| Training & Education | Type and scope of programs implemented, and assistance provided to upgrade employee skills and transition assistance programs in place | Description | GRI 404-2 | Please reference our 2022 Report for information on employee training and education programs during 2022. | Please see page 25, 26 and 40 of this report for information on employee training and education programs in place during 2023. |\n\n46",
+    "navigation_items": [
+      {
+        "text": "Unit of",
+        "x0": 326.04128,
+        "top": 64.63338000000005,
+        "x1": 355.381652,
+        "bottom": 72.67338000000001,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          1,
+          2
+        ],
+        "repeated_page_count": 4
+      },
+      {
+        "text": "Upbound 2023 Sustainability Disclosure Table",
+        "x0": 36.6509,
+        "top": 30.153500000000008,
+        "x1": 307.80739999999986,
+        "bottom": 45.15350000000001,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          420,
+          421,
+          422,
+          423,
+          424
+        ],
+        "repeated_page_count": 10
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 543,
+    "source_word_count": 418,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": false,
+    "regions": [
+      {
+        "top": 0.0,
+        "bottom": 540.0,
+        "region_type": "table_verified",
+        "column_count": 0,
+        "reason": "verified_table_extraction_reused"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 3,
+    "image": "assets/UPD-UPBOUND GROUP INC-2023/page_0046.png"
+  },
+  {
+    "ticker": "UPBD",
+    "pdf_file": "UPD-UPBOUND GROUP INC-2023.pdf",
+    "pdf_stem": "UPD-UPBOUND GROUP INC-2023",
+    "page": 47,
+    "role": "pilot",
+    "current_decision": "auto_pass_verified_table_extraction",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "Upbound 2023 Sustainability Disclosure Table\n\n| Topic | Accounting Metric | Unit of Measurement | Code | 2022 Response | 2023 Response |\n| --- | --- | --- | --- | --- | --- |\n| Diversity, Equity & Inclusion |  |  |  |  |  |\n| Workforce Diversity & Inclusion | Percentage of gender and racial/ethnic group representation for (1) management, (2) technical staff, and (3) all other employees | Percentage (%) | SASB CG-MR- 330a.1; SASB CG-EC- 330a.3; SASB TC-SI- 330a.3; GRI 405-1 | Please reference our 2022 Report for information on our workforce diversity and inclusion during 2022. | Please see page 30 of this report for information on our workforce diversity and inclusion. |\n|  | Total amount of monetary losses as a result of legal proceedings associated with employment discrimination | Number; Reporting Currency | SASB CG-MR- 330a.2 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and QuarterlyReports on Form 10-Q in accordance with regulatory requirements. |  |\n| Discrimination & Harassment Management | Formalized group-wide policy on workplace discrimination and harassment in place | Description | n/a | Upbound has implemented multiple formalized policies to ensure that workplace discrimination and harassment are not tolerated. These policies include the Equal Employment Opportunity Policy; Anti-Discrimination, Harassment, and Retaliation Policy; and Open Door Reporting Policy.Please reference our 2022 Report for more information on this topic relevant to 2022. | Upbound has implemented multiple formalized policies to ensure that workplace discrimination and harassment are not tolerated. These policies include the Equal Employment Opportunity Policy; Anti-Discrimination, Harassment, and Retaliation Policy; and Open Door Reporting Policy. More information can be found on page 42 of this report. |\n|  | Remediation procedure in place for identified cases of discrimination and/or harassment | Description | GRI 406-1 | At Upbound, we maintain an Open Door Reporting Policy, which provides all coworkers with several options for reporting discrimination and/or harassment. Under the Open Door Reporting Policy, there will be a prompt, thorough, fair, and objective investigation by qualified personnel and will endeavor to protect the privacy and confidentiality of all parties involved. If it is determined that discrimination, harassment, or retaliation of any kind has occurred, or if a manager knowingly allows the policy to be violated without reporting it, corrective action, commensurate with the circumstances, will be taken, up to and including termination. The Company will also take appropriate action to deter future discrimination, harassment, or retaliation concerns. |  |\n|  | Total number of incidents of discrimination during the reporting period | Description | GRI 406-1 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and QuarterlyReports on Form 10-Q in accordance with regulatory requirements. |  |\n\n47",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "verified_table_extraction_reused",
+    "candidate_text": "Upbound 2023 Sustainability Disclosure Table\n\n| Topic | Accounting Metric | Unit of Measurement | Code | 2022 Response | 2023 Response |\n| --- | --- | --- | --- | --- | --- |\n| Diversity, Equity & Inclusion |  |  |  |  |  |\n| Workforce Diversity & Inclusion | Percentage of gender and racial/ethnic group representation for (1) management, (2) technical staff, and (3) all other employees | Percentage (%) | SASB CG-MR- 330a.1; SASB CG-EC- 330a.3; SASB TC-SI- 330a.3; GRI 405-1 | Please reference our 2022 Report for information on our workforce diversity and inclusion during 2022. | Please see page 30 of this report for information on our workforce diversity and inclusion. |\n|  | Total amount of monetary losses as a result of legal proceedings associated with employment discrimination | Number; Reporting Currency | SASB CG-MR- 330a.2 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and QuarterlyReports on Form 10-Q in accordance with regulatory requirements. |  |\n| Discrimination & Harassment Management | Formalized group-wide policy on workplace discrimination and harassment in place | Description | n/a | Upbound has implemented multiple formalized policies to ensure that workplace discrimination and harassment are not tolerated. These policies include the Equal Employment Opportunity Policy; Anti-Discrimination, Harassment, and Retaliation Policy; and Open Door Reporting Policy.Please reference our 2022 Report for more information on this topic relevant to 2022. | Upbound has implemented multiple formalized policies to ensure that workplace discrimination and harassment are not tolerated. These policies include the Equal Employment Opportunity Policy; Anti-Discrimination, Harassment, and Retaliation Policy; and Open Door Reporting Policy. More information can be found on page 42 of this report. |\n|  | Remediation procedure in place for identified cases of discrimination and/or harassment | Description | GRI 406-1 | At Upbound, we maintain an Open Door Reporting Policy, which provides all coworkers with several options for reporting discrimination and/or harassment. Under the Open Door Reporting Policy, there will be a prompt, thorough, fair, and objective investigation by qualified personnel and will endeavor to protect the privacy and confidentiality of all parties involved. If it is determined that discrimination, harassment, or retaliation of any kind has occurred, or if a manager knowingly allows the policy to be violated without reporting it, corrective action, commensurate with the circumstances, will be taken, up to and including termination. The Company will also take appropriate action to deter future discrimination, harassment, or retaliation concerns. |  |\n|  | Total number of incidents of discrimination during the reporting period | Description | GRI 406-1 | Any material legal and/or regulatory issues are disclosed in our Annual Reports on Form 10-K and QuarterlyReports on Form 10-Q in accordance with regulatory requirements. |  |\n\n47",
+    "navigation_items": [
+      {
+        "text": "Upbound 2023 Sustainability Disclosure Table",
+        "x0": 36.6509,
+        "top": 30.153500000000008,
+        "x1": 307.80739999999986,
+        "bottom": 45.15350000000001,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "repeated_page_count": 10
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 464,
+    "source_word_count": 397,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": false,
+    "regions": [
+      {
+        "top": 0.0,
+        "bottom": 540.0,
+        "region_type": "table_verified",
+        "column_count": 0,
+        "reason": "verified_table_extraction_reused"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 3,
+    "image": "assets/UPD-UPBOUND GROUP INC-2023/page_0047.png"
+  },
+  {
+    "ticker": "BBWI",
+    "pdf_file": "BBWI-BATH & BODY WORKS INC-2023.pdf",
+    "pdf_stem": "BBWI-BATH & BODY WORKS INC-2023",
+    "page": 22,
+    "role": "pilot",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "Introduction | Welcome To Bath & Body Works | Our ESG Journey | Engaged People | Thoughtful Products | Brighter Places | Governance | Appendix\n\nDiversity, Equity and Inclusion (DEI)\nWE EMBRACE DIVERSITY\nacross our business, including race, ethnicity, gender, age, religion, sexual\norientation, disability and veteran status, and strive to ensure everyone is\nincluded and has equitable access and opportunity.\nFAMILY STATUS SEXUAL ORIENTATION\nLANGUAGES\nGENDER, GENDER IDENTITY\nDiversity WORK LOCATION*\nDISABILITY\nRACE\nIS ALL OF US\nMILITARY SERVICE\nEDUCATION\nAGE, GENERATION, LIFE STAGE ETHNICITY**\n*Field stores, distribution and\nfulfillment centers and home offices\n**Culture or country of origin\nDiversity, Equity and Inclusion (DEI)\nWe intentionally weave inclusion and belonging\n\u2022 A Diversity First Top 50 Company \u2022 America\u2019s Greatest Workplaces for\ninto our business. This is a core value that is a\nby the Diversity Research Institute LGBTQ+ Individuals by Newsweek\ncultural foundation and supports our corporate\nstrategy of customer and global expansion. We \u2022 Diversity in Business Award by \u2022 America\u2019s Greatest Workplaces for\nbelieve that by being a place where people feel Columbus Business First Veterans by Newsweek\nsafe, respected, valued and, above all, \u2022 America\u2019s Greatest Workplaces for \u2022 Forbes List of America\u2019s Best\nthemselves, we can better connect with one Women by Newsweek Large Employers\nanother and grow as a stronger, smarter\n\u2022 Forbes List of America\u2019s Best \u2022 America's Greatest Workplaces\nbusiness. This starts with our own associates\nEmployers for Women by Newsweek\nand extends to the interactions we have with\n\u2022 95 on the HRC Corporate Equality \u2022 Most Trustworthy Companies in\nour vendor partners and customers, through\nIndex America by Newsweek\nour business processes and in the communities\nwhere we live and work.\n\nWe want associates to feel part of something\nbigger than their day-to-day roles. We want\nthem to feel part of a larger community of\ninclusion where they are valued, understood\nand supported by what we like to call our\n\u2018Gingham Family.\u2019 We are building on the\nsuccess of programs and initiatives we know\nenable our associates to be their authentic\nselves at work, like voluntary self-identification\nin our HR system, offering the option for our\nstore associates to wear more personalized\nname tag pins and our Inclusion Resource\nGroups. From moments of heritage celebrations\nto learning opportunities and conversation\ncircles, we see that these initiatives have\nimmediate impact on our associates who share\nhow deeply they value these moments of\ntogetherness. We are thrilled that our efforts\nhave this positive response from associates and\nare honored to further celebrate our success\nthrough the many accolades we receive as\nbeing a great place to work. We are also proud\nto extend our impact beyond our four walls and\nsupport organizations and causes that align to\nour values, including those that work to eliminate\nracism, empower women and advocate for the\nLGBTQ+ community. As we look ahead, I know\nwe will continue to champion the power of\ndiversity \u2014 the common thread that unites us all.\u201d\nKelie Charles\nChief Diversity Officer\n\nBath & Body Works | Environmental, Social and Governance Report 2023 22",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "Diversity, Equity and Inclusion (DEI)\n\nWE EMBRACE DIVERSITY\nacross our business, including race, ethnicity, gender, age, religion, sexual\norientation, disability and veteran status, and strive to ensure everyone is\nincluded and has equitable access and opportunity.\n\nFAMILY STATUS SEXUAL ORIENTATION\nLANGUAGES\nGENDER, GENDER IDENTITY\nDiversity WORK LOCATION*\nDISABILITY\nRACE We want associates to feel part of something\nIS ALL OF US\nbigger than their day-to-day roles. We want\nMILITARY SERVICE them to feel part of a larger community of\nEDUCATION\ninclusion where they are valued, understood\nand supported by what we like to call our\nAGE, GENERATION, LIFE STAGE ETHNICITY**\n\u2018Gingham Family.\u2019 We are building on the\nsuccess of programs and initiatives we know\n*Field stores, distribution and enable our associates to be their authentic\nfulfillment centers and home offices selves at work, like voluntary self-identification\n**Culture or country of origin in our HR system, offering the option for our\nstore associates to wear more personalized\nname tag pins and our Inclusion Resource\nGroups. From moments of heritage celebrations\nDiversity, Equity and Inclusion (DEI) to learning opportunities and conversation\nWe intentionally weave inclusion and belonging circles, we see that these initiatives have\n\u2022 A Diversity First Top 50 Company \u2022 America\u2019s Greatest Workplaces for immediate impact on our associates who share\ninto our business. This is a core value that is a\nby the Diversity Research Institute LGBTQ+ Individuals by Newsweek how deeply they value these moments of\ncultural foundation and supports our corporate\nstrategy of customer and global expansion. We \u2022 Diversity in Business Award by \u2022 America\u2019s Greatest Workplaces for togetherness. We are thrilled that our efforts\nbelieve that by being a place where people feel Columbus Business First Veterans by Newsweek have this positive response from associates and\nsafe, respected, valued and, above all, \u2022 America\u2019s Greatest Workplaces for \u2022 Forbes List of America\u2019s Best are honored to further celebrate our success\nthemselves, we can better connect with one Women by Newsweek Large Employers through the many accolades we receive as\nanother and grow as a stronger, smarter being a great place to work. We are also proud\n\u2022 Forbes List of America\u2019s Best \u2022 America's Greatest Workplaces\nbusiness. This starts with our own associates to extend our impact beyond our four walls and\nEmployers for Women by Newsweek\nand extends to the interactions we have with support organizations and causes that align to\n\u2022 95 on the HRC Corporate Equality \u2022 Most Trustworthy Companies in our values, including those that work to eliminate\nour vendor partners and customers, through\nIndex America by Newsweek racism, empower women and advocate for the\nour business processes and in the communities\nwhere we live and work. LGBTQ+ community. As we look ahead, I know\nwe will continue to champion the power of\ndiversity \u2014 the common thread that unites us all.\u201d\nKelie Charles\nChief Diversity Officer\n\n22",
+    "navigation_items": [
+      {
+        "text": "Bath & Body Works | Environmental, Social and Governance Report 2023",
+        "x0": 34.0157,
+        "top": 589.7391,
+        "x1": 259.11609999999996,
+        "bottom": 596.7391,
+        "rotation": 0.0,
+        "item_type": "footer",
+        "source_indices": [
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511
+        ],
+        "repeated_page_count": 76
+      },
+      {
+        "text": "Introduction | Welcome To Bath & Body Works | Our ESG Journey | Engaged People | Thoughtful Products | Brighter Places | Governance | Appendix",
+        "x0": 34.01329999999996,
+        "top": 20.975099999999998,
+        "x1": 547.9869,
+        "bottom": 27.975099999999998,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          476,
+          477,
+          478,
+          479,
+          480,
+          481,
+          482,
+          483,
+          484,
+          485,
+          486,
+          487,
+          488,
+          489,
+          490,
+          491,
+          492,
+          493,
+          494,
+          495,
+          496,
+          497,
+          498,
+          499,
+          500
+        ],
+        "repeated_page_count": 76
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 477,
+    "source_word_count": 477,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 59.1,
+        "bottom": 77.1,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 126.1,
+        "bottom": 168.6,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "top": 204.4,
+        "bottom": 582.0,
+        "region_type": "row_structured",
+        "column_count": 2,
+        "reason": "p25_fill=0.176"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 2,
+    "image": "assets/BBWI-BATH & BODY WORKS INC-2023/page_0022.png"
+  },
+  {
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "pdf_stem": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023",
+    "page": 2,
+    "role": "control",
+    "current_decision": "auto_pass",
+    "current_reading_order_status": "not_applicable",
+    "current_text": "INTRODUCTION\nThe 2023 Building a Better World ESG update highlights our\ngoals and the progress made through our Planet initiatives.\nAEO\u2019s key areas of focus are prioritized by what matters most to our\nbusiness and our stakeholders, including customers, associates,\nvendors investors and regulators.\nAdditional information can be found at aeo-inc.com.\n02",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "INTRODUCTION\nThe 2023 Building a Better World ESG update highlights our\ngoals and the progress made through our Planet initiatives.\nAEO\u2019s key areas of focus are prioritized by what matters most to our\nbusiness and our stakeholders, including customers, associates,\nvendors investors and regulators.\nAdditional information can be found at aeo-inc.com.\n\n02",
+    "navigation_items": [],
+    "rotated_content_items": [],
+    "candidate_word_count": 52,
+    "source_word_count": 52,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 410.5,
+        "bottom": 565.0,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "legacy_status": "not_applicable",
+    "legacy_columns": 0,
+    "image": "assets/AEO-AMERICAN EAGLE OUTFITTERS INC-2023/page_0002.png"
+  },
+  {
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "pdf_stem": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023",
+    "page": 10,
+    "role": "control",
+    "current_decision": "auto_pass_verified_table_extraction",
+    "current_reading_order_status": "not_applicable",
+    "current_text": "2023 SUSTAINABLE POLYESTER BREAKDOWN\n\n2023 PROGRESS\n2023 GOAL:\n50% sustainable polyester\n2023 ACHIEVED:\n56% of total polyester recycled\n2028 GOAL:\n100% sustainable polyester\n\nPLASTIC BOTTLES:\nAEO used the equivalent of more\nthan 520 million plastic bottles in\nrecycled polyester.\nAmerican Eagle used the\nequivalent of more than\n360 million plastic bottles in\nrecycled polyester\nAerie used the equivalent of nearly\n108 million plastic bottles in\nrecycled polyester\n\n80%\n\n60%\n\n56%\n\n40%\n\nRECYCLED POYLESTER BY BRAND\n82%\n\n56%\n\n74%\n\n44%\n\n51%\n\n42%\n\n20%\n\n0\n\nAEO\n\nTotal AE\n\nAE\nBottoms Non-Bottoms\n\nAE\n\nAerie\n\nOffline Unsubscribed\n\n| Brand | Total Recycled (kg) | Total Recycled (lbs) | Water Bottles |\n| --- | --- | --- | --- |\n| Total AEO | 8,736,073 | 19,259,721 | 520,012,474 |\n| AE Total | 6,051,075 | 13,340,321 | 360,188,666 |\n| AE Bottoms | 2,719,802 | 5,996,130 | 161,895,507 |\n| AE Non-Bottoms | 3,331,274 | 7,344,193 | 198,293,219 |\n| Aerie | 1,809,616 | 3,989,516 | 107,716,922 |\n| OFFLINE | 873,518 | 1,925,775 | 51,995,932 |\n| Unsubscribed | 240 | 529 | 14,286 |\n\n010",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "verified_table_extraction_reused",
+    "candidate_text": "2023 SUSTAINABLE POLYESTER BREAKDOWN\n\n2023 PROGRESS\n2023 GOAL:\n50% sustainable polyester\n2023 ACHIEVED:\n56% of total polyester recycled\n2028 GOAL:\n100% sustainable polyester\n\nPLASTIC BOTTLES:\nAEO used the equivalent of more\nthan 520 million plastic bottles in\nrecycled polyester.\nAmerican Eagle used the\nequivalent of more than\n360 million plastic bottles in\nrecycled polyester\nAerie used the equivalent of nearly\n108 million plastic bottles in\nrecycled polyester\n\n80%\n\n60%\n\n56%\n\n40%\n\nRECYCLED POYLESTER BY BRAND\n82%\n\n56%\n\n74%\n\n44%\n\n51%\n\n42%\n\n20%\n\n0\n\nAEO\n\nTotal AE\n\nAE\nBottoms Non-Bottoms\n\nAE\n\nAerie\n\nOffline Unsubscribed\n\n| Brand | Total Recycled (kg) | Total Recycled (lbs) | Water Bottles |\n| --- | --- | --- | --- |\n| Total AEO | 8,736,073 | 19,259,721 | 520,012,474 |\n| AE Total | 6,051,075 | 13,340,321 | 360,188,666 |\n| AE Bottoms | 2,719,802 | 5,996,130 | 161,895,507 |\n| AE Non-Bottoms | 3,331,274 | 7,344,193 | 198,293,219 |\n| Aerie | 1,809,616 | 3,989,516 | 107,716,922 |\n| OFFLINE | 873,518 | 1,925,775 | 51,995,932 |\n| Unsubscribed | 240 | 529 | 14,286 |\n\n010",
+    "navigation_items": [],
+    "rotated_content_items": [],
+    "candidate_word_count": 184,
+    "source_word_count": 135,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": false,
+    "regions": [
+      {
+        "top": 0.0,
+        "bottom": 612.0,
+        "region_type": "table_verified",
+        "column_count": 0,
+        "reason": "verified_table_extraction_reused"
+      }
+    ],
+    "legacy_status": "not_applicable",
+    "legacy_columns": 0,
+    "image": "assets/AEO-AMERICAN EAGLE OUTFITTERS INC-2023/page_0010.png"
+  },
+  {
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf",
+    "pdf_stem": "AEO-AMERICAN EAGLE OUTFITTERS INC-2024",
+    "page": 2,
+    "role": "control",
+    "current_decision": "auto_pass",
+    "current_reading_order_status": "not_applicable",
+    "current_text": "INTRODUCTION\nThe 2024 Building a Better World ESG update highlights\nour continued commitment to our Planet initiatives, as well\nas the progress made toward meeting our goals.\nAEO\u2019s key areas of focus are prioritized by what matters most\nto our business and our stakeholders, including customers,\nassociates, vendors investors and regulators.\nAdditional information can be found at aeo-inc.com.\n02",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "INTRODUCTION\nThe 2024 Building a Better World ESG update highlights\nour continued commitment to our Planet initiatives, as well\nas the progress made toward meeting our goals.\n\nAEO\u2019s key areas of focus are prioritized by what matters most\nto our business and our stakeholders, including customers,\nassociates, vendors investors and regulators.\n\nAdditional information can be found at aeo-inc.com.\n\n02",
+    "navigation_items": [],
+    "rotated_content_items": [],
+    "candidate_word_count": 59,
+    "source_word_count": 59,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 412.8,
+        "bottom": 487.7,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "top": 510.2,
+        "bottom": 549.2,
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "top": 571.7,
+        "bottom": 581.7,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      }
+    ],
+    "legacy_status": "not_applicable",
+    "legacy_columns": 0,
+    "image": "assets/AEO-AMERICAN EAGLE OUTFITTERS INC-2024/page_0002.png"
+  },
+  {
+    "ticker": "BBY",
+    "pdf_file": "BBY-BEST BUY CO INC-2024.pdf",
+    "pdf_stem": "BBY-BEST BUY CO INC-2024",
+    "page": 46,
+    "role": "control",
+    "current_decision": "auto_pass_column_order_reconstructed",
+    "current_reading_order_status": "reconstructed",
+    "current_text": "About Best Buy Environmental Employees Community Responsible business practices Appendix Best Buy 2025 CR&S Report 46\n\nCybersecurity\nSecuring customer information and\nas highlighted in our Code of Ethics.\nthat trust through our cybersecurity\nCybersecurity\nWe recognize the importance of ensuring\nthe ongoing safety and security of our data,\nsystems and technology. To effectively address\ninformation security risk, we have established a\ndedicated information security team to assess,\nmonitor and maintain our assets, while also\nresponding to cyber-related incidents.\nOur information security program, led\nby our chief information security officer\n(CISO), is designed around the industry-\nstandard National Institute of Standards and\nTechnology\u2019s Cybersecurity Framework. We\nperiodically engage with outside expertise to\nhelp develop this program and are audited\nannually for compliance with Payment Card\nIndustry Data Security Standards as applicable.\nThe CISO updates our Board of Directors\u2019 Audit\nCommittee regularly on our program and\ncybersecurity matters.\nWe have a dedicated cyber threat intelligence\nteam to ensure that we stay abreast of new\nand evolving threats. Our teams continually\nevaluate our cyber risk and perform technical\nassessments against our systems to ensure our\nresilience. Our teams also monitor for newly\nreleased vulnerabilities, working quickly to\nunderstand applicability to our systems and\nperforming mitigation where necessary.\nWe operate a suite of technical information\nsecurity capabilities designed to detect and\nprotect our organization from attempted\n\nand privacy\nhonoring our privacy promises are\nOur customers entrust us with their\nand privacy practices.\nattacks. Our cybersecurity operations and\nresponse teams continually monitor and respond\nto threats to keep our systems secure. We have\na detailed and exercised plan prepared to guide\nour response to major information security\nevents. Best Buy did not experience any material\ncyber incidents in FY25.\nPrivacy\nWe work to ensure that consumers can actively\nengage with us concerning their privacy. For\nexample, the California Consumer Privacy\nAct grants California consumers a set of\npersonal information options, including asking\nfor access to the information a business has\ncollected about them or to delete certain\ninformation. Best Buy has extended the\navailability of these personal information\noptions to all U.S. consumers.\nConsumers can learn more about our privacy\npractices on our dedicated Privacy Hub.\nEmployee training and awareness\nOur dedicated information security and\ncompliance training and awareness team\nis proactively disseminating awareness\nmessages to our employees throughout\nthe year, providing consistent and specific\nreminders reinforcing secure user behavior and\nhighlighting emerging threats.\n\ncore employee obligations at Best\ninformation, and we seek to honor\nAll employees participate in Best Buy\u2019s security\nand privacy awareness program, Valuable\nInformation Protection (VIP). VIP uses a variety\nof approaches to educate employees on\ninformation security and privacy to foster a\nsecurity-minded culture that honors our privacy\npromises. This program encompasses a variety\nof modules, incentivized engagement activities\nand targeted role-specific learnings based on\nresponsibilities and risk level. We update VIP\ncontent frequently to reflect current security\nand privacy challenges.\nOur Phishing and Social Engineering\nProgram is another critical component of\nour VIP efforts. Our strategy for preparing\nemployees to serve as the critical line of\ndefense against cybercriminals includes high-\nfrequency simulation exercises, leadership\naccountability achieved through the regular\nsharing of simulation metrics and engagement\nopportunities such as phishing-simulation\ncompetitions.\nU.S. Cyber Trust Mark\nOur customers are increasingly relying on the\nconvenience of wireless interconnected smart\nproducts, also known as Internet of Things\n(IoT) products. While IoT products offer many\nbenefits, they can be susceptible to a range\nof security vulnerabilities that are exploited by\nbad actors. To help keep our customers and\n\nBuy,\nour nation\u2019s infrastructure safe, we are proud to\nparticipate in the development of the Federal\nCommunications Commission\u2019s (FCC) U.S. Cyber\nTrust Mark Program.\nThe FCC's U.S. Cyber Trust Mark Program was\ninitiated as a public-private partnership in\nresponse to a 2017 Presidential executive order\nthat focused on strengthening the cybersecurity\nof critical infrastructure.\nThe program reflects collaboration between\nthe U.S. federal government and industry\nstakeholders who have been working to enhance\nthe cybersecurity of wireless consumer devices\nconnected to the internet.\nOver the last year, our Privacy team has\nparticipated in the program\u2019s creation and\nfeedback process, also speaking in support\nof the program at CES\u00ae,the most prominent\ntechnology event in the world, hosted by the\nConsumer Technology Association.\nThis Trust Mark is a voluntary cybersecurity\nlabeling program for IoT products. While still\nunder development, we envision our vendor\npartners will use this label on qualifying\nproducts that meet the program\u2019s cybersecurity\nstandards, giving consumers the opportunity\nto prioritize cybersecurity in their consumer\nelectronics purchases.",
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "candidate_text": "Best Buy 2025 CR&S Report 46\n\nCybersecurity and privacy\n\nSecuring customer information and\nas highlighted in our Code of Ethics.\nthat trust through our cybersecurity\nCybersecurity\nWe recognize the importance of ensuring\nthe ongoing safety and security of our data,\nsystems and technology. To effectively address\ninformation security risk, we have established a\ndedicated information security team to assess,\nmonitor and maintain our assets, while also\nresponding to cyber-related incidents.\nOur information security program, led\nby our chief information security officer\n(CISO), is designed around the industry-\nstandard National Institute of Standards and\nTechnology\u2019s Cybersecurity Framework. We\nperiodically engage with outside expertise to\nhelp develop this program and are audited\nannually for compliance with Payment Card\nIndustry Data Security Standards as applicable.\nThe CISO updates our Board of Directors\u2019 Audit\nCommittee regularly on our program and\ncybersecurity matters.\nWe have a dedicated cyber threat intelligence\nteam to ensure that we stay abreast of new\nand evolving threats. Our teams continually\nevaluate our cyber risk and perform technical\nassessments against our systems to ensure our\nresilience. Our teams also monitor for newly\nreleased vulnerabilities, working quickly to\nunderstand applicability to our systems and\nperforming mitigation where necessary.\nWe operate a suite of technical information\nsecurity capabilities designed to detect and\nprotect our organization from attempted\n\nhonoring our privacy promises are\nOur customers entrust us with their\nand privacy practices.\nattacks. Our cybersecurity operations and\nresponse teams continually monitor and respond\nto threats to keep our systems secure. We have\na detailed and exercised plan prepared to guide\nour response to major information security\nevents. Best Buy did not experience any material\ncyber incidents in FY25.\nPrivacy\nWe work to ensure that consumers can actively\nengage with us concerning their privacy. For\nexample, the California Consumer Privacy\nAct grants California consumers a set of\npersonal information options, including asking\nfor access to the information a business has\ncollected about them or to delete certain\ninformation. Best Buy has extended the\navailability of these personal information\noptions to all U.S. consumers.\nConsumers can learn more about our privacy\npractices on our dedicated Privacy Hub.\nEmployee training and awareness\nOur dedicated information security and\ncompliance training and awareness team\nis proactively disseminating awareness\nmessages to our employees throughout\nthe year, providing consistent and specific\nreminders reinforcing secure user behavior and\nhighlighting emerging threats.\n\ncore employee obligations at Best\ninformation, and we seek to honor\nAll employees participate in Best Buy\u2019s security\nand privacy awareness program, Valuable\nInformation Protection (VIP). VIP uses a variety\nof approaches to educate employees on\ninformation security and privacy to foster a\nsecurity-minded culture that honors our privacy\npromises. This program encompasses a variety\nof modules, incentivized engagement activities\nand targeted role-specific learnings based on\nresponsibilities and risk level. We update VIP\ncontent frequently to reflect current security\nand privacy challenges.\nOur Phishing and Social Engineering\nProgram is another critical component of\nour VIP efforts. Our strategy for preparing\nemployees to serve as the critical line of\ndefense against cybercriminals includes high-\nfrequency simulation exercises, leadership\naccountability achieved through the regular\nsharing of simulation metrics and engagement\nopportunities such as phishing-simulation\ncompetitions.\nU.S. Cyber Trust Mark\nOur customers are increasingly relying on the\nconvenience of wireless interconnected smart\nproducts, also known as Internet of Things\n(IoT) products. While IoT products offer many\nbenefits, they can be susceptible to a range\nof security vulnerabilities that are exploited by\nbad actors. To help keep our customers and\n\nBuy,\nour nation\u2019s infrastructure safe, we are proud to\nparticipate in the development of the Federal\nCommunications Commission\u2019s (FCC) U.S. Cyber\nTrust Mark Program.\nThe FCC's U.S. Cyber Trust Mark Program was\ninitiated as a public-private partnership in\nresponse to a 2017 Presidential executive order\nthat focused on strengthening the cybersecurity\nof critical infrastructure.\nThe program reflects collaboration between\nthe U.S. federal government and industry\nstakeholders who have been working to enhance\nthe cybersecurity of wireless consumer devices\nconnected to the internet.\nOver the last year, our Privacy team has\nparticipated in the program\u2019s creation and\nfeedback process, also speaking in support\nof the program at CES\u00ae,the most prominent\ntechnology event in the world, hosted by the\nConsumer Technology Association.\nThis Trust Mark is a voluntary cybersecurity\nlabeling program for IoT products. While still\nunder development, we envision our vendor\npartners will use this label on qualifying\nproducts that meet the program\u2019s cybersecurity\nstandards, giving consumers the opportunity\nto prioritize cybersecurity in their consumer\nelectronics purchases.",
+    "navigation_items": [
+      {
+        "text": "About Best BuyEnvironmentalEmployees",
+        "x0": 36.003999999999905,
+        "top": 15.371999999999957,
+        "x1": 221.11519999999993,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "repeated_page_count": 20
+      },
+      {
+        "text": "Appendix",
+        "x0": 435.7639999999999,
+        "top": 15.371999999999957,
+        "x1": 469.74799999999993,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          6
+        ],
+        "repeated_page_count": 27
+      },
+      {
+        "text": "Community",
+        "x0": 242.3959999999999,
+        "top": 15.371999999999957,
+        "x1": 283.9719999999999,
+        "bottom": 23.371999999999957,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          5
+        ],
+        "repeated_page_count": 60
+      },
+      {
+        "text": "Responsible business practices",
+        "x0": 305.256,
+        "top": 15.391900000000078,
+        "x1": 421.60639999999995,
+        "bottom": 23.391900000000078,
+        "rotation": 0.0,
+        "item_type": "header",
+        "source_indices": [
+          654,
+          655,
+          656
+        ],
+        "repeated_page_count": 23
+      }
+    ],
+    "rotated_content_items": [],
+    "candidate_word_count": 741,
+    "source_word_count": 741,
+    "preservation_ratio": 1.0,
+    "external_token_check_passed": true,
+    "regions": [
+      {
+        "top": 91.4,
+        "bottom": 125.4,
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "top": 158.0,
+        "bottom": 576.2,
+        "region_type": "multi_column_prose",
+        "column_count": 4,
+        "reason": "p25_fill=0.275"
+      }
+    ],
+    "legacy_status": "reconstructed",
+    "legacy_columns": 4,
+    "image": "assets/BBY-BEST BUY CO INC-2024/page_0046.png"
+  }
+]

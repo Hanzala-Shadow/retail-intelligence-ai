@@ -1,0 +1,17 @@
+role,ticker,pdf_file,page,current_decision,current_reading_order_status,candidate_status,candidate_reason,region_count,region_types,source_word_count,candidate_word_count,preservation_ratio,external_token_check_passed
+pilot,AMZN,AMZN-AMAZON.COM INC-2023.pdf,63,auto_hold,ambiguous,candidate_ready,regions_classified,1,row_structured,457,457,1.0,True
+pilot,BURL,BURL-BURLINGTON STORES INC-2023.pdf,30,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,3,multi_column_prose|heading|multi_column_prose,431,431,1.0,True
+pilot,WSM,WSM-WILLIAMS-SONOMA INC-2023.pdf,31,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,3,heading|single_column_prose|row_structured,277,277,1.0,True
+pilot,GES,GES-GUESS-2024.pdf,9,auto_pass_region_order_reconstructed,ambiguous,candidate_ready,regions_classified,2,row_structured|single_column_prose,1253,1253,1.0,True
+pilot,BBY,BBY-BEST BUY CO INC-2024.pdf,5,auto_pass,not_applicable,candidate_ready,regions_classified,2,heading|single_column_prose,363,363,1.0,True
+pilot,W,W-WAYFAIR INC-2024.pdf,6,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,2,multi_column_prose|single_column_prose,248,248,1.0,True
+pilot,PTRN,PTRN-PATTERN GROUP INC-2023.pdf,128,auto_pass,not_applicable,candidate_ready,regions_classified,1,single_column_prose,701,701,1.0,True
+pilot,KTB,KTB-KONTOOR BRANDS INC-2024.pdf,20,auto_pass_region_order_reconstructed,ambiguous,needs_review,one_or_more_regions_uncertain,2,heading|uncertain,558,558,1.0,True
+pilot,KTB,KTB-KONTOOR BRANDS INC-2024.pdf,21,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,2,heading|multi_column_prose,436,436,1.0,True
+pilot,UPBD,UPD-UPBOUND GROUP INC-2023.pdf,46,auto_pass_verified_table_extraction,reconstructed,candidate_ready,verified_table_extraction_reused,1,table_verified,418,543,1.0,False
+pilot,UPBD,UPD-UPBOUND GROUP INC-2023.pdf,47,auto_pass_verified_table_extraction,reconstructed,candidate_ready,verified_table_extraction_reused,1,table_verified,397,464,1.0,False
+pilot,BBWI,BBWI-BATH & BODY WORKS INC-2023.pdf,22,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,3,heading|single_column_prose|row_structured,477,477,1.0,True
+control,AEO,AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf,2,auto_pass,not_applicable,candidate_ready,regions_classified,1,single_column_prose,52,52,1.0,True
+control,AEO,AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf,10,auto_pass_verified_table_extraction,not_applicable,candidate_ready,verified_table_extraction_reused,1,table_verified,135,184,1.0,False
+control,AEO,AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf,2,auto_pass,not_applicable,candidate_ready,regions_classified,3,single_column_prose|single_column_prose|heading,59,59,1.0,True
+control,BBY,BBY-BEST BUY CO INC-2024.pdf,46,auto_pass_column_order_reconstructed,reconstructed,candidate_ready,regions_classified,2,heading|multi_column_prose,741,741,1.0,True

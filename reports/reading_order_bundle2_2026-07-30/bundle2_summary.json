@@ -1,0 +1,683 @@
+[
+  {
+    "role": "target",
+    "ticker": "BBY",
+    "pdf_file": "BBY-BEST BUY CO INC-2024.pdf",
+    "page": 46,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          35.6,
+          91.4,
+          425.7,
+          125.4
+        ],
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "bbox": [
+          36.0,
+          158.0,
+          612.1,
+          202.0
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          36.0,
+          219.3,
+          755.5,
+          576.2
+        ],
+        "region_type": "multi_column_prose",
+        "column_count": 4,
+        "reason": "p25_fill=0.441"
+      }
+    ],
+    "source_word_count": 741,
+    "candidate_word_count": 741,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "Cybersecurity",
+        "position": 29,
+        "found": true
+      },
+      {
+        "text": "Securing customer information",
+        "position": 55,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 4,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "improved",
+    "candidate_text": "Best Buy 2025 CR&S Report 46\n\nCybersecurity and privacy\n\nSecuring customer information and honoring our privacy promises are core employee obligations at Best Buy,\nas highlighted in our Code of Ethics. Our customers entrust us with their information, and we seek to honor\nthat trust through our cybersecurity and privacy practices.\n\nCybersecurity\nWe recognize the importance of ensuring\nthe ongoing safety and security of our data,\nsystems and technology. To effectively address\ninformation security risk, we have established a\ndedicated information security team to assess,\nmonitor and maintain our assets, while also\nresponding to cyber-related incidents.\nOur information security program, led\nby our chief information security officer\n(CISO), is designed around the industry-\nstandard National Institute of Standards and\nTechnology’s Cybersecurity Framework. We\nperiodically engage with outside expertise to\nhelp develop this program and are audited\nannually for compliance with Payment Card\nIndustry Data Security Standards as applicable.\nThe CISO updates our Board of Directors’ Audit\nCommittee regularly on our program and\ncybersecurity matters.\nWe have a dedicated cyber threat intelligence\nteam to ensure that we stay abreast of new\nand evolving threats. Our teams continually\nevaluate our cyber risk and perform technical\nassessments against our systems to ensure our\nresilience. Our teams also monitor for newly\nreleased vulnerabilities, working quickly to\nunderstand applicability to our systems and\nperforming mitigation where necessary.\nWe operate a suite of technical information\nsecurity capabilities designed to detect and\nprotect our organization from attempted\n\nattacks. Our cybersecurity operations and\nresponse teams continually monitor and respond\nto threats to keep our systems secure. We have\na detailed and exercised plan prepared to guide\nour response to major information security\nevents. Best Buy did not experience any material\ncyber incidents in FY25.\nPrivacy\nWe work to ensure that consumers can actively\nengage with us concerning their privacy. For\nexample, the California Consumer Privacy\nAct grants California consumers a set of\npersonal information options, including asking\nfor access to the information a business has\ncollected about them or to delete certain\ninformation. Best Buy has extended the\navailability of these personal information\noptions to all U.S. consumers.\nConsumers can learn more about our privacy\npractices on our dedicated Privacy Hub.\nEmployee training and awareness\nOur dedicated information security and\ncompliance training and awareness team\nis proactively disseminating awareness\nmessages to our employees throughout\nthe year, providing consistent and specific\nreminders reinforcing secure user behavior and\nhighlighting emerging threats.\n\nAll employees participate in Best Buy’s security\nand privacy awareness program, Valuable\nInformation Protection (VIP). VIP uses a variety\nof approaches to educate employees on\ninformation security and privacy to foster a\nsecurity-minded culture that honors our privacy\npromises. This program encompasses a variety\nof modules, incentivized engagement activities\nand targeted role-specific learnings based on\nresponsibilities and risk level. We update VIP\ncontent frequently to reflect current security\nand privacy challenges.\nOur Phishing and Social Engineering\nProgram is another critical component of\nour VIP efforts. Our strategy for preparing\nemployees to serve as the critical line of\ndefense against cybercriminals includes high-\nfrequency simulation exercises, leadership\naccountability achieved through the regular\nsharing of simulation metrics and engagement\nopportunities such as phishing-simulation\ncompetitions.\nU.S. Cyber Trust Mark\nOur customers are increasingly relying on the\nconvenience of wireless interconnected smart\nproducts, also known as Internet of Things\n(IoT) products. While IoT products offer many\nbenefits, they can be susceptible to a range\nof security vulnerabilities that are exploited by\nbad actors. To help keep our customers and\n\nour nation’s infrastructure safe, we are proud to\nparticipate in the development of the Federal\nCommunications Commission’s (FCC) U.S. Cyber\nTrust Mark Program.\nThe FCC's U.S. Cyber Trust Mark Program was\ninitiated as a public-private partnership in\nresponse to a 2017 Presidential executive order\nthat focused on strengthening the cybersecurity\nof critical infrastructure.\nThe program reflects collaboration between\nthe U.S. federal government and industry\nstakeholders who have been working to enhance\nthe cybersecurity of wireless consumer devices\nconnected to the internet.\nOver the last year, our Privacy team has\nparticipated in the program’s creation and\nfeedback process, also speaking in support\nof the program at CES®,the most prominent\ntechnology event in the world, hosted by the\nConsumer Technology Association.\nThis Trust Mark is a voluntary cybersecurity\nlabeling program for IoT products. While still\nunder development, we envision our vendor\npartners will use this label on qualifying\nproducts that meet the program’s cybersecurity\nstandards, giving consumers the opportunity\nto prioritize cybersecurity in their consumer\nelectronics purchases."
+  },
+  {
+    "role": "target",
+    "ticker": "BBWI",
+    "pdf_file": "BBWI-BATH & BODY WORKS INC-2023.pdf",
+    "page": 22,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          34.0,
+          59.1,
+          295.6,
+          77.1
+        ],
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "bbox": [
+          172.0,
+          126.1,
+          437.4,
+          168.6
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          89.7,
+          204.4,
+          498.7,
+          299.3
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          77.9,
+          297.5,
+          550.4,
+          366.4
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          34.0,
+          403.9,
+          205.3,
+          542.3
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      },
+      {
+        "bbox": [
+          261.1,
+          419.4,
+          550.6,
+          529.2
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      },
+      {
+        "bbox": [
+          586.8,
+          272.3,
+          759.7,
+          582.0
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "source_word_count": 477,
+    "candidate_word_count": 477,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "WE EMBRACE DIVERSITY",
+        "position": 38,
+        "found": true
+      },
+      {
+        "text": "IS ALL OF US",
+        "position": 373,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 2,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "improved",
+    "candidate_text": "Diversity, Equity and Inclusion (DEI)\n\nWE EMBRACE DIVERSITY\nacross our business, including race, ethnicity, gender, age, religion, sexual\norientation, disability and veteran status, and strive to ensure everyone is\nincluded and has equitable access and opportunity.\n\nFAMILY STATUS SEXUAL ORIENTATION\nLANGUAGES\nGENDER, GENDER IDENTITY\nDiversity WORK LOCATION*\nDISABILITY\nRACE\nIS ALL OF US\nMILITARY SERVICE\n\nEDUCATION\nAGE, GENERATION, LIFE STAGE ETHNICITY**\n*Field stores, distribution and\nfulfillment centers and home offices\n**Culture or country of origin\n\nDiversity, Equity and Inclusion (DEI)\nWe intentionally weave inclusion and belonging\ninto our business. This is a core value that is a\ncultural foundation and supports our corporate\nstrategy of customer and global expansion. We\nbelieve that by being a place where people feel\nsafe, respected, valued and, above all,\nthemselves, we can better connect with one\nanother and grow as a stronger, smarter\nbusiness. This starts with our own associates\nand extends to the interactions we have with\nour vendor partners and customers, through\nour business processes and in the communities\nwhere we live and work.\n\n• A Diversity First Top 50 Company • America’s Greatest Workplaces for\nby the Diversity Research Institute LGBTQ+ Individuals by Newsweek\n• Diversity in Business Award by • America’s Greatest Workplaces for\nColumbus Business First Veterans by Newsweek\n• America’s Greatest Workplaces for • Forbes List of America’s Best\nWomen by Newsweek Large Employers\n• Forbes List of America’s Best • America's Greatest Workplaces\nEmployers for Women by Newsweek\n• 95 on the HRC Corporate Equality • Most Trustworthy Companies in\nIndex America by Newsweek\n\nWe want associates to feel part of something\nbigger than their day-to-day roles. We want\nthem to feel part of a larger community of\ninclusion where they are valued, understood\nand supported by what we like to call our\n‘Gingham Family.’ We are building on the\nsuccess of programs and initiatives we know\nenable our associates to be their authentic\nselves at work, like voluntary self-identification\nin our HR system, offering the option for our\nstore associates to wear more personalized\nname tag pins and our Inclusion Resource\nGroups. From moments of heritage celebrations\nto learning opportunities and conversation\ncircles, we see that these initiatives have\nimmediate impact on our associates who share\nhow deeply they value these moments of\ntogetherness. We are thrilled that our efforts\nhave this positive response from associates and\nare honored to further celebrate our success\nthrough the many accolades we receive as\nbeing a great place to work. We are also proud\nto extend our impact beyond our four walls and\nsupport organizations and causes that align to\nour values, including those that work to eliminate\nracism, empower women and advocate for the\nLGBTQ+ community. As we look ahead, I know\nwe will continue to champion the power of\ndiversity — the common thread that unites us all.”\nKelie Charles\nChief Diversity Officer\n\n22"
+  },
+  {
+    "role": "target",
+    "ticker": "BBWI",
+    "pdf_file": "BBWI-BATH & BODY WORKS INC-2023.pdf",
+    "page": 36,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          34.0,
+          129.7,
+          365.7,
+          152.2
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          34.0,
+          149.7,
+          747.1,
+          529.8
+        ],
+        "region_type": "multi_column_prose",
+        "column_count": 4,
+        "reason": "p25_fill=0.442"
+      }
+    ],
+    "source_word_count": 693,
+    "candidate_word_count": 693,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "Supporting Purpose-Driven Marketing",
+        "position": 0,
+        "found": true
+      },
+      {
+        "text": "ACS",
+        "position": 708,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 2,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "needs review",
+    "candidate_text": "Supporting Purpose-Driven Marketing\nWe believe in the power of education, for our\nWe are beyond grateful for the continued\n\nassociates and our customers, to create a\nwelcoming world for people across all\nbackgrounds and walks of life. In 2023, we\nworked cross-functionally to implement a new\nphilanthropic strategy that focused on making\nsure that we have community partners that\nalign back to our eight IRG focus areas and\nsupported them with grants throughout the\nyear. Through this, we proudly funded more\nthan $1.19 million to nonprofits working to\neliminate racism, empower women and\nadvocate for the LGBTQ+ community, including\nIt Gets Better (in the U.S. and Canada) and the\nAmerican Chemical Society (ACS).\nSupporting the Next Generation of Chemists with\nWe believe in the power of fragrance and are\npassionate about investing in the next\ngeneration of chemists who will help create\nbeautiful fragrances for us and others in the\nfuture. We’re proud to support the American\nChemical Society (ACS) with its ACS Scholars\nProgram and its ACS Office of Diversity,\nEquity, Inclusion and Respect’s (DEIR)\nmission. Since January 19, 2023, the Bath &\nBody Works Foundation has donated\n$170,000 to support the ACS Scholars\nProgram’s mission and to help open doors\nfor the next generation of chemists to\npursue perfumery or wherever their passion\nfor chemistry takes them. This contribution\nwas amplified by our heritage month\nperfumer series, a social media campaign\nwhich promotes and celebrates our diverse\nperfumers. Additionally, the Bath & Body\nWorks Foundation has donated $30,000 to\n\npartnership with Bath & Body Works. With the\nsupport of Bath & Body Works, we continuously\nwork towards evolving our programs, moving\nus closer to a world where all LGBTQ+ youth are\nfree to live equally, connect to their\ncommunities and know their power as\nindividuals. Through our collaborative efforts,\nwe continue to empower LGBTQ+ youth to\ndefine their own journey.”\nJimmy Ancheta-Tilley Jr.\nDirector of Development, It Gets Better Project\nthe American Chemical Society\nthe ACS Office of DEIR to help ACS expand\nresources to engage more diverse\npopulations.\n“ The American Chemical Society is grateful to\nBath & Body Works for its support of the ACS\nScholars Program, which each year provides\ncollege scholarships and mentoring to\nhundreds of Black, Indigenous, Latina/o/x\nand Hispanic students pursuing degrees in\nthe chemical sciences. Through its generous\ngift, Bath & Body Works is supporting a\nprogram that reflects the Society’s core\nbelief that the inclusion of and respect for\ndiverse people, experiences and ideas lead\nto superior solutions to the world’s\nchallenges.” – Terri M. Chambers, Ed.D.,\nSenior Director, ACS Education\n\nProudly Supporting the LGBTQ+\nWe are proud to celebrate and support the\nLGBTQ+ community. In 2023, we continued\nour support with a total donation of\n$157,000 to several of our long-time partners\nincluding It Gets Better, which is working to\nuplift, empower and connect lesbian, gay,\nbisexual, transgender and queer youth\naround the globe. We also contributed to the\nHuman Rights Campaign (HRC) Foundation\nin support of the annual HRC Columbus Gala\n— bringing the community together to\ncelebrate spirit and pride and to energize the\nroom for the fight for LGBTQ+ rights that\nremains ahead of us. Additionally, since\n2012, we’ve been supporters of Stonewall\nColumbus, an organization that advocates\nfor equity and inclusion of the LGBTQ+\ncommunity. In 2023, we donated and also\nparticipated in the Stonewall Columbus\nPride Parade, one of the largest pride\nparades in the country.\n\nCommunity\n“ For the second year now, the generous\nsupport from Bath & Body Works has played\na pivotal role in driving our organization’s\nmission to uplift and empower our 2SLGBTQ+\n(Lesbian, Gay, Bisexual, Trans, Queer,\nTwo-Spirit, Intersex, Asexual) youth across\nthe nation. This past year, It Gets Better\nCanada was able to connect with youth in\nperson, as we delivered impactful workshops\nand learnings from coast-to-coast-to-coast,\nfocused on combating anti-2SLGBTQ+\nbullying and increasing awareness on\nnavigating digital literacy. As 2SLGBTQ+\nyouth continue to face challenges and\nbarriers, especially within schools, support\nfrom organizations like Bath & Body Works is\nintegral in working towards creating safe\nand affirming spaces for all.” – Omid Razavi,\nExecutive Director, It Gets Better Canada\n\n36"
+  },
+  {
+    "role": "target",
+    "ticker": "BBW",
+    "pdf_file": "BBW-BUILD-A-BEAR WORKSHOP INC-2023.pdf",
+    "page": 2,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          35.9,
+          36.1,
+          924.0,
+          355.4
+        ],
+        "region_type": "multi_column_prose",
+        "column_count": 2,
+        "reason": "p25_fill=0.032"
+      },
+      {
+        "bbox": [
+          323.3,
+          408.2,
+          773.0,
+          471.4
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "source_word_count": 140,
+    "candidate_word_count": 140,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "About This Report",
+        "position": 454,
+        "found": true
+      },
+      {
+        "text": "Table of Contents",
+        "position": -1,
+        "found": false
+      }
+    ],
+    "navigation_item_count": 8,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "improved",
+    "candidate_text": "Table of A Company with 3\nContents Message from Our CEO 4\nThe Stuff You Love 5\nOur Values 5\nOur Reach 6\nA Bear's Commitment to Responsibility 7\nForging Our Path 8\nBuilding with Impact 10\nMemorable Makings 11\nMeaningful Marketing 16\nConscientious Conduct 17\n\nCaring for People 20\nHeartful Service 21\nBelonging Embraced 27\nGiving Back 31\nActing from Values 33\nCaring Leadership 34\nPrincipled Actions 37\nSafeguarded Content 38\nA Little More 41\nSASB Index 42\n\nAbout This Report\nThis Corporate Responsibility Report presents Build-A-Bear Workshop, Inc.’s (Build-A-Bear’s or the Company’s)\nenvironmental, social, and governance (ESG) approach, policies, practices, and performance. The information\ncontained herein reflects decisions and actions through the first quarter of fiscal year 2024 and quantitative data\nfor the fiscal year 2023 (Jan. 29, 2023 – Feb. 3, 2024), unless otherwise noted.\n\n2 2"
+  },
+  {
+    "role": "target",
+    "ticker": "AMZN",
+    "pdf_file": "AMZN-AMAZON.COM INC-2023.pdf",
+    "page": 63,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          72.0,
+          168.0,
+          929.6,
+          225.6
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          72.0,
+          226.3,
+          937.3,
+          980.7
+        ],
+        "region_type": "multi_column_prose",
+        "column_count": 2,
+        "reason": "p25_fill=0.531"
+      },
+      {
+        "bbox": [
+          1014.0,
+          201.6,
+          1451.7,
+          277.6
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          1041.9,
+          851.1,
+          1773.6,
+          940.5
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "source_word_count": 457,
+    "candidate_word_count": 457,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "Sustainability Solutions Hub",
+        "position": 67,
+        "found": true
+      },
+      {
+        "text": "Looking Forward",
+        "position": 1893,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 11,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "needs review",
+    "candidate_text": "63\n\nProcter & Gamble (including its brands Pampers, Oral-B, and The Sustainability Solutions Hub\nBraun), and Earth Rated—to qualify products that could be\nrecognized by certifications in the Climate Pledge Friendly\nWe launched the Sustainability Solutions Hub in 2023 for\n\nprogram.\nNumber of Products Recognized by One\nor More Certification in Our Climate\nPledge Friendly Program\n1.4M\n550K\n250K\n2021 2022 2023\nImproving Customer Discovery\nWe have helped nearly 37.6 million Amazon customers switch\nto products recognized by certifications in the Climate Pledge\nFriendly program, in part by enabling new online shopping\nfeatures to guide their browsing.\nFor our Amazon Business customers, we are partnering with\nthem to create procurement policies that place a preference\non products recognized by certifications in the Climate\nPledge Friendly program. As of December 2023, more than\n51,000 businesses had these buying policies in place, up from\n18,000 in 2022.\n\nAmazon selling partners in France, Germany, Italy, Spain,\nthe UK, and the U.S. The Hub helps them get started with\nAmazon’s sustainability programs, including Climate Pledge\nFriendly, Amazon Renewed, and Ships in Product Packaging.\nIt includes a curated set of third-party service providers to\nsupport selling partners in designing and certifying more\nsustainable products and packaging, as well as personalized\nreporting dashboards.\nAs part of the Hub, we launched new dashboards that\nprovide selling partners with personalized, relevant data and\ninformation so they can:\n• Track their monthly sales in Amazon’s sustainability\nprograms over the past 12 months.\n• Identify their other products that are eligible or\ncandidates for our sustainability programs.\n• Highlight products that are currently enrolled in\nAmazon’s sustainability programs.\nIn 2023, over 200,000 selling partners participated in\nAmazon’s sustainability programs.\nLooking Forward\nWe continue to evolve the customer shopping experience\nand make the discovery of products with sustainability\nfeatures even easier. In March 2024, we launched a new\nonline shopping experience that highlights these features\n(see visual, right), such as recycled materials and organic\ncontent, in products that are recognized by one or more\ncertification in the Climate Pledge Friendly program. We also\nlook forward to expanding and refining the Sustainability\nSolutions Hub to support our efforts to welcome our selling\npartners into our sustainability programs and give them the\nresources they need to succeed in sharing more sustainable\nproducts with our customers.\n\nDiscover Product Sustainability Features\nHelping customers discover products with sustainability features\nthroughout the online shopping experience.\n\nBadging in Search Sustainability Feature Details Product Pages\nThe new sustainability features With just a click, customers can While browsing the product page,\nbadge makes it easier for customers see more details about each customers have access to all of the\nto discover products from search. sustainability feature and the product’s sustainability features\nproduct’s associated certifications. and associated certifications."
+  },
+  {
+    "role": "target",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "page": 8,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          35.0,
+          28.1,
+          646.6,
+          46.1
+        ],
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "bbox": [
+          59.8,
+          90.0,
+          223.9,
+          233.1
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          333.2,
+          82.6,
+          697.7,
+          300.3
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "source_word_count": 50,
+    "candidate_word_count": 50,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "2023 PROGRESS",
+        "position": 55,
+        "found": true
+      },
+      {
+        "text": "TOTAL PREFERRED FIBERS",
+        "position": 199,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "improved",
+    "candidate_text": "CONTINUED INCREASE IN USE OF SUSTAINABLE RAW MATERIALS\n\n2023 PROGRESS\n2023 ACHIEVED:\n54% of total fibers were from\nsustainable sources\n2028 GOAL:\nUse sustainable sources for\n75% of all fibers by 2028\n\nTOTAL PREFERRED FIBERS\n50%\n53% 54%\n40%\n46%\n30%\n23%\n20%\n10%\n0\n2020 2021 2022 2023\n\n08"
+  },
+  {
+    "role": "target",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf",
+    "page": 8,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          35.0,
+          28.1,
+          646.6,
+          46.1
+        ],
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "bbox": [
+          59.8,
+          90.0,
+          224.1,
+          233.1
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      },
+      {
+        "bbox": [
+          333.1,
+          82.6,
+          742.7,
+          300.3
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "source_word_count": 58,
+    "candidate_word_count": 58,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "2024 PROGRESS",
+        "position": 55,
+        "found": true
+      },
+      {
+        "text": "TOTAL PREFERRED FIBERS",
+        "position": 199,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "improved",
+    "candidate_text": "CONTINUED INCREASE IN USE OF SUSTAINABLE RAW MATERIALS\n\n2024 PROGRESS\n2024 ACHIEVED:\n62% of total fibers were from\nsustainable sources\n2028 GOAL:\nUse sustainable sources for\n75% of all fibers by 2028\n\nTOTAL PREFERRED FIBERS\n80%\n75%\n62%\n60%\n54%\n53%\n46%\n40%\n23%\n20%\n9%\n3%\n0\n2018 2019 2020 2021 2022 2023 2024 2028 GOAL\n\n08"
+  },
+  {
+    "role": "control",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "page": 2,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          36.0,
+          410.5,
+          353.2,
+          565.0
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "source_word_count": 52,
+    "candidate_word_count": 52,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "INTRODUCTION",
+        "position": 0,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "unchanged",
+    "candidate_text": "INTRODUCTION\nThe 2023 Building a Better World ESG update highlights our\ngoals and the progress made through our Planet initiatives.\nAEO’s key areas of focus are prioritized by what matters most to our\nbusiness and our stakeholders, including customers, associates,\nvendors investors and regulators.\nAdditional information can be found at aeo-inc.com.\n\n02"
+  },
+  {
+    "role": "control",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "page": 6,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          35.0,
+          28.1,
+          744.3,
+          568.4
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "source_word_count": 152,
+    "candidate_word_count": 152,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "2023 REAL GOOD BY THE NUMBERS",
+        "position": 0,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "unchanged",
+    "candidate_text": "2023 REAL GOOD BY THE NUMBERS\n% of 2020 2021 2022 2023\nReal Good\nStyles YoY\n100%\n97% 98% 98%\n95% 94%\n92% 91%\n87% 88% 88%\n81% 83%\n75%\n70% 72% 66% 75% 71%70%\n67%\n57%\n58% 55%\n50%\n45% 45% 47%\n44% 44% 45% 45%\n33%\n25% 31%\n25%\n18% 18% 20% 19%\n7%\n0%\nOFFLINE Intimates Aerie AE Women’s AE Women’s AE Women AE Men’s AE Men’s AE Men Total AEO\nTops Bottoms Tops Bottoms\nBRAND / CATEGORY 2020 2021 2022 2023\nTotal OFFLINE 45%\nTotal Intimates 18% 25% 45% 67%\nTotal Aerie 18% 34% 44% 70%\nTotal AE Women’s Tops 7% 58% 72% 44%\nTotal AE Women’s Bottoms 55% 81% 97% 87%\nTotal AE Women 20% 58% 83% 57%\nTotal AE Men’s Tops 31% 88% 98% 88%\nTotal AE Men’s Bottoms 45% 95% 92% 98%\nTotal AE Men 75% 94% 91%\nTotal AEO 19% 47% 71% 70%\n\n06"
+  },
+  {
+    "role": "control",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "page": 10,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          34.0,
+          28.1,
+          461.2,
+          46.1
+        ],
+        "region_type": "heading",
+        "column_count": 0,
+        "reason": "full_width_heading_line"
+      },
+      {
+        "bbox": [
+          60.8,
+          93.1,
+          270.0,
+          510.0
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      },
+      {
+        "bbox": [
+          327.7,
+          72.7,
+          741.5,
+          503.8
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "no_repeating_column_starts"
+      }
+    ],
+    "source_word_count": 135,
+    "candidate_word_count": 135,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "2023 SUSTAINABLE POLYESTER BREAKDOWN",
+        "position": 0,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "unchanged",
+    "candidate_text": "2023 SUSTAINABLE POLYESTER BREAKDOWN\n\n2023 PROGRESS\n2023 GOAL:\n50% sustainable polyester\n2023 ACHIEVED:\n56% of total polyester recycled\n2028 GOAL:\n100% sustainable polyester\nPLASTIC BOTTLES:\nAEO used the equivalent of more\nthan 520 million plastic bottles in\nrecycled polyester.\nAmerican Eagle used the\nequivalent of more than\n360 million plastic bottles in\nrecycled polyester\nAerie used the equivalent of nearly\n108 million plastic bottles in\nrecycled polyester\n\nRECYCLED POYLESTER BY BRAND\n82%\n80%\n74%\n60% 56% 56%\n51%\n44%\n42%\n40%\n20%\n0\nAEO Total AE AE AE Offline Unsubscribed\nAerie\nBottoms Non-Bottoms\nBrand Total Recycled (kg) Total Recycled (lbs) Water Bottles\nTotal AEO 8,736,073 19,259,721 520,012,474\nAE Total 6,051,075 13,340,321 360,188,666\nAE Bottoms 2,719,802 5,996,130 161,895,507\nAE Non-Bottoms 3,331,274 7,344,193 198,293,219\nAerie 1,809,616 3,989,516 107,716,922\nOFFLINE 873,518 1,925,775 51,995,932\nUnsubscribed 240 529 14,286\n\n010"
+  },
+  {
+    "role": "control",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf",
+    "page": 3,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          36.1,
+          36.9,
+          746.8,
+          550.5
+        ],
+        "region_type": "row_structured",
+        "column_count": 2,
+        "reason": "p25_fill=0.083"
+      }
+    ],
+    "source_word_count": 308,
+    "candidate_word_count": 308,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "BUILDING A BETTER PLANET",
+        "position": 0,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 0,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "unchanged",
+    "candidate_text": "BUILDING A BETTER PLANET - GOALS\nFOCUS AREA GOAL ESTABLISHED STATUS PROGRESS + ACHIEVEMENTS\nReduce water use per jean by 30% by 2023 from a Reduced water usage per jean by 36% in\n2019\n2017 baseline year EXCEEDED 2021, meeting goal two years early\nReduce water use per jean by 50% by 2025 from a Reduced water usage by 40% in 2023. Target\n2022 ON TRACK\n2017 baseline year increased, after meeting our initial goal\nReached an overall recycling rate of 64% in\nRecycle 50% of total water used in denim laundries by 2023 2019\nEXCEEDED 2022, exceeding goal one year early\nRecycle 70% of total water used in denim laundries by 2025 Reached an overall recycling rate of 76%,\n2022\nWATER EXCEEDED meeting goal two years early\nApply AEO Wastewater Management Standard to 100%\n2019 As of 2021, 100% of strategic water-intensive\nof strategic water-intensive factories, mills and laundries\nACHIEVED factories conduct wastewater testing annually\nby 2023\nReduce water footprint by 30% by 2028 across own\n2022 NEW Initial work underway\noperations and strategic factories and mills for all\nproduct types\nAEO commits to securing renewable energy for 100% of\nelectrical power demand for owned and operated facilities 2019 ON TRACK AEO reached 22% renewable energy in 2023\nby 2030\nReduce scope 1 & 2 emissions 80% by 2030 from a Emissions decreased 31% from our baseline\n2019 ON TRACK\n2018 base year in 2023\nReduce carbon emissions 40% by 2030 and 60% by 2040\n2019 ON TRACK Emissions remained flat to 2022\nin AEO’s manufacturing from a 2018 base year\nCLIMATE\nCommitted to net-zero emissions by 2050\n2022 NEW Initial work underway\nPhase out coal-fired boilers in our supply chain by 2030;\n2022 NEW Initial work underway\nno new factories with coal-fired boilers after 2025\n\n*Specific framework indices can be found in the Appendix. 03\n03"
+  },
+  {
+    "role": "control",
+    "ticker": "AAPL",
+    "pdf_file": "AAPL-APPLE INC-2024.pdf",
+    "page": 97,
+    "candidate_status": "candidate_ready",
+    "candidate_reason": "regions_classified",
+    "regions": [
+      {
+        "bbox": [
+          24.0,
+          54.0,
+          170.3,
+          156.4
+        ],
+        "region_type": "single_column_prose",
+        "column_count": 1,
+        "reason": "insufficient_words_for_columns"
+      }
+    ],
+    "source_word_count": 41,
+    "candidate_word_count": 41,
+    "word_preservation_passed": true,
+    "preservation_ratio": 1.0,
+    "important_landmarks_in_output_order": [
+      {
+        "text": "In this section",
+        "position": 38,
+        "found": true
+      },
+      {
+        "text": "Report notes",
+        "position": 267,
+        "found": true
+      }
+    ],
+    "navigation_item_count": 4,
+    "rotated_content_item_count": 0,
+    "visual_verdict": "unchanged",
+    "candidate_text": "2025 Environmental Progress Report 97\nIn this section\nA: Corporate facilities energy supplement\nB: life cycle assessment methodology\nC: Assurance and review statements\nD: Carbon neutral certificates\nE: Environment, Health and Safety Policy\nF: ISO 14001 certification\nReport notes\nEnd notes"
+  }
+]

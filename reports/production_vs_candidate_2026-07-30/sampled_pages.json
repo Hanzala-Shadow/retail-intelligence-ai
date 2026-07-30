@@ -1,0 +1,272 @@
+[
+  {
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 8,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 24,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 35,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BIRD",
+    "pdf_file": "BIRD-ALLBIRDS INC-2024.pdf",
+    "page": 13,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BIRD",
+    "pdf_file": "BIRD-ALLBIRDS INC-2024.pdf",
+    "page": 8,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BIRD",
+    "pdf_file": "BIRD-ALLBIRDS INC-2024.pdf",
+    "page": 2,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2019.pdf",
+    "page": 42,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2019.pdf",
+    "page": 49,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2019.pdf",
+    "page": 1,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TGT",
+    "pdf_file": "TGT-TARGET CORP-2018.pdf",
+    "page": 90,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TGT",
+    "pdf_file": "TGT-TARGET CORP-2018.pdf",
+    "page": 70,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TGT",
+    "pdf_file": "TGT-TARGET CORP-2018.pdf",
+    "page": 34,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 21,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 132,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 119,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CVS",
+    "pdf_file": "CVS-CVS HEALTH CORP-2017.pdf",
+    "page": 68,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CVS",
+    "pdf_file": "CVS-CVS HEALTH CORP-2017.pdf",
+    "page": 59,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CVS",
+    "pdf_file": "CVS-CVS HEALTH CORP-2017.pdf",
+    "page": 46,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TSCO",
+    "pdf_file": "TSCO-TRACTOR SUPPLY CO-2025.pdf",
+    "page": 27,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TSCO",
+    "pdf_file": "TSCO-TRACTOR SUPPLY CO-2025.pdf",
+    "page": 5,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "TSCO",
+    "pdf_file": "TSCO-TRACTOR SUPPLY CO-2025.pdf",
+    "page": 10,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2023.pdf",
+    "page": 30,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2023.pdf",
+    "page": 24,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2023.pdf",
+    "page": 2,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "FND",
+    "pdf_file": "FND-FLOOR & DECOR HLDGS-2022.pdf",
+    "page": 15,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "FND",
+    "pdf_file": "FND-FLOOR & DECOR HLDGS-2022.pdf",
+    "page": 4,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "FND",
+    "pdf_file": "FND-FLOOR & DECOR HLDGS-2022.pdf",
+    "page": 2,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 40,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 20,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 31,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BBBY",
+    "pdf_file": "BBBY-BED BATH & BEYOND INC-2020.pdf",
+    "page": 33,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BBBY",
+    "pdf_file": "BBBY-BED BATH & BEYOND INC-2020.pdf",
+    "page": 48,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "BBBY",
+    "pdf_file": "BBBY-BED BATH & BEYOND INC-2020.pdf",
+    "page": 51,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CRI",
+    "pdf_file": "CRI-CARTER'S INC-2021.pdf",
+    "page": 16,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CRI",
+    "pdf_file": "CRI-CARTER'S INC-2021.pdf",
+    "page": 13,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "CRI",
+    "pdf_file": "CRI-CARTER'S INC-2021.pdf",
+    "page": 57,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "PTRN",
+    "pdf_file": "PTRN-PATTERN GROUP INC-2019.pdf",
+    "page": 23,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "PTRN",
+    "pdf_file": "PTRN-PATTERN GROUP INC-2019.pdf",
+    "page": 56,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "PTRN",
+    "pdf_file": "PTRN-PATTERN GROUP INC-2019.pdf",
+    "page": 70,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 3,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 16,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 97,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 53,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 58,
+    "group": "diff_sample"
+  },
+  {
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 27,
+    "group": "diff_sample"
+  }
+]

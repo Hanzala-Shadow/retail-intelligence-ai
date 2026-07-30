@@ -1,0 +1,116 @@
+[
+  {
+    "id": "G1",
+    "page": "AEO p3",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G2",
+    "page": "AEO p4",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G3",
+    "page": "ACI p4",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G4",
+    "page": "ACI p6",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G5",
+    "page": "ACI p7",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G6",
+    "page": "ACI p9",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G7",
+    "page": "ACI p10",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G8",
+    "page": "ACI p11",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G9",
+    "page": "ACI p13",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G10",
+    "page": "ACI p15",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G11",
+    "page": "ACI p16",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G12",
+    "page": "ACI p18",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G13",
+    "page": "ACI p19",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G14",
+    "page": "ACI p20",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G15",
+    "page": "ACI p23",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G16",
+    "page": "ACI p24",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G17",
+    "page": "ACI p25",
+    "A": "regions",
+    "B": "column_order"
+  },
+  {
+    "id": "G18",
+    "page": "ACI p26",
+    "A": "column_order",
+    "B": "regions"
+  },
+  {
+    "id": "G19",
+    "page": "ACI p29",
+    "A": "regions",
+    "B": "column_order"
+  }
+]

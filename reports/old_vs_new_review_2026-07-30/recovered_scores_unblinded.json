@@ -1,0 +1,140 @@
+{
+  "raw": {
+    "G1": {
+      "score": "B better",
+      "note": ""
+    },
+    "G2": {
+      "score": "A better",
+      "note": ""
+    },
+    "G3": {
+      "score": "B better",
+      "note": ""
+    },
+    "G4": {
+      "score": "A better",
+      "note": ""
+    },
+    "G5": {
+      "score": "B better",
+      "note": ""
+    },
+    "G6": {
+      "score": "B better",
+      "note": ""
+    },
+    "G7": {
+      "score": "A better",
+      "note": ""
+    },
+    "G8": {
+      "score": "B better",
+      "note": ""
+    },
+    "G9": {
+      "score": "A better",
+      "note": ""
+    },
+    "G10": {
+      "score": "A better",
+      "note": ""
+    },
+    "G11": {
+      "score": "No difference",
+      "note": ""
+    },
+    "G12": {
+      "score": "B better",
+      "note": ""
+    },
+    "G13": {
+      "score": "A better",
+      "note": ""
+    },
+    "R1": {
+      "score": "Candidate usable",
+      "note": ""
+    }
+  },
+  "unblinded": [
+    {
+      "id": "G1",
+      "page": "AEO p3",
+      "raw": "B better",
+      "winner": "regions"
+    },
+    {
+      "id": "G2",
+      "page": "AEO p4",
+      "raw": "A better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G3",
+      "page": "ACI p4",
+      "raw": "B better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G4",
+      "page": "ACI p6",
+      "raw": "A better",
+      "winner": "regions"
+    },
+    {
+      "id": "G5",
+      "page": "ACI p7",
+      "raw": "B better",
+      "winner": "regions"
+    },
+    {
+      "id": "G6",
+      "page": "ACI p9",
+      "raw": "B better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G7",
+      "page": "ACI p10",
+      "raw": "A better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G8",
+      "page": "ACI p11",
+      "raw": "B better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G9",
+      "page": "ACI p13",
+      "raw": "A better",
+      "winner": "regions"
+    },
+    {
+      "id": "G10",
+      "page": "ACI p15",
+      "raw": "A better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G11",
+      "page": "ACI p16",
+      "raw": "No difference",
+      "winner": "tie"
+    },
+    {
+      "id": "G12",
+      "page": "ACI p18",
+      "raw": "B better",
+      "winner": "column_order"
+    },
+    {
+      "id": "G13",
+      "page": "ACI p19",
+      "raw": "A better",
+      "winner": "column_order"
+    }
+  ]
+}

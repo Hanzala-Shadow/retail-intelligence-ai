@@ -1,0 +1,688 @@
+[
+  {
+    "set": "main_sample",
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 2,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_SGC_SGC_SUPERIOR_GROUP_OF_COS_INC_2024_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1956,
+      "height_px": 1100,
+      "bytes": 20821
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "BIRD",
+    "pdf_file": "BIRD-ALLBIRDS INC-2024.pdf",
+    "page": 5,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_BIRD_BIRD_ALLBIRDS_INC_2024_p5.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 1210,
+      "bytes": 377346
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2019.pdf",
+    "page": 3,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WSM_WSM_WILLIAMS_SONOMA_INC_2019_p3.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 33217
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "TGT",
+    "pdf_file": "TGT-TARGET CORP-2018.pdf",
+    "page": 3,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_TGT_TGT_TARGET_CORP_2018_p3.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 10331
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 2,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WMT_WMT_WALMART_INC_2016_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 908,
+      "height_px": 1183,
+      "bytes": 23265
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "CVS",
+    "pdf_file": "CVS-CVS HEALTH CORP-2017.pdf",
+    "page": 12,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_CVS_CVS_CVS_HEALTH_CORP_2017_p12.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 22789
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "TSCO",
+    "pdf_file": "TSCO-TRACTOR SUPPLY CO-2025.pdf",
+    "page": 2,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_TSCO_TSCO_TRACTOR_SUPPLY_CO_2025_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 2934,
+      "height_px": 1650,
+      "bytes": 640110
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2023.pdf",
+    "page": 6,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_ACI_ACI_ALBERTSONS_COS_INC_2023_p6.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 29092
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "FND",
+    "pdf_file": "FND-FLOOR & DECOR HLDGS-2022.pdf",
+    "page": 2,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_FND_FND_FLOOR_DECOR_HLDGS_2022_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 1210,
+      "bytes": 22208
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 5,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_BRLT_BRLT_BRILLIANT_EARTH_GP_INC_2022_p5.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 169884
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "BBBY",
+    "pdf_file": "BBBY-BED BATH & BEYOND INC-2020.pdf",
+    "page": 6,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_BBBY_BBBY_BED_BATH_BEYOND_INC_2020_p6.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1760,
+      "height_px": 990,
+      "bytes": 237340
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "CRI",
+    "pdf_file": "CRI-CARTER'S INC-2021.pdf",
+    "page": 16,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_CRI_CRI_CARTER_S_INC_2021_p16.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1760,
+      "height_px": 990,
+      "bytes": 163393
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "PTRN",
+    "pdf_file": "PTRN-PATTERN GROUP INC-2019.pdf",
+    "page": 3,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_PTRN_PTRN_PATTERN_GROUP_INC_2019_p3.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 867,
+      "height_px": 1170,
+      "bytes": 12455
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 2,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WHR_WHR_WHIRLPOOL_CORP_2023_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 183645
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 2,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_RL_RL_RALPH_LAUREN_CORP_2021_p2.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 1210,
+      "bytes": 249900
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WMK",
+    "pdf_file": "WMK-WEIS MARKETS INC-2017.pdf",
+    "page": 7,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WMK_WMK_WEIS_MARKETS_INC_2017_p7.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 935,
+      "bytes": 42679
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "LESL",
+    "pdf_file": "LESL-LESLIE'S INC-2021.pdf",
+    "page": 3,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_LESL_LESL_LESLIE_S_INC_2021_p3.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 228540
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "COLM",
+    "pdf_file": "COLM-COLUMBIA SPORTSWEAR CO-2022.pdf",
+    "page": 8,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_COLM_COLM_COLUMBIA_SPORTSWEAR_CO_2022_p8.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 158916
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 25,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WMT_WMT_WALMART_INC_2016_p25.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 908,
+      "height_px": 1183,
+      "bytes": 72599
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "COLM",
+    "pdf_file": "COLM-COLUMBIA SPORTSWEAR CO-2022.pdf",
+    "page": 34,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_COLM_COLM_COLUMBIA_SPORTSWEAR_CO_2022_p34.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 245558
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "CRI",
+    "pdf_file": "CRI-CARTER'S INC-2021.pdf",
+    "page": 42,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_CRI_CRI_CARTER_S_INC_2021_p42.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1760,
+      "height_px": 990,
+      "bytes": 201661
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 71,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WHR_WHR_WHIRLPOOL_CORP_2023_p71.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 101681
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 59,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_BRLT_BRLT_BRILLIANT_EARTH_GP_INC_2022_p59.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 26886
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 5,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_SGC_SGC_SUPERIOR_GROUP_OF_COS_INC_2024_p5.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1956,
+      "height_px": 1100,
+      "bytes": 437213
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "BRLT",
+    "pdf_file": "BRLT-BRILLIANT EARTH GP INC-2022.pdf",
+    "page": 58,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_BRLT_BRLT_BRILLIANT_EARTH_GP_INC_2022_p58.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 30262
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "COLM",
+    "pdf_file": "COLM-COLUMBIA SPORTSWEAR CO-2022.pdf",
+    "page": 49,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_COLM_COLM_COLUMBIA_SPORTSWEAR_CO_2022_p49.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 20618
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2023.pdf",
+    "page": 7,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_ACI_ACI_ALBERTSONS_COS_INC_2023_p7.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 52533
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "SGC",
+    "pdf_file": "SGC-SUPERIOR GROUP OF COS INC-2024.pdf",
+    "page": 22,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_SGC_SGC_SUPERIOR_GROUP_OF_COS_INC_2024_p22.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1956,
+      "height_px": 1100,
+      "bytes": 317380
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 26,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_RL_RL_RALPH_LAUREN_CORP_2021_p26.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 1210,
+      "bytes": 112303
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WMT",
+    "pdf_file": "WMT-WALMART INC-2016.pdf",
+    "page": 164,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WMT_WMT_WALMART_INC_2016_p164.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 908,
+      "height_px": 1183,
+      "bytes": 95151
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "CVS",
+    "pdf_file": "CVS-CVS HEALTH CORP-2017.pdf",
+    "page": 60,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_CVS_CVS_CVS_HEALTH_CORP_2017_p60.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 147560
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WHR",
+    "pdf_file": "WHR-WHIRLPOOL CORP-2023.pdf",
+    "page": 59,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WHR_WHR_WHIRLPOOL_CORP_2023_p59.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1540,
+      "height_px": 935,
+      "bytes": 138440
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "WSM",
+    "pdf_file": "WSM-WILLIAMS-SONOMA INC-2019.pdf",
+    "page": 37,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_WSM_WSM_WILLIAMS_SONOMA_INC_2019_p37.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 32299
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "TSCO",
+    "pdf_file": "TSCO-TRACTOR SUPPLY CO-2025.pdf",
+    "page": 15,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_TSCO_TSCO_TRACTOR_SUPPLY_CO_2025_p15.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 2934,
+      "height_px": 1650,
+      "bytes": 778762
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "RL",
+    "pdf_file": "RL-RALPH LAUREN CORP-2021.pdf",
+    "page": 20,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_RL_RL_RALPH_LAUREN_CORP_2021_p20.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 935,
+      "height_px": 1210,
+      "bytes": 247124
+    }
+  },
+  {
+    "set": "main_sample",
+    "ticker": "TGT",
+    "pdf_file": "TGT-TARGET CORP-2018.pdf",
+    "page": 45,
+    "group": "production_ambiguous",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/main_sample_TGT_TGT_TARGET_CORP_2018_p45.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 85372
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf",
+    "page": 3,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_AEO_AEO_AMERICAN_EAGLE_OUTFITTERS_INC_2024_p3.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 25361
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "AEO",
+    "pdf_file": "AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf",
+    "page": 4,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_AEO_AEO_AMERICAN_EAGLE_OUTFITTERS_INC_2024_p4.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 21639
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 4,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p4.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 85894
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 6,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p6.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 29087
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 7,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p7.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 41927
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 9,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p9.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 40202
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 10,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p10.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 143554
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 11,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p11.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 184569
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 13,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p13.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 119786
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 15,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p15.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 173412
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 16,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p16.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 222118
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 18,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p18.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 116465
+    }
+  },
+  {
+    "set": "human_validation",
+    "ticker": "ACI",
+    "pdf_file": "ACI-ALBERTSONS COS INC-2022.pdf",
+    "page": 19,
+    "group": "reconstructed_text_differs",
+    "image_path": "reports/llm_reader_review_2026-07-30/images/human_validation_ACI_ACI_ALBERTSONS_COS_INC_2022_p19.png",
+    "render": {
+      "dpi": 110,
+      "width_px": 1210,
+      "height_px": 935,
+      "bytes": 398284
+    }
+  }
+]

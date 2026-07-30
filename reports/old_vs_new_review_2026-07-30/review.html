@@ -1,0 +1,3066 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reader comparison - blinded</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; padding: 0 20px 64px; background: #f6f7f9; color: #202124; }
+header { position: sticky; top: 0; z-index: 10; background: #ffffffee; backdrop-filter: blur(6px);
+         border-bottom: 1px solid #d7dbe0; padding: 12px 0; margin-bottom: 18px; }
+h1 { margin: 0 0 8px; font-size: 19px; }
+h2 { font-size: 16px; margin: 30px 0 6px; }
+.tally { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 14px; }
+.pill { padding: 4px 10px; border-radius: 999px; border: 1px solid #d7dbe0; background: #fff; }
+.intro { font-size: 14px; max-width: 90ch; }
+article { background: #fff; border: 1px solid #d7dbe0; border-radius: 8px; padding: 14px; margin: 0 0 20px; }
+article.scored { border-color: #15803d; }
+.meta { font-size: 12px; color: #5f6368; margin: 0 0 8px; }
+.grid { display: grid; grid-template-columns: minmax(240px, 0.9fr) minmax(300px, 1fr) minmax(300px, 1fr); gap: 14px; align-items: start; }
+h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #5f6368; }
+img { width: 100%; border: 1px solid #bbb; border-radius: 4px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 10px; background: #111827;
+      color: #e5e7eb; border-radius: 4px; max-height: 440px; overflow-y: auto; font-size: 11.5px; line-height: 1.5; }
+pre.empty { background: #7f1d1d; }
+.score { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.score label { cursor: pointer; padding: 8px 16px; border: 1px solid #d7dbe0; border-radius: 6px; background: #fff; font-size: 14px; user-select: none; }
+.score label:has(input:checked) { font-weight: 600; background: #dbeafe; border-color: #1a73e8; }
+.score input[type=text] { flex: 1; min-width: 200px; padding: 8px; border: 1px solid #d7dbe0; border-radius: 6px; }
+button { padding: 8px 14px; border: 1px solid #d7dbe0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; }
+button.primary { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+#out { width: 100%; min-height: 150px; font-family: ui-monospace, monospace; font-size: 12px; padding: 12px; border: 1px solid #d7dbe0; border-radius: 6px; }
+@media (max-width: 1150px) { .grid { grid-template-columns: 1fr; } }
+@media (prefers-color-scheme: dark) {
+  body { background: #16181c; color: #e8eaed; }
+  header { background: #1f2126ee; border-color: #33363b; }
+  article { background: #1f2126; border-color: #33363b; }
+  .pill, .score label, button, #out { background: #26282d; border-color: #44474d; color: #e8eaed; }
+  .meta, h3 { color: #9aa0a6; }
+}
+</style></head><body>
+<header><h1>Which reader reads this page better?</h1>
+<div class="tally">
+<span class="pill">Scored <b id="n-done">0</b></span>
+<button id="copy" class="primary">Copy scores</button>
+<button id="clear">Clear</button>
+</div></header>
+<p class="intro"><strong>The two texts are blinded.</strong> Which parser is A and which is B changes from page to page, and this page does not know the answer. Judge only which text reads closer to how a person reads the page: sentences whole, labels next to their values, blocks not interleaved. If neither is clearly better, choose <em>No difference</em> &mdash; that is a real answer, not a cop-out.</p>
+<h2>Group 1 &mdash; both readers produce text (19 pages)</h2>
+<p class="intro">These carry the decision.</p>
+<article data-id="G1"><h3 style="font-size:14px;text-transform:none;color:inherit">G1. AEO p3</h3>
+<p class="meta">321 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g01_AEO_3.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>BUILDING A BETTER PLANET - GOALS
+FOCUS AREA GOAL ESTABLISHED STATUS
+Reduce water use per jean by 30% by 2023 from a 2017
+2019
+baseline year EXCEEDED
+Reduce water use per jean by 50% by 2025 from a
+2022 ON TRACK
+2017 baseline year
+Recycle 50% of total water used in denim laundries by 2023 2019
+EXCEEDED
+Recycle 70% of total water used in denim laundries by 2025 2022
+WATER EXCEEDED
+Apply AEO Wastewater Management Standard to 100%
+2019
+of strategic water-intensive factories, mills and laundries
+ACHIEVED
+by 2023
+Reduce water footprint by 30% by 2028 across own
+2022
+operations and strategic factories and mills for all ON TRACK
+product types
+AEO commits to securing renewable energy for 100% of
+electrical power demand for owned and operated facilities 2019 ON TRACK
+by 2030
+Reduce scope 1 &amp; 2 emissions 80% by 2030 from a
+2019 ON TRACK
+2018 base year
+Reduce carbon emissions 40% by 2030 and 60% by 2040
+CLIMATE 2019 ON TRACK
+in AEO’s manufacturing from a 2018 base year
+Phase out coal-fired boilers in our supply chain by 2030;
+2022 ON TRACK
+no new factories with coal-fired boilers after 2025
+
+PROGRESS + ACHIEVEMENTS
+Reduced water usage per jean by 36% in 2021,
+meeting goal two years early
+Reduced water usage by 48% in 2024. Target
+increased, after meeting our initial goal
+Reached an overall recycling rate of 64% in 2022,
+exceeding goal one year early
+Reached an overall recycling rate of 76%,
+meeting goal two years early
+As of 2021, 100% of strategic water-intensive
+factories conduct wastewater testing annually
+Reduction work launched, discussions underway
+with suppliers
+AEO reached 24% renewable energy in 2024
+Emissions decreased 56% from our baseline
+in 2024
+Total emissions from tier 1 factories reduced
+11% from 2023 to 2024; procurement volume
+increased 1%.
+16 suppliers phased out coal in 2024, more
+are underway
+
+*Specific framework indices can be found in the Appendix. 03
+03</pre></section>
+<section><h3>Parser B</h3><pre>BUILDING A BETTER PLANET - GOALS
+FOCUS AREA GOAL ESTABLISHED STATUS PROGRESS + ACHIEVEMENTS
+Reduce water use per jean by 30% by 2023 from a 2017 Reduced water usage per jean by 36% in 2021,
+2019
+baseline year EXCEEDED meeting goal two years early
+Reduce water use per jean by 50% by 2025 from a Reduced water usage by 48% in 2024. Target
+2022 ON TRACK
+2017 baseline year increased, after meeting our initial goal
+Reached an overall recycling rate of 64% in 2022,
+Recycle 50% of total water used in denim laundries by 2023 2019
+EXCEEDED exceeding goal one year early
+Recycle 70% of total water used in denim laundries by 2025 Reached an overall recycling rate of 76%,
+2022
+WATER EXCEEDED meeting goal two years early
+Apply AEO Wastewater Management Standard to 100%
+2019 As of 2021, 100% of strategic water-intensive
+of strategic water-intensive factories, mills and laundries
+ACHIEVED factories conduct wastewater testing annually
+
+by 2023
+Reduce water footprint by 30% by 2028 across own
+operations and strategic factories and mills for all
+product types
+AEO commits to securing renewable energy for 100% of
+electrical power demand for owned and operated facilities
+by 2030
+Reduce scope 1 &amp; 2 emissions 80% by 2030 from a
+2018 base year
+Reduce carbon emissions 40% by 2030 and 60% by 2040
+CLIMATE
+in AEO’s manufacturing from a 2018 base year
+Phase out coal-fired boilers in our supply chain by 2030;
+no new factories with coal-fired boilers after 2025
+
+Reduction work launched, discussions underway
+2022
+ON TRACK
+with suppliers
+2019 ON TRACK AEO reached 24% renewable energy in 2024
+Emissions decreased 56% from our baseline
+2019 ON TRACK
+in 2024
+Total emissions from tier 1 factories reduced
+2019 ON TRACK 11% from 2023 to 2024; procurement volume
+increased 1%.
+16 suppliers phased out coal in 2024, more
+2022 ON TRACK
+are underway
+
+*Specific framework indices can be found in the Appendix. 03
+03</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G1" value="A better">A better</label>
+<label><input type="radio" name="G1" value="No difference">No difference</label>
+<label><input type="radio" name="G1" value="B better">B better</label>
+<input type="text" data-note="G1" placeholder="note (optional)">
+</div></article>
+<article data-id="G2"><h3 style="font-size:14px;text-transform:none;color:inherit">G2. AEO p4</h3>
+<p class="meta">249 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g02_AEO_4.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>BUILDING A BETTER PLANET - GOALS
+FOCUS AREA GOAL ESTABLISHED STATUS
+Collect post-consumer apparel, diverting waste from
+2019 ON TRACK
+landfills with a goal to increase volume every year
+Convert all labels to sustainably sourced materials 2019
+ACHIEVED
+Recycle 100% of pre-consumer apparel waste at factories
+2022 ON TRACK
+by 2028
+WASTE
+REDUCTION
+Keep unsellable garments (returns and QA issues, product
+2022 ON TRACK
+safety issues) from landfills by 2028
+Reduce virgin plastic by 50% and reduce total
+2022 ON TRACK
+plastic footprint by 30% by 2028
+Use sustainable sources for 75% of all fibers by 2028 2022 ON TRACK
+•100% of cotton fiber 2019 ON TRACK
+•100% of man-made cellulose fibers 2019 ON TRACK
+•20% of all-natural fiber volume will come from
+SUSTAINABLE 2022 ON TRACK
+recycled materials
+MATERIALS
+•50% of nylon fiber 2022 ON TRACK
+•100% of polyester fiber 2022 ON TRACK
+
+PROGRESS + ACHIEVEMENTS
+Consumer take back programs include Blue
+Jeans Go Green (American Eagle) and I Support
+the Girls (Aerie)
+All hangtags and product labels are sustainably
+sourced and will continue to be
+Waste assessment at factories underway
+Partnered with a network of nonprofits to reuse
++recycle unsellable garments
+Initial work underway
+62% of all fibers are sustainably sourced
+67% of cotton was sustainably sourced
+92% of cellulosics were sustainably sourced
+6% of all-natural fiber volume will come from
+recycled materials
+44% of nylon was sustainably sourced
+Goal was set at 50% in 2019 and updated in
+2022; 63% of polyester was sustainably sourced
+
+04</pre></section>
+<section><h3>Parser B</h3><pre>BUILDING A BETTER PLANET - GOALS
+FOCUS AREA GOAL ESTABLISHED STATUS PROGRESS + ACHIEVEMENTS
+Consumer take back programs include Blue
+Collect post-consumer apparel, diverting waste from
+2019 ON TRACK Jeans Go Green (American Eagle) and I Support
+landfills with a goal to increase volume every year
+the Girls (Aerie)
+All hangtags and product labels are sustainably
+Convert all labels to sustainably sourced materials 2019
+ACHIEVED sourced and will continue to be
+Recycle 100% of pre-consumer apparel waste at factories
+2022 ON TRACK Waste assessment at factories underway
+by 2028
+WASTE
+REDUCTION
+Keep unsellable garments (returns and QA issues, product Partnered with a network of nonprofits to reuse
+2022 ON TRACK
+safety issues) from landfills by 2028 +recycle unsellable garments
+Reduce virgin plastic by 50% and reduce total
+2022 ON TRACK Initial work underway
+plastic footprint by 30% by 2028
+Use sustainable sources for 75% of all fibers by 2028 2022 ON TRACK 62% of all fibers are sustainably sourced
+•100% of cotton fiber 2019 ON TRACK 67% of cotton was sustainably sourced
+•100% of man-made cellulose fibers 2019 ON TRACK 92% of cellulosics were sustainably sourced
+•20% of all-natural fiber volume will come from 6% of all-natural fiber volume will come from
+SUSTAINABLE 2022 ON TRACK
+recycled materials recycled materials
+MATERIALS
+•50% of nylon fiber 2022 ON TRACK 44% of nylon was sustainably sourced
+Goal was set at 50% in 2019 and updated in
+•100% of polyester fiber 2022 ON TRACK
+2022; 63% of polyester was sustainably sourced
+
+04</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G2" value="A better">A better</label>
+<label><input type="radio" name="G2" value="No difference">No difference</label>
+<label><input type="radio" name="G2" value="B better">B better</label>
+<input type="text" data-note="G2" placeholder="note (optional)">
+</div></article>
+<article data-id="G3"><h3 style="font-size:14px;text-transform:none;color:inherit">G3. ACI p4</h3>
+<p class="meta">496 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g03_ACI_4.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Letter from Our CEO
+Last year, Albertsons Companies introduced Recipe
+for Change , a framework focused on maximizing our
+positive impact across four pillars: Planet, People,
+Product, and Community. By bringing together our
+long-term goals and strategies into a unified platform,
+we further solidified our commitment to support the
+communities we serve and the planet we share while
+delivering business results.
+In 2022, we continued making meaningful progress
+toward our Recipe for Change commitments and
+embedding these goals throughout our operations.
+We’re pleased to share our results with you in this
+year’s report.
+For our neighborhoods to thrive, we need a healthy
+planet. That’s why we’re committed to reducing our
+carbon footprint and nurturing the environment.
+Between 2019 and 2022, we reduced carbon
+emissions in our own operations by 21%, continuing
+to make progress toward our 2030 science-based
+emissions reduction goals. We achieved this by
+completing more than 1,100 energy efficiency and 85
+refrigeration projects. In addition, we recycled more
+than 850 million pounds of cardboard and 27 million
+pounds of plastic film and bags.
+We’re committed to creating a diverse, equitable and
+inclusive workplace–one that ensures every associate
+is celebrated and has equal access to opportunities
+
+wide inclusion index and are leveraging the
+results to continue to foster a company culture
+where associates feel they can be themselves and
+share their individual perspectives. In addition,
+we added our newest associate resource group–
+diverseABILITY–focused on driving inclusion for
+people with diverse abilities, their caretakers,
+and allies.
+As a company, we’re continually looking for
+opportunities to expand our sustainable product
+selection and reduce unnecessary packaging and
+food waste. In 2022, we rolled out standardized
+recycling communications on more than 7,000 Own
+Brands packaged products and 40,000 store-made
+products so our customers have the information
+they need to easily recycle packaging after use.
+Additionally, we rolled out nearly 1,000 new soft
+plastics recycling bins in stores and worked with
+consumer-packaged goods (CPG) partners to help
+educate and engage customers in their use.
+Our local grocery stores have deep connections
+in the communities they serve, giving us a unique
+opportunity to help our neighborhoods thrive. One
+way we do this is by helping fight food insecurity
+at the local level through meal donations, charitable
+giving, and partnerships designed to help break the
+cycle of hunger. Since 2019, we have enabled more
+
+than 950 million meals through store food donations
+and resources. In 2022, we launched our company-
+and our Albertsons Companies Foundation’s
+
+Nourishing Neighbors program. In 2022, in support of
+the White House Conference on Hunger, Nutrition, and
+Health, we expanded our commitment by setting new
+goals and initiatives designed to further address food
+insecurity as well as empower nutrition and health.
+Finally, I’d like to thank the entire Albertsons Companies
+team for its passion and commitment to living our
+purpose and positively impacting the communities we so
+proudly serve. Together, we will continue to create better
+lives, vibrant neighborhoods, and a healthier planet.
+Vivek Sankaran
+CEO
+
+4 4</pre></section>
+<section><h3>Parser B</h3><pre>Letter from Our CEO
+Last year, Albertsons Companies introduced Recipe
+for Change , a framework focused on maximizing our
+positive impact across four pillars: Planet, People,
+Product, and Community. By bringing together our
+long-term goals and strategies into a unified platform,
+we further solidified our commitment to support the
+communities we serve and the planet we share while
+delivering business results.
+In 2022, we continued making meaningful progress
+toward our Recipe for Change commitments and
+embedding these goals throughout our operations.
+We’re pleased to share our results with you in this
+year’s report.
+For our neighborhoods to thrive, we need a healthy
+planet. That’s why we’re committed to reducing our
+carbon footprint and nurturing the environment.
+Between 2019 and 2022, we reduced carbon
+emissions in our own operations by 21%, continuing
+to make progress toward our 2030 science-based
+emissions reduction goals. We achieved this by
+completing more than 1,100 energy efficiency and 85
+refrigeration projects. In addition, we recycled more
+than 850 million pounds of cardboard and 27 million
+pounds of plastic film and bags.
+We’re committed to creating a diverse, equitable and
+inclusive workplace–one that ensures every associate
+is celebrated and has equal access to opportunities
+and resources. In 2022, we launched our company-
+
+wide inclusion index and are leveraging the
+results to continue to foster a company culture
+where associates feel they can be themselves and
+share their individual perspectives. In addition,
+we added our newest associate resource group–
+diverseABILITY–focused on driving inclusion for
+people with diverse abilities, their caretakers,
+and allies.
+As a company, we’re continually looking for
+opportunities to expand our sustainable product
+selection and reduce unnecessary packaging and
+food waste. In 2022, we rolled out standardized
+recycling communications on more than 7,000 Own
+Brands packaged products and 40,000 store-made
+products so our customers have the information
+they need to easily recycle packaging after use.
+Additionally, we rolled out nearly 1,000 new soft
+plastics recycling bins in stores and worked with
+consumer-packaged goods (CPG) partners to help
+educate and engage customers in their use.
+Our local grocery stores have deep connections
+in the communities they serve, giving us a unique
+opportunity to help our neighborhoods thrive. One
+way we do this is by helping fight food insecurity
+at the local level through meal donations, charitable
+giving, and partnerships designed to help break the
+cycle of hunger. Since 2019, we have enabled more
+than 950 million meals through store food donations
+and our Albertsons Companies Foundation’s
+
+Nourishing Neighbors program. In 2022, in support of
+the White House Conference on Hunger, Nutrition, and
+Health, we expanded our commitment by setting new
+goals and initiatives designed to further address food
+insecurity as well as empower nutrition and health.
+Finally, I’d like to thank the entire Albertsons Companies
+team for its passion and commitment to living our
+purpose and positively impacting the communities we so
+proudly serve. Together, we will continue to create better
+lives, vibrant neighborhoods, and a healthier planet.
+Vivek Sankaran
+CEO
+
+4 4</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G3" value="A better">A better</label>
+<label><input type="radio" name="G3" value="No difference">No difference</label>
+<label><input type="radio" name="G3" value="B better">B better</label>
+<input type="text" data-note="G3" placeholder="note (optional)">
+</div></article>
+<article data-id="G4"><h3 style="font-size:14px;text-transform:none;color:inherit">G4. ACI p6</h3>
+<p class="meta">270 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g04_ACI_6.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Our Purpose
+
+To bring people together
+around the joys of food
+and to inspire well-being.
+
+Our company has a rich history, bringing together 24
+banners with unique local identities that have deep roots
+in our communities and a strong heritage of service. We
+empower our associates to live our purpose in pursuit of
+our ambition to earn customers for life. Our values guide
+our associates in creating effortless, inspiring, affordable,
+and personal experiences that build deep, long-lasting
+relationships with our customers.
+
+We put people first.
+Our associates are the
+connection to our customers
+and communities. We care
+for their well-being and invest
+in their personal and
+professional growth.
+
+We are We value different
+customer-driven. perspectives.
+We care about our customers and We encourage open dialogue
+make decisions based on what’s and healthy debate. We
+best for them. We are empowered make better decisions when
+to make a positive impact—big and everyone’s voice is heard.
+small—in our customers’ lives.
+
+We raise the bar. We act as owners.
+We stay curious and We act with integrity, pride, and
+challenge the status quo passion. We hold ourselves
+to continually innovate and accountable, anticipate
+improve how we serve our customer needs, and engage
+customers and communities. others constructively to deliver
+results that matter.
+
+We are one team.
+We value teamwork and
+camaraderie. We build
+relationships and recognize
+each other’s contributions.
+
+We build belong ing.
+We know a diverse and
+inclusive workforce is built
+on a foundation of courtesy,
+
+We are committed
+to a healthy future.
+We work together and build
+
+partnerships to support
+dignity, and respect.
+our communities and the
+planet we share.
+
+6</pre></section>
+<section><h3>Parser B</h3><pre>Our Purpose
+To bring people together
+around the joys of food
+We put people first.
+and to inspire well-being. Our associates are the
+connection to our customers
+and communities. We care
+for their well-being and invest
+in their personal and
+professional growth.
+Our company has a rich history, bringing together 24
+banners with unique local identities that have deep roots
+in our communities and a strong heritage of service. We
+empower our associates to live our purpose in pursuit of
+our ambition to earn customers for life. Our values guide
+our associates in creating effortless, inspiring, affordable,
+and personal experiences that build deep, long-lasting
+relationships with our customers.
+We raise the bar.
+We stay curious and
+challenge the status quo
+to continually innovate and
+improve how we serve our
+customers and communities.
+We build belong
+We know a diverse and
+inclusive workforce is built
+on a foundation of courtesy,
+dignity, and respect.
+
+We are We value different
+customer-driven. perspectives.
+We care about our customers and We encourage open dialogue
+make decisions based on what’s and healthy debate. We
+best for them. We are empowered make better decisions when
+to make a positive impact—big and everyone’s voice is heard.
+small—in our customers’ lives.
+We act as owners. We are one team.
+We act with integrity, pride, and We value teamwork and
+passion. We hold ourselves camaraderie. We build
+accountable, anticipate relationships and recognize
+customer needs, and engage each other’s contributions.
+others constructively to deliver
+results that matter.
+ing. We are committed
+to a healthy future.
+We work together and build
+partnerships to support
+our communities and the
+planet we share.
+
+6</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G4" value="A better">A better</label>
+<label><input type="radio" name="G4" value="No difference">No difference</label>
+<label><input type="radio" name="G4" value="B better">B better</label>
+<input type="text" data-note="G4" placeholder="note (optional)">
+</div></article>
+<article data-id="G5"><h3 style="font-size:14px;text-transform:none;color:inherit">G5. ACI p7</h3>
+<p class="meta">316 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g05_ACI_7.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>®
+Recipe for Change 2022 Overview
+We’re working to make a real difference in the communities we serve and the planet
+Our Recipe for Change brings together the key ingredients we need to achieve our
+View highlights of our Recipe for Change framework below and learn more about our
+progress throughout this report.
+Our Goals
+Achieve
+47% carbon reduction net zero emissions
+in our operations by 2030. 1 in our operations by 2040.
+Increase Foster an
+diverse representation inclusive culture
+within our management. that embraces differences.
+Increase the
+recyclability, reusability, Zero food waste
+going to landfill by 2030.
+and/or compostability
+of Own Brands Packaging by 2025.
+Champion innovative programs and partnerships to help Enable the donation of
+break the cycle of hunger. 1 billion meals by 2030.
+1 Scope 1 and 2 emissions
+“The progress we saw in 2022 would not have been possible without the passion
+made meaningful changes that are improving food donations in our communities,
+belonging within our teams. In the year ahead, we plan to continue to expand engagement
+with our vendors to drive industry change and increasing customer involvement
+journey, we can make change a reality and better support the communities we serve
+
+we share.
+bold ambitions.
+goals and
+Our Progress
+Reduced carbon emissions by 21%
+in our own operations between 2019 and 2022. 1
+Established an inclusion index
+to foster a culture that puts people first and values diverse perspectives.
+Standardized recycling communications
+for 7,000+ Own Brands products and 40,000+ store-made products.
+Enabled 254 million meals
+through our store food donation and Nourishing Neighbors
+programs, totaling more than 950 million meals since 2019.
+and dedication of our associates. Because of them, we
+reducing our emissions, and increasing inclusion and
+with Recipe for Change, including partnering
+in achieving our goals. By bringing others along on our
+and the planet we share.”
+
+— Suzanne Long,
+Chief Sustainability and Transformation Officer 7 7</pre></section>
+<section><h3>Parser B</h3><pre>®
+Recipe for Change 2022 Overview
+We’re working to make a real difference in the communities we serve and the planet we share.
+Our Recipe for Change brings together the key ingredients we need to achieve our bold ambitions.
+View highlights of our Recipe for Change framework below and learn more about our goals and
+progress throughout this report.
+
+Our Goals
+47% carbon reduction
+in our operations by 2030. 1
+
+Our Progress
+Achieve
+net zero emissions Reduced carbon emissions by 21%
+in our operations by 2040. in our own operations between 2019 and 2022. 1
+
+Increase Foster an
+diverse representation inclusive culture
+within our management. that embraces differences.
+
+Established an inclusion index
+to foster a culture that puts people first and values diverse perspectives.
+
+Increase the
+recyclability, reusability, Zero food waste
+going to landfill by 2030.
+and/or compostability
+of Own Brands Packaging by 2025.
+Champion innovative programs and partnerships to help Enable the donation of
+break the cycle of hunger. 1 billion meals by 2030.
+
+Standardized recycling communications
+for 7,000+ Own Brands products and 40,000+ store-made products.
+Enabled 254 million meals
+through our store food donation and Nourishing Neighbors
+
+programs, totaling more than 950 million meals since 2019.
+1 Scope 1 and 2 emissions
+“The progress we saw in 2022 would not have been possible without the passion and dedication of our associates. Because of them, we
+made meaningful changes that are improving food donations in our communities, reducing our emissions, and increasing inclusion and
+belonging within our teams. In the year ahead, we plan to continue to expand engagement with Recipe for Change, including partnering
+with our vendors to drive industry change and increasing customer involvement in achieving our goals. By bringing others along on our
+journey, we can make change a reality and better support the communities we serve and the planet we share.”
+
+— Suzanne Long,
+Chief Sustainability and Transformation Officer 7 7</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G5" value="A better">A better</label>
+<label><input type="radio" name="G5" value="No difference">No difference</label>
+<label><input type="radio" name="G5" value="B better">B better</label>
+<input type="text" data-note="G5" placeholder="note (optional)">
+</div></article>
+<article data-id="G6"><h3 style="font-size:14px;text-transform:none;color:inherit">G6. ACI p9</h3>
+<p class="meta">588 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g06_ACI_9.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Climate Action
+
+Our 2022 progress against our baseline year is as follows:
+Our Strategy to Reduce our Carbon Footprint
+As part of our 2030 carbon reduction goal, Albertsons
+
+A Better Tomorrow Starts at the Source Carbon Footprint
+Companies created a comprehensive strategy to reduce
+EMISSIONS 2019 emissions and engage our larger value chain. Our focus
+2022
+CATEGORY BASELINE YEAR
+As part of our Recipe for Change, we’re letting areas are as follows:
+science lead the way in our goal to reduce carbon SCOPE 1 2,828,955 2,499,308
+• Scope 1: Reduce emissions from our refrigeration
+emissions across our operations and value chain.
+SCOPE 2 -
+1,998,819 1,623,637 systems.
+LOCATION BASED
+Our Goals: SCOPE 2 - • Scope 2: Reduce and optimize our energy demand and
+2,130,132 1,400,857
+MARKET BASED
+increase procurement of renewable energy.
+• Achieve Science Based Target initiative (SBTi)
+SCOPE 1 &amp; 2
+4,959,087 3,900,165
+approved emissions reduction goals by 2030. MARKET BASED TOTAL
+• Scope 3: Engage our top suppliers to set science-
+based carbon reduction goals and create innovative
+• Reduce emissions in our own operations SCOPE 3 CATEGORY 1 WE WILL EVALUATE
+OUR CALCULATION opportunities to reduce the emissions from the fuel
+PURCHASED GOODS 30,363,100 PROCESS IN 2023 TO
+by 47%. AND SERVICES
+UPDATE THIS CATEGORY customers buy and use.
+• Reduce downstream emissions from the
+SCOPE 3 CATEGORY 11 The sections below provide examples of projects and
+use of sold goods by 27%. USE OF SOLD 10,241,700 9,704,066
+strategies we are leveraging to reduce our carbon footprint.
+PRODUCTS
+• Engage our top suppliers to set science-
+See 2021/2022 ESG Report for 2020 and 2021 data.
+based targets by 2026. Energy Efficiency Projects
+• Achieve net zero emissions in our own We completed more than 1,100 energy efficiency projects
+operations by 2040. Carbon Footprint - Own Operations across our operations in 2022 to reduce our energy
+demand. Projects included installing LED lighting retrofits,
+6 doors on refrigerated cases, building management systems,
+and more.
+5
+-21%
+A carbon emission reduction target is considered “science-
+4 Our Shaw’s stores in Massachusetts were named one of the
+based” when it aligns with what the latest climate science
+2022 Mass Save Climate Leaders for their efforts to reduce
+says is necessary to meet the goals of the Paris Climate 3
+energy use. 2 The program recognizes leaders that have
+Agreement, which calls for pursuing efforts to limit global
+2 implemented changes to increase energy efficiency and
+warming to 1.5°C above preindustrial levels.
+demonstrated a long-term commitment to reducing their
+1
+carbon footprint.
+Albertsons Companies’ 2030 emissions reduction goal
+0
+has been approved by the Science Based Targets initiative
+2019 2020 2021 2022
+(SBTi), the gold standard for emissions goals developed Renewable Energy
+by the CDP, World Resources Institute, World Wildlife Scope 1 Scope 2 (Market Based)
+Where feasible, we use our facilities to generate renewable
+Fund, and the United Nations Global Compact. The SBTi
+Additional details on our carbon footprint can be found in energy. The EPA’s Green Power Partnership ranked
+standards require companies to not only address emissions
+our annual CDP Climate Change Disclosures. Albertsons Companies at #11 in their Top 30 Retail Partner
+from their own operations (Scopes 1 and 2), but also
+rankings for Calendar Year 2022. 3
+material emissions from their value chain (Scope 3). Our
+emissions reduction goals are based on a 2019 baseline,
+and we annually report carbon emissions through the
+2 2022 Mass Saves Climate Leaders
+CDP’s Climate Change Disclosure. 3 Green Power Partnership Top 30 Retail | US EPA
+
+9</pre></section>
+<section><h3>Parser B</h3><pre>Climate Action
+A Better Tomorrow Starts at the Source
+As part of our Recipe for Change, we’re letting
+science lead the way in our goal to reduce carbon
+emissions across our operations and value chain.
+Our Goals:
+• Achieve Science Based Target initiative (SBTi)
+approved emissions reduction goals by 2030.
+• Reduce emissions in our own operations
+by 47%.
+• Reduce downstream emissions from the
+use of sold goods by 27%.
+• Engage our top suppliers to set science-
+based targets by 2026.
+• Achieve net zero emissions in our own
+operations by 2040.
+A carbon emission reduction target is considered “science-
+based” when it aligns with what the latest climate science
+says is necessary to meet the goals of the Paris Climate
+Agreement, which calls for pursuing efforts to limit global
+warming to 1.5°C above preindustrial levels.
+Albertsons Companies’ 2030 emissions reduction goal
+has been approved by the Science Based Targets initiative
+(SBTi), the gold standard for emissions goals developed
+by the CDP, World Resources Institute, World Wildlife
+Fund, and the United Nations Global Compact. The SBTi
+standards require companies to not only address emissions
+from their own operations (Scopes 1 and 2), but also
+material emissions from their value chain (Scope 3). Our
+emissions reduction goals are based on a 2019 baseline,
+and we annually report carbon emissions through the
+CDP’s Climate Change Disclosure.
+
+Our 2022 progress against our baseline year is as follows:
+Carbon Footprint
+EMISSIONS 2019
+2022
+CATEGORY BASELINE YEAR
+SCOPE 1 2,828,955 2,499,308
+SCOPE 2 -
+1,998,819 1,623,637
+LOCATION BASED
+SCOPE 2 -
+2,130,132 1,400,857
+MARKET BASED
+SCOPE 1 &amp; 2
+4,959,087 3,900,165
+MARKET BASED TOTAL
+SCOPE 3 CATEGORY 1 WE WILL EVALUATE
+OUR CALCULATION
+PURCHASED GOODS 30,363,100 PROCESS IN 2023 TO
+AND SERVICES UPDATE THIS CATEGORY
+SCOPE 3 CATEGORY 11
+USE OF SOLD 10,241,700 9,704,066
+PRODUCTS
+See 2021/2022 ESG Report for 2020 and 2021 data.
+Carbon Footprint - Own Operations
+6
+5
+-21%
+4
+3
+2
+1
+0
+2019 2020 2021 2022
+Scope 1 Scope 2 (Market Based)
+Additional details on our carbon footprint can be found in
+our annual CDP Climate Change Disclosures.
+
+Our Strategy to Reduce our Carbon Footprint
+As part of our 2030 carbon reduction goal, Albertsons
+Companies created a comprehensive strategy to reduce
+emissions and engage our larger value chain. Our focus
+areas are as follows:
+• Scope 1: Reduce emissions from our refrigeration
+systems.
+• Scope 2: Reduce and optimize our energy demand and
+increase procurement of renewable energy.
+• Scope 3: Engage our top suppliers to set science-
+based carbon reduction goals and create innovative
+opportunities to reduce the emissions from the fuel
+customers buy and use.
+The sections below provide examples of projects and
+strategies we are leveraging to reduce our carbon footprint.
+Energy Efficiency Projects
+We completed more than 1,100 energy efficiency projects
+across our operations in 2022 to reduce our energy
+demand. Projects included installing LED lighting retrofits,
+doors on refrigerated cases, building management systems,
+and more.
+Our Shaw’s stores in Massachusetts were named one of the
+2022 Mass Save Climate Leaders for their efforts to reduce
+energy use. 2 The program recognizes leaders that have
+implemented changes to increase energy efficiency and
+demonstrated a long-term commitment to reducing their
+carbon footprint.
+Renewable Energy
+Where feasible, we use our facilities to generate renewable
+energy. The EPA’s Green Power Partnership ranked
+Albertsons Companies at #11 in their Top 30 Retail Partner
+rankings for Calendar Year 2022. 3
+2 2022 Mass Saves Climate Leaders
+3 Green Power Partnership Top 30 Retail | US EPA
+
+9</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G6" value="A better">A better</label>
+<label><input type="radio" name="G6" value="No difference">No difference</label>
+<label><input type="radio" name="G6" value="B better">B better</label>
+<input type="text" data-note="G6" placeholder="note (optional)">
+</div></article>
+<article data-id="G7"><h3 style="font-size:14px;text-transform:none;color:inherit">G7. ACI p10</h3>
+<p class="meta">709 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g07_ACI_10.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>We have two utility grade turbines at our Tracy, CA well as the items we buy and sell to operate our stores,
+
+distribution center, and at the end of 2022 we had more
+than 50 locations with on-site solar generation, with plans
+to install more in the coming year.
+We work with energy providers in our operating areas to
+purchase utility-scale renewable energy and renewable
+energy credits. Through these arrangements, we have
+been able to participate in buying energy from a solar
+farm in Arizona and source renewable energy for Safeway
+stores in Virginia.
+In 2022, we entered into an agreement to purchase
+18% of the total MW generated from the first phase of
+the Edwards Sanborn Solar Storage Project, the largest
+ground-mounted solar array project construction on an Air
+Force base. Once completed, the Southern California site
+will be the largest project in the world to simultaneously
+combine solar photovoltaic and battery storage systems.
+Refrigerants
+As part of our Climate Action strategy, we have developed
+a roadmap to reduce our refrigerant leakage rate and
+convert to lower global warming potential refrigerants in
+our operations.
+We have committed capital to these projects and are
+working with our operating divisions to ensure we drive
+execution in support of local, state, and national refrigerant
+goals and requirements.
+In 2022, we completed more than 85 projects to transition
+stores to lower global warming potential refrigerants.
+We also currently have 3 stores that utilize carbon
+dioxide (CO ) refrigerant systems, with plans to further
+2
+expand in the coming year. Our 22 distribution centers
+and 19 manufacturing facilities primarily use ammonia
+refrigeration systems.
+In addition, we increased our focus on strategic innovation
+and partnerships in early refrigerant leak detection
+technology and forming innovative collaborations with
+leading universities and research organizations.
+
+Transportation
+As part of our Climate Action efforts, we continue to
+increase the sustainability of our truck fleet. Our entire
+private truck fleet is certified by the EPA’s SmartWay
+program to advance supply chain sustainability and freight
+transportation efficiency.
+We continue to explore opportunities that reduce the
+impact of our fleet, including utilizing electric vehicles to
+supplement our existing distribution operations. At the end
+of 2022, 89% of our forklifts were electric, and our fleet
+includes 18 electric terminal tractors, 9 battery-electric
+refrigerated trailers, and 2 battery-electric trucks. We
+are piloting nitrogen transportation refrigeration units to
+reduce emissions from our refrigerated trailers, as well as
+new technology for tire monitoring in an effort to improve
+fuel economy.
+Value Chain Emissions
+When calculating our 2019 baseline carbon footprint, we
+found that 90% of our total carbon footprint is associated
+with emissions from our value chain (Scope 3). Within our
+value chain, two categories of emissions are considered
+most important—or material—per the Science-Based
+Targets initiative and Greenhouse Gas Protocol: 1)
+Purchased Goods and Services and 2) Use of Sold Goods.
+Purchased Goods and Services includes the tens of
+thousands of product offerings across our stores, as
+
+distribution centers, manufacturing facilities, and offices.
+This category of emissions makes up the majority of the
+carbon footprint of our value chain. To address these
+emissions, we set an SBTi-approved goal to engage more
+than 200 of our top suppliers by emissions on setting their
+own science-based carbon reduction targets. We aim to
+have these suppliers set, commit to setting, and/or track
+their progress against an existing target by 2026. At the
+end of 2022, more than 80 of our suppliers met these
+requirements. Throughout the year, we engaged with the
+vendor community through webinars, conferences, and
+leadership meetings to educate suppliers on our goals and
+explore partnership opportunities to ensure we collectively
+deliver on this commitment.
+The Use of Sold Goods category includes the emissions
+associated with the use of the fuels we sell to our
+customers through our fuel stations and propane offerings.
+We continue to evaluate how innovative opportunities to
+reduce the emissions associated with these products can
+tie into our fuel and merchandising strategies. As part of
+this, we are monitoring regulatory and purchasing trends
+in our market areas to better understand the availability
+and adoption of alternative and low-carbon fuels as well as
+electric and alternative-energy vehicles.
+Learn more about our current electric vehicle charging
+offerings in the Electric Vehicle Charging section.
+
+10 10</pre></section>
+<section><h3>Parser B</h3><pre>We have two utility grade turbines at our Tracy, CA well as the items we buy and sell to operate our stores,
+
+distribution center, and at the end of 2022 we had more
+than 50 locations with on-site solar generation, with plans
+to install more in the coming year.
+We work with energy providers in our operating areas to
+purchase utility-scale renewable energy and renewable
+energy credits. Through these arrangements, we have
+been able to participate in buying energy from a solar
+farm in Arizona and source renewable energy for Safeway
+stores in Virginia.
+In 2022, we entered into an agreement to purchase
+18% of the total MW generated from the first phase of
+the Edwards Sanborn Solar Storage Project, the largest
+ground-mounted solar array project construction on an Air
+Force base. Once completed, the Southern California site
+will be the largest project in the world to simultaneously
+combine solar photovoltaic and battery storage systems.
+Refrigerants
+As part of our Climate Action strategy, we have developed
+a roadmap to reduce our refrigerant leakage rate and
+convert to lower global warming potential refrigerants in
+our operations.
+We have committed capital to these projects and are
+working with our operating divisions to ensure we drive
+execution in support of local, state, and national refrigerant
+goals and requirements.
+
+Transportation
+As part of our Climate Action efforts, we continue to
+increase the sustainability of our truck fleet. Our entire
+private truck fleet is certified by the EPA’s SmartWay
+program to advance supply chain sustainability and freight
+transportation efficiency.
+We continue to explore opportunities that reduce the
+impact of our fleet, including utilizing electric vehicles to
+supplement our existing distribution operations. At the end
+of 2022, 89% of our forklifts were electric, and our fleet
+includes 18 electric terminal tractors, 9 battery-electric
+refrigerated trailers, and 2 battery-electric trucks. We
+are piloting nitrogen transportation refrigeration units to
+reduce emissions from our refrigerated trailers, as well as
+new technology for tire monitoring in an effort to improve
+fuel economy.
+Value Chain Emissions
+When calculating our 2019 baseline carbon footprint, we
+found that 90% of our total carbon footprint is associated
+with emissions from our value chain (Scope 3). Within our
+value chain, two categories of emissions are considered
+most important—or material—per the Science-Based
+Targets initiative and Greenhouse Gas Protocol: 1)
+Purchased Goods and Services and 2) Use of Sold Goods.
+Purchased Goods and Services includes the tens of
+thousands of product offerings across our stores, as
+
+distribution centers, manufacturing facilities, and offices.
+This category of emissions makes up the majority of the
+carbon footprint of our value chain. To address these
+emissions, we set an SBTi-approved goal to engage more
+than 200 of our top suppliers by emissions on setting their
+own science-based carbon reduction targets. We aim to
+have these suppliers set, commit to setting, and/or track
+their progress against an existing target by 2026. At the
+end of 2022, more than 80 of our suppliers met these
+requirements. Throughout the year, we engaged with the
+vendor community through webinars, conferences, and
+leadership meetings to educate suppliers on our goals and
+explore partnership opportunities to ensure we collectively
+deliver on this commitment.
+The Use of Sold Goods category includes the emissions
+associated with the use of the fuels we sell to our
+customers through our fuel stations and propane offerings.
+We continue to evaluate how innovative opportunities to
+reduce the emissions associated with these products can
+tie into our fuel and merchandising strategies. As part of
+this, we are monitoring regulatory and purchasing trends
+in our market areas to better understand the availability
+and adoption of alternative and low-carbon fuels as well as
+electric and alternative-energy vehicles.
+Learn more about our current electric vehicle charging
+offerings in the Electric Vehicle Charging section.
+
+In 2022, we completed more than 85 projects to transition
+stores to lower global warming potential refrigerants.
+We also currently have 3 stores that utilize carbon
+dioxide (CO ) refrigerant systems, with plans to further
+2
+expand in the coming year. Our 22 distribution centers
+and 19 manufacturing facilities primarily use ammonia
+refrigeration systems.
+In addition, we increased our focus on strategic innovation
+and partnerships in early refrigerant leak detection
+technology and forming innovative collaborations with
+leading universities and research organizations.
+
+10 10</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G7" value="A better">A better</label>
+<label><input type="radio" name="G7" value="No difference">No difference</label>
+<label><input type="radio" name="G7" value="B better">B better</label>
+<input type="text" data-note="G7" placeholder="note (optional)">
+</div></article>
+<article data-id="G8"><h3 style="font-size:14px;text-transform:none;color:inherit">G8. ACI p11</h3>
+<p class="meta">268 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g08_ACI_11.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Operational Waste
+In 2022, we recycled more than 850 million pounds of
+cardboard and 27 million pounds of plastic bags and film.
+This includes the pallet wrap used to safely distribute
+products as well as plastic bags and film returned by our
+customers, a service available in many of our stores.
+To expand our existing recycling services for plastic bags
+and wraps, we rolled out new and improved recycling bins
+in nearly 1,000 stores in California, Connecticut, Delaware,
+Maryland, New Jersey, New York, Pennsylvania, Virginia,
+and Washington, D.C. These bins provide access to soft
+plastics recycling, a service that is not available to the
+majority of our customers through curbside recycling.
+For more details on our soft plastic recycling bins, see the
+
+Electric Vehicle Charging
+As part of our efforts to support the planet we share, we
+strive to help our customers reduce their carbon footprints,
+too. At the end of 2022, we had more than 300 electric
+vehicle chargers across our portfolio that our customers
+used for more than 500,000 charging sessions.
+Water Stewardship
+We work to reduce the water usage in our facilities while
+maintaining high food safety and sanitation requirements.
+Focusing on leak prevention has been key to our water
+conservation efforts. We use a computer algorithm to track
+water consumption and detect water usage fluctuations.
+If an abnormal increase in water use is detected, we
+investigate the problem and address it quickly to minimize
+
+Plastics &amp; Packaging section of this report. Learn about
+negative impacts.
+our efforts to eliminate food waste going to landfill in the
+Food Waste section of this report.
+
+11 11</pre></section>
+<section><h3>Parser B</h3><pre>Operational Waste
+In 2022, we recycled more than 850 million pounds of
+cardboard and 27 million pounds of plastic bags and film.
+This includes the pallet wrap used to safely distribute
+products as well as plastic bags and film returned by our
+customers, a service available in many of our stores.
+To expand our existing recycling services for plastic bags
+and wraps, we rolled out new and improved recycling bins
+in nearly 1,000 stores in California, Connecticut, Delaware,
+Maryland, New Jersey, New York, Pennsylvania, Virginia,
+and Washington, D.C. These bins provide access to soft
+plastics recycling, a service that is not available to the
+majority of our customers through curbside recycling.
+For more details on our soft plastic recycling bins, see the
+Plastics &amp; Packaging section of this report. Learn about
+our efforts to eliminate food waste going to landfill in the
+Food Waste section of this report.
+
+Electric Vehicle Charging
+As part of our efforts to support the planet we share, we
+strive to help our customers reduce their carbon footprints,
+too. At the end of 2022, we had more than 300 electric
+vehicle chargers across our portfolio that our customers
+used for more than 500,000 charging sessions.
+Water Stewardship
+We work to reduce the water usage in our facilities while
+maintaining high food safety and sanitation requirements.
+Focusing on leak prevention has been key to our water
+conservation efforts. We use a computer algorithm to track
+water consumption and detect water usage fluctuations.
+If an abnormal increase in water use is detected, we
+investigate the problem and address it quickly to minimize
+negative impacts.
+
+11 11</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G8" value="A better">A better</label>
+<label><input type="radio" name="G8" value="No difference">No difference</label>
+<label><input type="radio" name="G8" value="B better">B better</label>
+<input type="text" data-note="G8" placeholder="note (optional)">
+</div></article>
+<article data-id="G9"><h3 style="font-size:14px;text-transform:none;color:inherit">G9. ACI p13</h3>
+<p class="meta">334 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g09_ACI_13.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Diversity, Equity &amp; Inclusion
+
+We Build Belonging
+As part of our Recipe for Change, we are committed
+to cultivating a workforce that reflects the rich
+diversity of the communities we serve and fostering
+an inclusive culture that embraces differences.
+Our Goals:
+
+• Increase diverse representation within our
+management to reflect the communities we serve.
+• Foster an inclusive culture that embraces our
+differences and drives innovation to accelerate
+growth.
+• Ensure all associates have equal access to
+opportunities and resources.
+
+Diversity, Equity &amp; Inclusion
+We have a 6-part Diversity, Equity &amp; Inclusion (DE&amp;I) framework to guide our efforts toward achieving our goals.
+
+INCLUSION &amp; IMPACTFUL ASSOCIATE
+BELONGING RESOURCE GROUPS
+Ensure that each associate’s voice Promote Associate Resource
+is heard and integrated into the Groups (ARGs) and empower
+workplace. Cultivate a supportive, them as a resource for
+welcoming, inclusive, and equitable leadership development,
+work environment that allows associate engagement and
+associates to feel connected belonging, sharing ideas and
+to the company’s purpose concerns, and supporting the
+and success. company’s initiatives.
+
+HIRING &amp;
+PROMOTIONS
+Strive to increase the pool of
+diverse candidates considered
+for promotion and have diverse
+slates and interviewers for all
+management roles.
+
+COMMUNITY
+ENGAGEMENT
+Use financial support and
+volunteerism to promote racial
+equality and social justice
+while strengthening ties with
+customers, diverse suppliers,
+and the communities we serve.
+
+TALENT MEANINGFUL
+DEVELOPMENT METRICS
+Embed Diversity, Equity &amp; Set targets and establish
+Inclusion into the lifecycles of diversity metrics to ensure
+talent development and succession successful and sustainable
+planning. Raise awareness outcomes with recruitment,
+about training and development retention, development, and
+opportunities. promotion goals.
+
+“Our leadership is driving collective action to build belonging by embedding
+Diversity, Equity &amp; Inclusion into the fabric of our company. We remain
+deeply committed to building a culture that puts people first, where diverse
+perspectives are valued and ensures that everyone-customers, associates,
+business partners, and people in the neighborhoods we serve-is treated with
+courtesy, dignity, and respect.”
+— Monique Lanaux
+GVP, Chief Diversity, Equity, Inclusion &amp; Belonging Officer
+
+13 13</pre></section>
+<section><h3>Parser B</h3><pre>Diversity, Equity &amp; Inclusion
+We Build Belonging
+As part of our Recipe for Change, we are committed
+to cultivating a workforce that reflects the rich
+diversity of the communities we serve and fostering
+an inclusive culture that embraces differences.
+Our Goals:
+• Increase diverse representation within our
+management to reflect the communities we serve.
+• Foster an inclusive culture that embraces our
+differences and drives innovation to accelerate
+growth.
+• Ensure all associates have equal access to
+opportunities and resources.
+
+Diversity, Equity &amp; Inclusion
+We have a 6-part Diversity, Equity &amp; Inclusion (DE&amp;I) framework to guide our efforts toward achieving our goals.
+INCLUSION &amp; IMPACTFUL ASSOCIATE HIRING &amp;
+BELONGING RESOURCE GROUPS PROMOTIONS
+Ensure that each associate’s voice Promote Associate Resource
+is heard and integrated into the Groups (ARGs) and empower
+Strive to increase the pool of
+workplace. Cultivate a supportive, them as a resource for
+diverse candidates considered
+welcoming, inclusive, and equitable leadership development,
+for promotion and have diverse
+work environment that allows associate engagement and
+slates and interviewers for all
+associates to feel connected belonging, sharing ideas and
+management roles.
+to the company’s purpose concerns, and supporting the
+and success. company’s initiatives.
+COMMUNITY TALENT MEANINGFUL
+ENGAGEMENT DEVELOPMENT METRICS
+Use financial support and
+Embed Diversity, Equity &amp; Set targets and establish
+volunteerism to promote racial
+Inclusion into the lifecycles of diversity metrics to ensure
+equality and social justice
+talent development and succession successful and sustainable
+while strengthening ties with
+planning. Raise awareness outcomes with recruitment,
+customers, diverse suppliers,
+about training and development retention, development, and
+and the communities we serve.
+opportunities. promotion goals.
+“Our leadership is driving collective action to build belonging by embedding
+Diversity, Equity &amp; Inclusion into the fabric of our company. We remain
+deeply committed to building a culture that puts people first, where diverse
+perspectives are valued and ensures that everyone-customers, associates,
+business partners, and people in the neighborhoods we serve-is treated with
+courtesy, dignity, and respect.”
+— Monique Lanaux
+GVP, Chief Diversity, Equity, Inclusion &amp; Belonging Officer
+
+13 13</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G9" value="A better">A better</label>
+<label><input type="radio" name="G9" value="No difference">No difference</label>
+<label><input type="radio" name="G9" value="B better">B better</label>
+<input type="text" data-note="G9" placeholder="note (optional)">
+</div></article>
+<article data-id="G10"><h3 style="font-size:14px;text-transform:none;color:inherit">G10. ACI p15</h3>
+<p class="meta">444 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g10_ACI_15.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Inclusion
+In 2022, over 80% of our associates shared their voice
+by participating in our annual engagement survey, a
+9% increase in companywide participation from the
+previous year. This survey serves as the foundation for
+our enterprise-wide inclusion index which gauges how
+many associates feel we have created an inclusive work
+environment and how we can continue to improve and
+grow our programs. During 2022, we offered opportunities
+for associates to learn more about DE&amp;I, including:
+• Training over 15,000 leaders through our “Leading
+with Inclusion” workshops—a highly interactive
+experience designed to heighten awareness around
+bias and provide tools to support associates’ ability
+to create a more inclusive work environment that
+celebrates courageous conversations.
+• Providing three distinct and curated programs focused
+on Black, Hispanic and Latino, and Asian leaders that
+offer an Executive Leadership curriculum for senior
+leaders and a Management Accelerator program for
+early-career to mid-career managers.
+• Launching an Associate Resource Group mentorship
+program designed to provide a valuable partnership
+between two people based on a mutual commitment
+to growth and development.
+• Offering micro-learning modules for all leaders that
+cover DE&amp;I topics and enable leaders to build cultural
+competency.
+• Facilitating leadership discussions on how to be more
+inclusive, holding bi-annual store and supply chain
+huddles on this topic, and providing monthly online
+training modules.
+Our Associate Resource Groups (ARGs) help enable an
+inclusive and welcoming culture among our associates.
+Our ARGs are open to all associates in corporate and
+division offices, as well as field leadership in many of
+our retail stores and supply chain facilities. Last year we
+increased membership across our ARGs to more than
+5,000 associates.
+
+In 2022, we added our newest associate resource group
+—diverseABILITY—an ARG focused on driving inclusion
+for people with diverse abilities, their caretakers, and
+allies. Other ARGs include the Women’s Inspiration and
+Inclusion Network, the Hispanic Leadership Network, the
+Asian Network, the African American Leadership Council,
+the Pride Alliance, the Recipe for Change Alliance, and the
+Veterans Associate Resource Group.
+Our ARGs host events throughout the year to build
+belonging amongst our associates and to create an
+environment where everyone is respected, valued and has
+equal opportunity to succeed. One such event in 2022
+was our Women’s Inspiration and Inclusion Network’s
+Purple Spirit Award program. In partnership with Mars’
+M&amp;M’S ® brand, and in support of the launch of their new ALLIANCE
+Purple character, we celebrated women who are flipping
+the status quo within our own organization and embody
+Albertsons Companies’ values. Three winners were
+selected from over 270 nominees across the organization
+and joined members of the Senior Leadership team at an
+event to kick off Women’s History Month.
+
+15</pre></section>
+<section><h3>Parser B</h3><pre>Inclusion
+In 2022, over 80% of our associates shared their voice
+by participating in our annual engagement survey, a
+9% increase in companywide participation from the
+previous year. This survey serves as the foundation for
+our enterprise-wide inclusion index which gauges how
+many associates feel we have created an inclusive work
+environment and how we can continue to improve and
+grow our programs. During 2022, we offered opportunities
+for associates to learn more about DE&amp;I, including:
+• Training over 15,000 leaders through our “Leading
+with Inclusion” workshops—a highly interactive
+experience designed to heighten awareness around
+bias and provide tools to support associates’ ability
+to create a more inclusive work environment that
+celebrates courageous conversations.
+• Providing three distinct and curated programs focused
+on Black, Hispanic and Latino, and Asian leaders that
+offer an Executive Leadership curriculum for senior
+leaders and a Management Accelerator program for
+early-career to mid-career managers.
+
+In 2022, we added our newest associate resource group
+—diverseABILITY—an ARG focused on driving inclusion
+for people with diverse abilities, their caretakers, and
+allies. Other ARGs include the Women’s Inspiration and
+Inclusion Network, the Hispanic Leadership Network, the
+Asian Network, the African American Leadership Council,
+the Pride Alliance, the Recipe for Change Alliance, and the
+Veterans Associate Resource Group.
+Our ARGs host events throughout the year to build
+belonging amongst our associates and to create an
+environment where everyone is respected, valued and has
+equal opportunity to succeed. One such event in 2022
+was our Women’s Inspiration and Inclusion Network’s
+Purple Spirit Award program. In partnership with Mars’
+M&amp;M’S ® brand, and in support of the launch of their new ALLIANCE
+Purple character, we celebrated women who are flipping
+the status quo within our own organization and embody
+Albertsons Companies’ values. Three winners were
+selected from over 270 nominees across the organization
+and joined members of the Senior Leadership team at an
+event to kick off Women’s History Month.
+
+• Launching an Associate Resource Group mentorship
+program designed to provide a valuable partnership
+between two people based on a mutual commitment
+to growth and development.
+• Offering micro-learning modules for all leaders that
+cover DE&amp;I topics and enable leaders to build cultural
+competency.
+• Facilitating leadership discussions on how to be more
+inclusive, holding bi-annual store and supply chain
+huddles on this topic, and providing monthly online
+training modules.
+Our Associate Resource Groups (ARGs) help enable an
+inclusive and welcoming culture among our associates.
+Our ARGs are open to all associates in corporate and
+division offices, as well as field leadership in many of
+our retail stores and supply chain facilities. Last year we
+increased membership across our ARGs to more than
+5,000 associates.
+
+15</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G10" value="A better">A better</label>
+<label><input type="radio" name="G10" value="No difference">No difference</label>
+<label><input type="radio" name="G10" value="B better">B better</label>
+<input type="text" data-note="G10" placeholder="note (optional)">
+</div></article>
+<article data-id="G11"><h3 style="font-size:14px;text-transform:none;color:inherit">G11. ACI p16</h3>
+<p class="meta">464 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g11_ACI_16.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Supplier Diversity
+Employee Retention &amp; Development
+We believe in fostering diversity and inclusion not only
+among our associates, but also among our business
+
+partners. We are dedicated to providing opportunities
+for diverse suppliers to grow their business and increase
+the presence of their products on shelves. Given that one
+of the biggest hurdles for small businesses is access to
+working capital, we have launched an expanded early
+payment program to determine the best time and terms
+for payments for diverse-owned businesses. The goal
+is to help these companies alleviate immediate capital
+challenges by making working capital more accessible.
+Last year, we hosted our third supplier summit to broaden
+our reach to businesses that are over 50% owned and
+controlled/operated by one of the following ethnicities or
+categories: African American, Asian American, Hispanic,
+LGBTQIA+, Native American, Service-Disabled Veteran,
+or Female.
+We work to elevate the visibility of our diverse suppliers
+through heritage celebrations throughout the year. For
+example, our Jewel-Osco division hosted its annual Black
+History Month celebration which supported more than
+35 local and minority-owned brands, while giving back
+to the community with in-store events and charitable
+donations from our Foundation. Similarly, our Mid-Atlantic
+division hosted Lunar New Year events with product
+samples, dance performances, activity tables and more
+for shoppers to learn about the Year of the Rabbit.
+
+Our commitment to our purpose and values continues
+to shape our approach to retaining and developing a
+highly skilled and ethical workforce that sets us apart
+and brings these values to life on a daily basis.
+Retention
+At the end of 2022, we employed approximately
+290,000 associates and are proud that a significant
+number of our associates celebrated milestone
+anniversaries with our company. More than 63,000 of
+these individuals commemorated at least 15 years of
+service, and more than 44,000 celebrated over 20
+years of service.
+Training and Development
+We offer formal and informal learning and development
+opportunities to all associates, and in 2022 our in-store,
+supply chain, and office associates together completed
+more than 4 million courses through various platforms.
+
+Courses are offered through eLearning and on-
+demand content, virtual and in-person classes,
+on-the-job training, VR (virtual reality), mentoring
+programs, and more.
+We also launched two enterprise-wide programs
+that focus on enhancing the capabilities of our
+leaders. First, our Assistant Store Director Training is
+an immersive program that prepares high potential
+frontline supervisors for the next step in their career
+through business and industry-specific experiential
+learning. Second, our Foundational Leadership Skills
+curriculum was designed for all people leaders to
+develop their leadership skills through self-study and
+instructor-led workshops.
+We have also partnered with industry associations to
+provide access to relevant continuing retail education
+opportunities through colleges around the country.
+Additional details on Learning and Development can
+be found in our 2022 10-K Filing.
+
+16</pre></section>
+<section><h3>Parser B</h3><pre>Supplier Diversity
+We believe in fostering diversity and inclusion not only
+among our associates, but also among our business
+partners. We are dedicated to providing opportunities
+for diverse suppliers to grow their business and increase
+the presence of their products on shelves. Given that one
+of the biggest hurdles for small businesses is access to
+working capital, we have launched an expanded early
+payment program to determine the best time and terms
+for payments for diverse-owned businesses. The goal
+is to help these companies alleviate immediate capital
+challenges by making working capital more accessible.
+Last year, we hosted our third supplier summit to broaden
+our reach to businesses that are over 50% owned and
+controlled/operated by one of the following ethnicities or
+categories: African American, Asian American, Hispanic,
+LGBTQIA+, Native American, Service-Disabled Veteran,
+or Female.
+We work to elevate the visibility of our diverse suppliers
+through heritage celebrations throughout the year. For
+example, our Jewel-Osco division hosted its annual Black
+History Month celebration which supported more than
+35 local and minority-owned brands, while giving back
+to the community with in-store events and charitable
+donations from our Foundation. Similarly, our Mid-Atlantic
+division hosted Lunar New Year events with product
+samples, dance performances, activity tables and more
+for shoppers to learn about the Year of the Rabbit.
+
+Employee Retention &amp; Development
+Our commitment to our purpose and values continues
+to shape our approach to retaining and developing a
+highly skilled and ethical workforce that sets us apart
+and brings these values to life on a daily basis.
+Retention
+At the end of 2022, we employed approximately
+290,000 associates and are proud that a significant
+number of our associates celebrated milestone
+anniversaries with our company. More than 63,000 of
+these individuals commemorated at least 15 years of
+service, and more than 44,000 celebrated over 20
+years of service.
+Training and Development
+We offer formal and informal learning and development
+opportunities to all associates, and in 2022 our in-store,
+supply chain, and office associates together completed
+more than 4 million courses through various platforms.
+
+Courses are offered through eLearning and on-
+demand content, virtual and in-person classes,
+on-the-job training, VR (virtual reality), mentoring
+programs, and more.
+We also launched two enterprise-wide programs
+that focus on enhancing the capabilities of our
+leaders. First, our Assistant Store Director Training is
+an immersive program that prepares high potential
+frontline supervisors for the next step in their career
+through business and industry-specific experiential
+learning. Second, our Foundational Leadership Skills
+curriculum was designed for all people leaders to
+develop their leadership skills through self-study and
+instructor-led workshops.
+We have also partnered with industry associations to
+provide access to relevant continuing retail education
+opportunities through colleges around the country.
+Additional details on Learning and Development can
+be found in our 2022 10-K Filing.
+
+16</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G11" value="A better">A better</label>
+<label><input type="radio" name="G11" value="No difference">No difference</label>
+<label><input type="radio" name="G11" value="B better">B better</label>
+<input type="text" data-note="G11" placeholder="note (optional)">
+</div></article>
+<article data-id="G12"><h3 style="font-size:14px;text-transform:none;color:inherit">G12. ACI p18</h3>
+<p class="meta">665 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g12_ACI_18.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Waste Reduction &amp; Circularity
+
+Preventing Food Waste
+We leverage a variety of innovative methods and
+Less Waste, More Hope
+technologies to prevent food from ever becoming waste.
+One way we accomplish this is by using technology to
+
+As part of our Recipe for Change, we are
+working to eliminate food waste going to landfill,
+reducing plastics and packaging in our Own
+Brands products, and accelerating our transition
+to a more circular economy.
+Our Goals:
+• Zero food waste going to landfill by 2030. 4
+• Increase the recyclability, reusability and/or
+compostability of our Own Brands packaging
+by 2025.
+Food Waste
+Reducing food waste has been a long-standing priority
+across our stores, distribution centers, and manufacturing
+plants. The USDA estimates that up to 30-40% of food is
+wasted across the U.S. food supply chain, from farms to
+transportation, stores, and homes. 5
+We are members of the USDA and U.S. EPA’s Food Loss
+and Waste Champions as well as the Pacific Coast Food
+Waste Commitment and work across our industry to
+identify opportunities and best practices to reduce and
+report food waste. We are establishing methodologies to
+measure and report our food waste baseline and progress
+toward our company-wide zero food waste to landfill goal.
+Our Strategy to Achieve Zero Food Waste to Landfill
+To meet our food waste goal, our stores, distribution
+centers, and manufacturing plants must divert at least 90%
+of food waste from landfill. We leverage the U.S. EPA’s
+food recovery hierarchy to prioritize our actions, including
+preventing food waste, donating edible food, and diverting
+inedible food waste.
+
+accurately order and produce the correct amount and
+assortment of products for our customers.
+In 2022, we completed the rollout of the Afresh technology
+across nearly all Albertsons Companies’ stores. This
+capability enables associates to leverage artificial
+intelligence to improve ordering, reduce unsold food, and
+consequently lessen greenhouse gas (GHG) emissions.
+Additionally, we are leveraging other innovative solutions
+to help prevent food waste both in stores and in customers’
+homes. In 2022, we expanded the use of leading-edge
+food preservation solutions to help food stay fresh longer
+for our customers and piloted an innovative discounted
+food application in select stores in our Seattle division.
+Donating Edible Food
+In 2022, we greatly expanded our network of local food
+donation partners as well as our store donation guidelines
+to continue to help support our neighbors in need. At the
+end of 2022, more than 90% of our stores were donating
+food on at least a weekly basis, with donation programs
+available across all departments in our stores, including
+produce, meat, seafood, service deli, and much more.
+Many of the local food recovery
+organizations we work with are part of the
+Feeding America network. In 2022, we
+were a Feeding America Visionary Partner,
+donating more than 80 million pounds
+of food from our stores, the equivalent
+of more than 65 million meals. As part of our work to
+continuously improve our programs, we’re collaborating
+with Johns Hopkins University and the Maryland Institute
+College of Art to further increase associate engagement in
+food donation and identify best practices.
+
+These programs are just a few of the many efforts we’re
+making to support our 2030 goals to eliminate sending
+food waste to landfill and enable 1 billion meals. See the
+Community Stewardship section of this report to learn
+more about our hunger relief efforts.
+Diverting Inedible Food
+In 2022, we diverted more than 321 million pounds of
+food and trimmings through inedible food waste diversion
+programs that are in place in the majority of our stores.
+These solutions included anaerobic digestion, compost,
+and animal feed operations. Anaerobic digestion turns
+food waste into a rich soil amendment and can also create
+renewable natural gas. As part of our efforts to explore
+and expand innovative partnerships and solutions, nearly
+100 of our stores now divert food waste through a low-
+carbon animal feed upcycling solution.
+4 Zero Waste | Cal Recycle
+5 Why should we care about food waste? | USDA
+
+18</pre></section>
+<section><h3>Parser B</h3><pre>Waste Reduction &amp; Circularity
+Less Waste, More Hope
+As part of our Recipe for Change, we are
+working to eliminate food waste going to landfill,
+reducing plastics and packaging in our Own
+Brands products, and accelerating our transition
+to a more circular economy.
+Our Goals:
+• Zero food waste going to landfill by 2030. 4
+• Increase the recyclability, reusability and/or
+compostability of our Own Brands packaging
+by 2025.
+Food Waste
+Reducing food waste has been a long-standing priority
+across our stores, distribution centers, and manufacturing
+plants. The USDA estimates that up to 30-40% of food is
+wasted across the U.S. food supply chain, from farms to
+transportation, stores, and homes. 5
+We are members of the USDA and U.S. EPA’s Food Loss
+and Waste Champions as well as the Pacific Coast Food
+Waste Commitment and work across our industry to
+identify opportunities and best practices to reduce and
+report food waste. We are establishing methodologies to
+measure and report our food waste baseline and progress
+toward our company-wide zero food waste to landfill goal.
+Our Strategy to Achieve Zero Food Waste to Landfill
+To meet our food waste goal, our stores, distribution
+centers, and manufacturing plants must divert at least 90%
+of food waste from landfill. We leverage the U.S. EPA’s
+food recovery hierarchy to prioritize our actions, including
+preventing food waste, donating edible food, and diverting
+inedible food waste.
+
+Preventing Food Waste
+We leverage a variety of innovative methods and
+technologies to prevent food from ever becoming waste.
+One way we accomplish this is by using technology to
+accurately order and produce the correct amount and
+assortment of products for our customers.
+In 2022, we completed the rollout of the Afresh technology
+across nearly all Albertsons Companies’ stores. This
+capability enables associates to leverage artificial
+intelligence to improve ordering, reduce unsold food, and
+consequently lessen greenhouse gas (GHG) emissions.
+Additionally, we are leveraging other innovative solutions
+to help prevent food waste both in stores and in customers’
+homes. In 2022, we expanded the use of leading-edge
+food preservation solutions to help food stay fresh longer
+for our customers and piloted an innovative discounted
+food application in select stores in our Seattle division.
+Donating Edible Food
+In 2022, we greatly expanded our network of local food
+donation partners as well as our store donation guidelines
+to continue to help support our neighbors in need. At the
+end of 2022, more than 90% of our stores were donating
+food on at least a weekly basis, with donation programs
+available across all departments in our stores, including
+produce, meat, seafood, service deli, and much more.
+Many of the local food recovery
+organizations we work with are part of the
+Feeding America network. In 2022, we
+were a Feeding America Visionary Partner,
+donating more than 80 million pounds
+of food from our stores, the equivalent
+of more than 65 million meals. As part of our work to
+continuously improve our programs, we’re collaborating
+with Johns Hopkins University and the Maryland Institute
+College of Art to further increase associate engagement in
+food donation and identify best practices.
+
+These programs are just a few of the many efforts we’re
+making to support our 2030 goals to eliminate sending
+food waste to landfill and enable 1 billion meals. See the
+Community Stewardship section of this report to learn
+more about our hunger relief efforts.
+Diverting Inedible Food
+In 2022, we diverted more than 321 million pounds of
+food and trimmings through inedible food waste diversion
+programs that are in place in the majority of our stores.
+These solutions included anaerobic digestion, compost,
+and animal feed operations. Anaerobic digestion turns
+food waste into a rich soil amendment and can also create
+renewable natural gas. As part of our efforts to explore
+and expand innovative partnerships and solutions, nearly
+100 of our stores now divert food waste through a low-
+carbon animal feed upcycling solution.
+4 Zero Waste | Cal Recycle
+5 Why should we care about food waste? | USDA
+
+18</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G12" value="A better">A better</label>
+<label><input type="radio" name="G12" value="No difference">No difference</label>
+<label><input type="radio" name="G12" value="B better">B better</label>
+<input type="text" data-note="G12" placeholder="note (optional)">
+</div></article>
+<article data-id="G13"><h3 style="font-size:14px;text-transform:none;color:inherit">G13. ACI p19</h3>
+<p class="meta">415 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g13_ACI_19.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>We’re exploring new and innovative ways to increase the customers know how to properly dispose of and recycle
+
+Plastics and Packaging
+As part of our Plastics and Packaging Pledge, Albertsons
+Companies is committed to improving the recyclability,
+reusability, and compostability of our Own Brands product
+packaging. Our Own Brands consist of trusted household
+names that are exclusive to our stores, such as O Organics ® ,
+Lucerne ® , Open Nature ® , Signature Select ® , Primo Taglio ® ,
+debi lilly design ™ , Waterfront Bistro ® , Soleil ® , ready meals ® ,
+and Value Corner ® .
+Our Own Brands primary plastic packaging footprint is
+approximately 68,000 metric tons annually. This baseline
+includes the plastic packaging used for our Own Brands
+and store-made products purchased through our stores,
+e-commerce platforms, and third-party delivery services.
+We work closely with our suppliers to better understand
+our footprint and identify areas for improvement. A
+significant portion of our annual primary plastic footprint is
+recyclable, reusable or compostable, and/or includes post-
+consumer recycled (PCR) content.
+
+percentage of reusable, recyclable, and/or compostable
+packaging and our use of post-consumer recycled content.
+In our milk and beverage manufacturing plants, we
+are exploring opportunities to increase post-consumer
+recycled plastic content in packaging components such
+as bottles, jugs and bottle caps, and using recycled
+paperboard in our multi-pack cartons.
+Standardized Recycling Communications
+In 2022, we achieved our goal to provide recycling
+instructions on more than 7,000 Own Brands packaged
+products through How2Recycle labels and QR codes. In
+addition, more than 40,000 store-made items now feature
+recycling information on scale labels and other packaging,
+directing customers to an informative new recycling page.
+Moving forward, all new Own Brands products will feature
+the How2Recycle labeling system to improve the reliability
+and transparency of recyclability claims. This label helps
+
+our Own Brands product packaging to help keep plastic
+out of the landfill whenever possible.
+Reducing Single-Use Bags
+In 2021, we launched a program to increase the number
+of items our associates place in each bag which continued
+to help us reduce the number of single-use bags used in
+each transaction in 2022. In addition, last year 7 of our
+divisions had stores utilizing more durable plastic bags
+that contain recycled plastic content, are re-usable 125
+times, and are washable. Between these two factors, in
+2022, we used 428 million fewer single-use bags than
+the previous year.
+6 Estimation may be adjusted as new and improved data becomes available from vendors
+
+19 19</pre></section>
+<section><h3>Parser B</h3><pre>We’re exploring new and innovative ways to increase the customers know how to properly dispose of and recycle
+
+Plastics and Packaging
+As part of our Plastics and Packaging Pledge, Albertsons
+Companies is committed to improving the recyclability,
+reusability, and compostability of our Own Brands product
+packaging. Our Own Brands consist of trusted household
+names that are exclusive to our stores, such as O Organics ® ,
+Lucerne ® , Open Nature ® , Signature Select ® , Primo Taglio ® ,
+debi lilly design ™ , Waterfront Bistro ® , Soleil ® , ready meals ® ,
+and Value Corner ® .
+Our Own Brands primary plastic packaging footprint is
+approximately 68,000 metric tons annually. This baseline
+includes the plastic packaging used for our Own Brands
+and store-made products purchased through our stores,
+e-commerce platforms, and third-party delivery services.
+We work closely with our suppliers to better understand
+our footprint and identify areas for improvement. A
+significant portion of our annual primary plastic footprint is
+
+percentage of reusable, recyclable, and/or compostable
+packaging and our use of post-consumer recycled content.
+In our milk and beverage manufacturing plants, we
+are exploring opportunities to increase post-consumer
+recycled plastic content in packaging components such
+as bottles, jugs and bottle caps, and using recycled
+paperboard in our multi-pack cartons.
+Standardized Recycling Communications
+In 2022, we achieved our goal to provide recycling
+instructions on more than 7,000 Own Brands packaged
+products through How2Recycle labels and QR codes. In
+addition, more than 40,000 store-made items now feature
+recycling information on scale labels and other packaging,
+directing customers to an informative new recycling page.
+Moving forward, all new Own Brands products will feature
+the How2Recycle labeling system to improve the reliability
+
+our Own Brands product packaging to help keep plastic
+out of the landfill whenever possible.
+Reducing Single-Use Bags
+In 2021, we launched a program to increase the number
+of items our associates place in each bag which continued
+to help us reduce the number of single-use bags used in
+each transaction in 2022. In addition, last year 7 of our
+divisions had stores utilizing more durable plastic bags
+that contain recycled plastic content, are re-usable 125
+times, and are washable. Between these two factors, in
+2022, we used 428 million fewer single-use bags than
+the previous year.
+6 Estimation may be adjusted as new and improved data becomes available from vendors
+
+recyclable, reusable or compostable, and/or includes post-
+and transparency of recyclability claims. This label helps
+consumer recycled (PCR) content.
+
+19 19</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G13" value="A better">A better</label>
+<label><input type="radio" name="G13" value="No difference">No difference</label>
+<label><input type="radio" name="G13" value="B better">B better</label>
+<input type="text" data-note="G13" placeholder="note (optional)">
+</div></article>
+<article data-id="G14"><h3 style="font-size:14px;text-transform:none;color:inherit">G14. ACI p20</h3>
+<p class="meta">559 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g14_ACI_20.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Sustainable Products &amp; Ingredients
+Responsible Seafood
+Through our Responsible Seafood Program, we are
+working to improve transparency within our seafood
+supply chain. This not only helps our customers feel
+confident in the source of our products, but supports the
+protection of ocean resources and the fair treatment of
+those working in the fishing industry.
+Our Responsible Seafood Program has extensive data
+requirements that provide us with traceability and
+transparency within our fresh and frozen seafood supply
+chains. In 2022, in collaboration with FishWise—our
+responsible seafood partner—we assessed over 330,000
+individual products—totaling more than 50 million pounds
+of seafood—against our rigorous seafood standards.
+Fair Trade protects the environment through standards
+Local Product Offerings
+
+We’re proud that all seafood in our Waterfront Bistro and
+Open Nature brands display our Responsible Choice ™ logo.
+This logo means we know the journey
+our seafood takes from the ocean or farm
+to our shelves and makes shopping for
+responsible seafood simpler by indicating
+which products meet our Responsible
+Seafood Policy and Commitment.
+Each year, we work with select seafood suppliers to
+undertake in-depth collaborative reviews of policies and
+processes to identify opportunities to incorporate best
+practices into the seafood supply chain.
+Fair Trade
+We offer a variety of Fair Trade Certified ™ products
+including produce, chocolate, coffee, and more within our
+Own Brands portfolio. All our O Organics ® coffee is Fair
+Trade Certified, and purchases made in 2022 generated
+more than $800,000 in community development funds to
+support coffee farmers, their families, and communities.
+
+covering topics such as soil and water quality and ensures
+that hard-working farmers earn fair wages and operate in
+safe conditions.
+debi lilly design ™
+Each debi lilly design Extending Smiles bouquet purchased
+enables a donation to a charitable organization. In 2022,
+more than $192,000 was raised for organizations including
+the National Domestic Violence Hotline, Homes For Our
+Troops, Trinity Health, and others.
+Using Biodegradable Ingredients
+In 2022, the U.S. Department of Agriculture BioPreferred ®
+Program recognized Albertsons Companies as a
+BioPreferred Program Champion for our long-term
+commitment to using renewable
+materials, reducing our reliance on
+petroleum, supporting the bioeconomy,
+and bettering the planet. We have 17
+products in our Open Nature brand that
+utilize biodegradable ingredients.
+
+We’ve spent decades nurturing partnerships with
+suppliers and farmers in our communities, helping to create
+jobs so our neighbors can thrive. Across our company, we
+offer more than 26,900 unique local products. Each of our
+operating divisions has local goods from their communities,
+allowing us to offer the highest-quality products available
+in each area. Whether it’s sourcing world-famous Idaho
+potatoes for our Idaho stores or Northeastern apples for
+our Shaw’s and Star Market stores, local offerings are often
+at the heart of our produce operations.
+In 2022, we expanded the availability of packaged salads
+grown using vertical farming across our Intermountain and
+Denver divisions. Vertical farming enables local produce
+to be grown and harvested year-round and reduces the
+environmental impact. Five of our operating divisions offer
+these products, and we continue to evaluate opportunities
+to expand this program as more vertical farming options
+become available across the country. The U.S. Department
+of Agriculture found that when compared to traditional
+agriculture, vertical farming methods reduce food waste
+while also producing lower carbon emissions and require
+less water usage while providing high nutrient products. 7
+7 Vertical farming | United Nations Climate Champions
+
+20</pre></section>
+<section><h3>Parser B</h3><pre>Sustainable Products &amp; Ingredients
+Responsible Seafood
+Through our Responsible Seafood Program, we are
+working to improve transparency within our seafood
+supply chain. This not only helps our customers feel
+confident in the source of our products, but supports the
+protection of ocean resources and the fair treatment of
+those working in the fishing industry.
+Our Responsible Seafood Program has extensive data
+requirements that provide us with traceability and
+transparency within our fresh and frozen seafood supply
+chains. In 2022, in collaboration with FishWise—our
+responsible seafood partner—we assessed over 330,000
+individual products—totaling more than 50 million pounds
+of seafood—against our rigorous seafood standards.
+We’re proud that all seafood in our Waterfront Bistro and
+Open Nature brands display our Responsible Choice ™ logo.
+This logo means we know the journey
+our seafood takes from the ocean or farm
+to our shelves and makes shopping for
+responsible seafood simpler by indicating
+which products meet our Responsible
+Seafood Policy and Commitment.
+Each year, we work with select seafood suppliers to
+undertake in-depth collaborative reviews of policies and
+processes to identify opportunities to incorporate best
+practices into the seafood supply chain.
+Fair Trade
+We offer a variety of Fair Trade Certified ™ products
+including produce, chocolate, coffee, and more within our
+Own Brands portfolio. All our O Organics ® coffee is Fair
+Trade Certified, and purchases made in 2022 generated
+more than $800,000 in community development funds to
+support coffee farmers, their families, and communities.
+
+Fair Trade protects the environment through standards
+covering topics such as soil and water quality and ensures
+that hard-working farmers earn fair wages and operate in
+safe conditions.
+debi lilly design ™
+Each debi lilly design Extending Smiles bouquet purchased
+enables a donation to a charitable organization. In 2022,
+more than $192,000 was raised for organizations including
+the National Domestic Violence Hotline, Homes For Our
+Troops, Trinity Health, and others.
+Using Biodegradable Ingredients
+In 2022, the U.S. Department of Agriculture BioPreferred ®
+Program recognized Albertsons Companies as a
+BioPreferred Program Champion for our long-term
+commitment to using renewable
+materials, reducing our reliance on
+petroleum, supporting the bioeconomy,
+and bettering the planet. We have 17
+products in our Open Nature brand that
+utilize biodegradable ingredients.
+
+Local Product Offerings
+We’ve spent decades nurturing partnerships with
+suppliers and farmers in our communities, helping to create
+jobs so our neighbors can thrive. Across our company, we
+offer more than 26,900 unique local products. Each of our
+operating divisions has local goods from their communities,
+allowing us to offer the highest-quality products available
+in each area. Whether it’s sourcing world-famous Idaho
+potatoes for our Idaho stores or Northeastern apples for
+our Shaw’s and Star Market stores, local offerings are often
+at the heart of our produce operations.
+In 2022, we expanded the availability of packaged salads
+grown using vertical farming across our Intermountain and
+Denver divisions. Vertical farming enables local produce
+to be grown and harvested year-round and reduces the
+environmental impact. Five of our operating divisions offer
+these products, and we continue to evaluate opportunities
+to expand this program as more vertical farming options
+become available across the country. The U.S. Department
+of Agriculture found that when compared to traditional
+agriculture, vertical farming methods reduce food waste
+while also producing lower carbon emissions and require
+less water usage while providing high nutrient products. 7
+7 Vertical farming | United Nations Climate Champions
+
+20</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G14" value="A better">A better</label>
+<label><input type="radio" name="G14" value="No difference">No difference</label>
+<label><input type="radio" name="G14" value="B better">B better</label>
+<input type="text" data-note="G14" placeholder="note (optional)">
+</div></article>
+<article data-id="G15"><h3 style="font-size:14px;text-transform:none;color:inherit">G15. ACI p23</h3>
+<p class="meta">609 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g15_ACI_23.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Community Stewardship
+
+Extending Our Table
+As part of our Recipe for Change, we’re
+committed to fighting food insecurity at a local
+level so all our neighbors thrive.
+Our Goals:
+• Enable 1 billion meals for our neighbors in
+need by 2030.
+• Champion innovative programs and
+partnerships to help break the cycle of hunger
+in the communities we serve.
+Food insecurity is a complex issue impacting more than
+33 million people in the United States, including 9.3 million
+children. 8 As we continue our commitment to fighting
+hunger at a local level, we are leveraging our strong
+community ties to explore programs and partnerships that
+advance innovative and localized solutions to break the
+cycle of hunger.
+
+ensure they are donating food categories and quantities
+that food banks can accept and distribute to those
+in need.
+Our stores also support hunger relief through other
+charitable efforts, such as in-store food drives and
+volunteer events.
+Albertsons Companies Foundation’s
+Nourishing Neighbors Program
+Nourishing Neighbors,
+a charitable program of
+Albertsons Companies
+Foundation, seeks to ensure
+at-risk children, adults,
+seniors, and families have
+access to the food they
+need to thrive. Through programs that fund initiatives
+such as breakfasts for kids, holiday dinners, and school
+pantries, Nourishing Neighbors works to ensure all our
+communities’ tables and pantries are full so that our
+neighbors can learn, grow and succeed.
+In 2022, Nourishing Neighbors raised over $40 million,
+enabling the donation of more than 188 million meals to
+ensure those living in our communities, as well as those
+impacted by disasters, have enough to eat. These funds
+supported over 2,000 organizations, impacting over
+
+600 million lives. Our 2022 Nourishing Neighbors giving
+highlights included:
+• Over 28 million healthy breakfasts for children through
+our Nourishing Neighbors breakfast campaign.
+• Gift cards for more than 250,000 families to purchase
+meals to fill their holiday tables.
+• $8 million to support meals for families impacted by
+the war in Ukraine.
+Ensuring Kids Start the Day with Breakfast
+A study conducted by Deloitte and No Kid Hungry Center
+for Best Practices 9 showed that ensuring kids start the
+day with breakfast can have a dramatic positive effect by
+helping students perform better in class and attend more
+days of school each year. We raise money to ensure all kids
+have access to breakfast every day. These funds provide
+grants to organizations that enhance school breakfasts,
+provide weekend breakfast backpack programs, supply
+summer breakfast meals, and many other breakfast-related
+programs. Since 2014, our Nourishing Neighbors program
+has enabled over 225 million breakfasts to kids in need.
+8 2021 Data. USDA will release 2022 values in October 2023.
+Source: Household Food Security in the United States in 2021 (usda.gov)
+9 Ending Childhood Hunger: A Social Impact Analysis | No Kid Hungry
+Center of Best Practices
+
+Donating Food from Our Stores
+Each year our stores donate millions of pounds of food to
+local food banks, pantries, and other organizations that
+are on the front lines in the fight against hunger. We are
+a Feeding America Visionary Partner, and in 2022 we
+donated more than 80 million pounds of food from our
+stores, distribution centers, and manufacturing plants —the
+equivalent of enabling more than 65 million meals.
+In 2022, we built out our relationships with local food
+donation partners and expanded our store donation
+guidelines to get more food to those in need in our
+communities. At the end of last year, more than 90% of our
+stores were donating food on at least a weekly basis, with
+programs available across all departments in our stores,
+including produce, meat, seafood, service deli, and much
+more. Our stores work with food donation partners to
+
+23</pre></section>
+<section><h3>Parser B</h3><pre>Community Stewardship
+Extending Our Table
+As part of our Recipe for Change, we’re
+committed to fighting food insecurity at a local
+level so all our neighbors thrive.
+Our Goals:
+• Enable 1 billion meals for our neighbors in
+need by 2030.
+• Champion innovative programs and
+partnerships to help break the cycle of hunger
+in the communities we serve.
+Food insecurity is a complex issue impacting more than
+33 million people in the United States, including 9.3 million
+children. 8 As we continue our commitment to fighting
+hunger at a local level, we are leveraging our strong
+community ties to explore programs and partnerships that
+advance innovative and localized solutions to break the
+cycle of hunger.
+Donating Food from Our Stores
+Each year our stores donate millions of pounds of food to
+local food banks, pantries, and other organizations that
+are on the front lines in the fight against hunger. We are
+a Feeding America Visionary Partner, and in 2022 we
+donated more than 80 million pounds of food from our
+stores, distribution centers, and manufacturing plants —the
+equivalent of enabling more than 65 million meals.
+In 2022, we built out our relationships with local food
+donation partners and expanded our store donation
+guidelines to get more food to those in need in our
+communities. At the end of last year, more than 90% of our
+stores were donating food on at least a weekly basis, with
+programs available across all departments in our stores,
+including produce, meat, seafood, service deli, and much
+more. Our stores work with food donation partners to
+
+ensure they are donating food categories and quantities
+that food banks can accept and distribute to those
+in need.
+Our stores also support hunger relief through other
+charitable efforts, such as in-store food drives and
+volunteer events.
+Albertsons Companies Foundation’s
+Nourishing Neighbors Program
+Nourishing Neighbors,
+a charitable program of
+Albertsons Companies
+Foundation, seeks to ensure
+at-risk children, adults,
+seniors, and families have
+access to the food they
+need to thrive. Through programs that fund initiatives
+such as breakfasts for kids, holiday dinners, and school
+pantries, Nourishing Neighbors works to ensure all our
+communities’ tables and pantries are full so that our
+neighbors can learn, grow and succeed.
+In 2022, Nourishing Neighbors raised over $40 million,
+enabling the donation of more than 188 million meals to
+ensure those living in our communities, as well as those
+impacted by disasters, have enough to eat. These funds
+supported over 2,000 organizations, impacting over
+
+600 million lives. Our 2022 Nourishing Neighbors giving
+highlights included:
+• Over 28 million healthy breakfasts for children through
+our Nourishing Neighbors breakfast campaign.
+• Gift cards for more than 250,000 families to purchase
+meals to fill their holiday tables.
+• $8 million to support meals for families impacted by
+the war in Ukraine.
+Ensuring Kids Start the Day with Breakfast
+A study conducted by Deloitte and No Kid Hungry Center
+for Best Practices 9 showed that ensuring kids start the
+day with breakfast can have a dramatic positive effect by
+helping students perform better in class and attend more
+days of school each year. We raise money to ensure all kids
+have access to breakfast every day. These funds provide
+grants to organizations that enhance school breakfasts,
+provide weekend breakfast backpack programs, supply
+summer breakfast meals, and many other breakfast-related
+programs. Since 2014, our Nourishing Neighbors program
+has enabled over 225 million breakfasts to kids in need.
+8 2021 Data. USDA will release 2022 values in October 2023.
+Source: Household Food Security in the United States in 2021 (usda.gov)
+9 Ending Childhood Hunger: A Social Impact Analysis | No Kid Hungry
+Center of Best Practices
+
+23</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G15" value="A better">A better</label>
+<label><input type="radio" name="G15" value="No difference">No difference</label>
+<label><input type="radio" name="G15" value="B better">B better</label>
+<input type="text" data-note="G15" placeholder="note (optional)">
+</div></article>
+<article data-id="G16"><h3 style="font-size:14px;text-transform:none;color:inherit">G16. ACI p24</h3>
+<p class="meta">734 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g16_ACI_24.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>• Introduce 1,000 new nutritious and approachable
+
+Engaging Students in Finding Solutions in Their
+Communities
+Explore. Act. Tell. (EAT) teaches young people how
+to become aware of food insecurity issues in their
+neighborhoods. Funded by the Albertsons Companies
+Foundation’s Nourishing Neighbors program and the
+Foundation for Impact on Literacy and Learning, students
+identify solutions for food insecurity by:
+• Exploring the topic of hunger in their community.
+• Designing ways to act on solutions.
+• Producing public service announcements encouraging
+others to take action.
+The Nourishing Neighbors program engaged over
+20,000 middle and high school students in the EAT
+program in 2022. Since the program began in 2020, over
+57,000 students, 780 schools, and 950 educators have
+participated in this program.
+Teaming Up with State Governments to Increase
+Access to Healthy Foods
+Our Seattle division is collaborating with the Washington
+State Department of Health on a variety of programs
+to address food insecurity. The Fruit and Vegetable
+Prescription Program allows select healthcare sites
+to provide patients experiencing food insecurity
+with “prescriptions” for fruits and vegetables. These
+“prescriptions” can then be used like cash to buy produce
+at Safeway stores in Washington. Our Seattle division
+also participates in the SNAP (Supplemental Nutrition
+Assistance Program) Produce Match program, which
+provides shoppers using Electronic Benefits Transfer (EBT)
+who spend at least $10 on fresh fruit and vegetables a
+
+Improving Food Access
+In 2022, we began rolling out a new online service for EBT
+recipients across our stores, where approved by the USDA.
+The integration of EBT services enables SNAP customers
+to use their benefits when purchasing groceries online,
+ensuring that families and individuals who rely on EBT
+SNAP benefits have greater access to nutritious food.
+Supporting the White House Conference on
+Hunger, Nutrition, and Health
+In support of the 2022 White House Conference on
+Hunger, Nutrition, and Health, Albertsons Companies
+expanded our commitment to fighting hunger and inspiring
+healthy eating by announcing new goals and initiatives.
+The following commitments, which complement our
+Recipe for Change efforts, are designed to help break the
+cycle of hunger and empower nutrition and health through
+technology and information:
+Addressing Hunger with Nourishing Neighbors
+• Enable the donation of over 100 million meals in 2023
+and 1 billion meals by 2030.
+• Help 50,000 eligible neighbors enroll in SNAP and
+Women Infants and Children (WIC) benefits in 2023.
+Empowering Nutrition and Health through
+Technology and Information
+• Provide 50 million evidence-based nutrition
+recommendations to digital customers by 2024.
+• Launch six health campaigns by 2025 utilizing in-store
+events and digital platforms to increase awareness of
+
+recipes, and further enhance tools to help make
+healthier living an easy and sustainable choice.
+• Expand the availability of ready meals ® from 600
+to 1,100 stores by the end of the 2022 fiscal year.
+ready meals ® offer nutritious meals designed by
+culinary experts and dieticians made fresh in-store
+every day.
+We will report our progress as we work toward
+achieving these goals. Additional details about the
+White House Conference on Hunger, Nutrition, and
+Health are available here.
+Associate-Sponsored Funding
+The Albertsons Companies Foundation’s We Care
+program is a voluntary associate-sponsored disaster
+relief and personal hardship fund that provides support
+to our communities and fellow
+associates in times of crisis. In 2022,
+more than $1 million was given out
+in grants to 190 associates.
+Partnering with CPGs
+In 2022, divisions across the company teamed up with
+Kellogg’s Frosted Flakes ® Mission Tiger ™ to donate over
+$200,000 to school athletic programs. Our Southwest
+division teamed up with the Tony the Tiger ® Sun Bowl
+to provide the Parkland Pre-Engineering Middle School
+sports program with $30,000 for new equipment.
+Acme stores in our Mid-Atlantic division partnered with
+Frosted Flakes to donate $100,000 to support flag
+football programs in the Philadelphia School District.
+
+MyPlate Dietary Guidelines. 10
+$5 coupon for produce on their next shopping trip.
+• Provide 100 million customers access to recipe
+and meal planning tools by 2025.
+10 MyPlate | U.S. Department of Agriculture
+
+“Research shows that a large percentage of EBT recipients face mobility challenges due to a disability, lack of
+transportation, or caring for young children, which can prevent them from physically shopping at a store. As a
+trusted community grocer committed to helping solve food insecurity, we want to make healthy foods available
+to those at risk by offering dignified and convenient shopping options.”
+— Susan Morris
+Chief Operations Officer
+
+24</pre></section>
+<section><h3>Parser B</h3><pre>• Introduce 1,000 new nutritious and approachable
+
+Engaging Students in Finding Solutions in Their
+Communities
+Explore. Act. Tell. (EAT) teaches young people how
+to become aware of food insecurity issues in their
+neighborhoods. Funded by the Albertsons Companies
+Foundation’s Nourishing Neighbors program and the
+Foundation for Impact on Literacy and Learning, students
+identify solutions for food insecurity by:
+• Exploring the topic of hunger in their community.
+• Designing ways to act on solutions.
+• Producing public service announcements encouraging
+others to take action.
+The Nourishing Neighbors program engaged over
+20,000 middle and high school students in the EAT
+program in 2022. Since the program began in 2020, over
+57,000 students, 780 schools, and 950 educators have
+participated in this program.
+Teaming Up with State Governments to Increase
+Access to Healthy Foods
+Our Seattle division is collaborating with the Washington
+State Department of Health on a variety of programs
+to address food insecurity. The Fruit and Vegetable
+Prescription Program allows select healthcare sites
+to provide patients experiencing food insecurity
+with “prescriptions” for fruits and vegetables. These
+“prescriptions” can then be used like cash to buy produce
+at Safeway stores in Washington. Our Seattle division
+also participates in the SNAP (Supplemental Nutrition
+Assistance Program) Produce Match program, which
+provides shoppers using Electronic Benefits Transfer (EBT)
+who spend at least $10 on fresh fruit and vegetables a
+$5 coupon for produce on their next shopping trip.
+“Research shows that a large percentage
+transportation, or caring for young
+trusted community grocer committed
+to those at risk by offering dignified
+— Susan Morris
+Chief Operations Officer
+
+Improving Food Access
+In 2022, we began rolling out a new online service for EBT
+recipients across our stores, where approved by the USDA.
+The integration of EBT services enables SNAP customers
+to use their benefits when purchasing groceries online,
+ensuring that families and individuals who rely on EBT
+SNAP benefits have greater access to nutritious food.
+Supporting the White House Conference on
+Hunger, Nutrition, and Health
+In support of the 2022 White House Conference on
+Hunger, Nutrition, and Health, Albertsons Companies
+expanded our commitment to fighting hunger and inspiring
+healthy eating by announcing new goals and initiatives.
+The following commitments, which complement our
+Recipe for Change efforts, are designed to help break the
+cycle of hunger and empower nutrition and health through
+technology and information:
+Addressing Hunger with Nourishing Neighbors
+• Enable the donation of over 100 million meals in 2023
+and 1 billion meals by 2030.
+• Help 50,000 eligible neighbors enroll in SNAP and
+Women Infants and Children (WIC) benefits in 2023.
+Empowering Nutrition and Health through
+Technology and Information
+• Provide 50 million evidence-based nutrition
+recommendations to digital customers by 2024.
+• Launch six health campaigns by 2025 utilizing in-store
+events and digital platforms to increase awareness of
+MyPlate Dietary Guidelines. 10
+• Provide 100 million customers access to recipe
+and meal planning tools by 2025.
+of EBT recipients face mobility challenges due to a
+children, which can prevent them from physically shopping
+to helping solve food insecurity, we want to make healthy
+and convenient shopping options.”
+
+recipes, and further enhance tools to help make
+healthier living an easy and sustainable choice.
+• Expand the availability of ready meals ® from 600
+to 1,100 stores by the end of the 2022 fiscal year.
+ready meals ® offer nutritious meals designed by
+culinary experts and dieticians made fresh in-store
+every day.
+We will report our progress as we work toward
+achieving these goals. Additional details about the
+White House Conference on Hunger, Nutrition, and
+Health are available here.
+Associate-Sponsored Funding
+The Albertsons Companies Foundation’s We Care
+program is a voluntary associate-sponsored disaster
+relief and personal hardship fund that provides support
+to our communities and fellow
+associates in times of crisis. In 2022,
+more than $1 million was given out
+in grants to 190 associates.
+Partnering with CPGs
+In 2022, divisions across the company teamed up with
+Kellogg’s Frosted Flakes ® Mission Tiger ™ to donate over
+$200,000 to school athletic programs. Our Southwest
+division teamed up with the Tony the Tiger ® Sun Bowl
+to provide the Parkland Pre-Engineering Middle School
+sports program with $30,000 for new equipment.
+Acme stores in our Mid-Atlantic division partnered with
+Frosted Flakes to donate $100,000 to support flag
+football programs in the Philadelphia School District.
+10 MyPlate | U.S. Department of Agriculture
+disability, lack of
+at a store. As a
+foods available
+
+24</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G16" value="A better">A better</label>
+<label><input type="radio" name="G16" value="No difference">No difference</label>
+<label><input type="radio" name="G16" value="B better">B better</label>
+<input type="text" data-note="G16" placeholder="note (optional)">
+</div></article>
+<article data-id="G17"><h3 style="font-size:14px;text-transform:none;color:inherit">G17. ACI p25</h3>
+<p class="meta">299 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g17_ACI_25.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Community
+
+Taking Care of Our Local Communities Jewel-Osco Division Northern California Division
+Thanks to our associates’ passion, generous The Jewel-Osco Asian Diversity &amp; Inclusion Associate When the Special Olympics Summer Games returned for
+customer donations, and collaborative efforts Resource Group participated in a food packing event with the first time since 2019, our Northern California division
+with community partners, our stores provide the Northern Illinois Food Bank. The team packed 16,370 kicked off the opening ceremony and volunteered at the
+the opportunity to mobilize funding efforts pounds of food, the equivalent of more than 13,600 meals, event. As an annual partner of the Special Olympics,
+and actively engage customers in helping setting a new record for the number of pallets packed in a we’re proud to support the Summer Games and cheer on
+their local communities. single volunteer shift. associates that participated as athletes.
+
+Denver Division
+During the holidays, our
+Denver division supported
+85 local non-profits raising
+over $1.8 million for those
+in need. They continued
+their fundraising efforts in
+February to help support the
+
+Mid-Atlantic Division Portland Division
+Children’s Hospital Colorado,
+raising over $150,000. Our Mid-Atlantic division hosted the 23rd Annual In Portland, our stores partner with KGW8, their local
+Safeway Feast of Sharing in Washington, D.C., where NBC affiliate, for the annual Great Food Drive. In 2022,
+Intermountain Division 5,000 nutritious holiday meals boxes were handed out to the division donated over 2 million meals to support their
+neighbors in need. In addition, volunteers packed 5,000 neighbors in need.
+Our Intermountain division donated more than $165,000
+gift bags with winter clothing accessories and toiletry kits,
+to the Idaho Foodbank to provide Thanksgiving and
+and the Safeway pharmacy team hosted a flu shot and
+Christmas meals for individuals and families through our
+vaccine clinic.
+Holiday Giving Program.
+
+25</pre></section>
+<section><h3>Parser B</h3><pre>Community
+Taking Care of Our Local Communities
+Thanks to our associates’ passion, generous
+customer donations, and collaborative efforts
+with community partners, our stores provide
+the opportunity to mobilize funding efforts
+and actively engage customers in helping
+their local communities.
+Denver Division
+During the holidays, our
+Denver division supported
+85 local non-profits raising
+over $1.8 million for those
+in need. They continued
+their fundraising efforts in
+February to help support the
+Children’s Hospital Colorado,
+raising over $150,000.
+Intermountain Division
+Our Intermountain division donated more than $165,000
+to the Idaho Foodbank to provide Thanksgiving and
+Christmas meals for individuals and families through our
+Holiday Giving Program.
+
+Jewel-Osco Division
+The Jewel-Osco Asian Diversity &amp; Inclusion Associate
+Resource Group participated in a food packing event with
+the Northern Illinois Food Bank. The team packed 16,370
+pounds of food, the equivalent of more than 13,600 meals,
+setting a new record for the number of pallets packed in a
+single volunteer shift.
+Mid-Atlantic Division
+Our Mid-Atlantic division hosted the 23rd Annual
+Safeway Feast of Sharing in Washington, D.C., where
+5,000 nutritious holiday meals boxes were handed out to
+neighbors in need. In addition, volunteers packed 5,000
+gift bags with winter clothing accessories and toiletry kits,
+and the Safeway pharmacy team hosted a flu shot and
+vaccine clinic.
+
+Northern California Division
+When the Special Olympics Summer Games returned for
+the first time since 2019, our Northern California division
+kicked off the opening ceremony and volunteered at the
+event. As an annual partner of the Special Olympics,
+we’re proud to support the Summer Games and cheer on
+associates that participated as athletes.
+Portland Division
+In Portland, our stores partner with KGW8, their local
+NBC affiliate, for the annual Great Food Drive. In 2022,
+the division donated over 2 million meals to support their
+neighbors in need.
+
+25</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G17" value="A better">A better</label>
+<label><input type="radio" name="G17" value="No difference">No difference</label>
+<label><input type="radio" name="G17" value="B better">B better</label>
+<input type="text" data-note="G17" placeholder="note (optional)">
+</div></article>
+<article data-id="G18"><h3 style="font-size:14px;text-transform:none;color:inherit">G18. ACI p26</h3>
+<p class="meta">305 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g18_ACI_26.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Community
+Shaw’s Division
+Since 2015, Shaw’s and Star Market have raised over $6.6
+million for Boston Children’s Hospital—every year more
+successful than the last. In 2022, through the generosity of
+our customers, associates, and vendor partners, the Give
+a Smile fundraising campaign raised over $1.3 million to
+provide lifesaving care for kids.
+.
+Seattle Division
+The Seattle division’s Nourish Everyone campaign raised
+more than $4 million to distribute grocery cards via
+food banks, schools, health clinics, and senior centers
+throughout Washington and Alaska. These cards enable
+access to fresh and non-food products that are not
+typically available at food banks and are redeemable at
+stores during evenings and weekends when food banks
+are typically closed.
+
+Southern California Division
+Our Southern California division’s Women’s Inspiration
+and Inclusion Network came together to raise funds and
+participate in the Susan G. Komen More Than Pink walk.
+The team raised more than $112,000 to support the cause,
+with one associate raising more than $105,000, making
+them one of the highest individual fundraisers in the
+Orange County walk.
+Southern Division
+In 2022, our Southern division raised nearly $150,000
+to support local Children’s Miracle Network Hospitals to
+ensure more children can receive the treatment they need
+to grow up and become our tomorrow.
+
+Southwest Division
+In our Southwest division,
+our Foundation annually
+partners with nonprofit
+healthcare organizations
+that serve the uninsured and
+under insured populations
+across our regions to ensure
+residents have access to
+important services including
+screenings and vaccinations.
+Participating nonprofits
+include Mission of Mercy,
+Baptist Clinic of El Paso, Rio
+Grande Cancer Foundation,
+school districts, and others.
+United Division
+Our United division supports the South Plains Food Bank
+to help those in need in their communities. Team members
+regularly volunteer to build food boxes for our senior
+communities across the South Plains, reaching over 3,500
+seniors each month.
+
+26</pre></section>
+<section><h3>Parser B</h3><pre>Community
+
+Shaw’s Division Southern California Division Southwest Division
+Since 2015, Shaw’s and Star Market have raised over $6.6 Our Southern California division’s Women’s Inspiration In our Southwest division,
+million for Boston Children’s Hospital—every year more and Inclusion Network came together to raise funds and our Foundation annually
+successful than the last. In 2022, through the generosity of participate in the Susan G. Komen More Than Pink walk. partners with nonprofit
+our customers, associates, and vendor partners, the Give The team raised more than $112,000 to support the cause, healthcare organizations
+a Smile fundraising campaign raised over $1.3 million to with one associate raising more than $105,000, making that serve the uninsured and
+provide lifesaving care for kids. them one of the highest individual fundraisers in the under insured populations
+Orange County walk. across our regions to ensure
+
+residents have access to
+important services including
+screenings and vaccinations.
+Participating nonprofits
+include Mission of Mercy,
+Baptist Clinic of El Paso, Rio
+Grande Cancer Foundation,
+school districts, and others.
+
+.
+United Division
+Our United division supports the South Plains Food Bank
+to help those in need in their communities. Team members
+
+Seattle Division
+The Seattle division’s Nourish Everyone campaign raised
+more than $4 million to distribute grocery cards via
+food banks, schools, health clinics, and senior centers
+throughout Washington and Alaska. These cards enable
+access to fresh and non-food products that are not
+typically available at food banks and are redeemable at
+stores during evenings and weekends when food banks
+are typically closed.
+
+Southern Division
+regularly volunteer to build food boxes for our senior
+In 2022, our Southern division raised nearly $150,000 communities across the South Plains, reaching over 3,500
+to support local Children’s Miracle Network Hospitals to seniors each month.
+ensure more children can receive the treatment they need
+to grow up and become our tomorrow.
+
+26</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G18" value="A better">A better</label>
+<label><input type="radio" name="G18" value="No difference">No difference</label>
+<label><input type="radio" name="G18" value="B better">B better</label>
+<input type="text" data-note="G18" placeholder="note (optional)">
+</div></article>
+<article data-id="G19"><h3 style="font-size:14px;text-transform:none;color:inherit">G19. ACI p29</h3>
+<p class="meta">453 body words</p>
+<div class="grid">
+<section><h3>Source page</h3><img src="g19_ACI_29.png" alt="page"></section>
+<section><h3>Parser A</h3><pre>Appendices
+Appendix 1: Goals and 2022 Progress
+TOPIC GOAL
+Reduce scope 1 and 2 emissions by
+47% by 2030 from a 2019 baseline
+Engage top suppliers to set science-based
+CLIMATE ACTION carbon reduction goals based on a 2019 baseline
+Reduce emissions from the use of sold goods
+by 27.5% from a 2019 baseline
+Increase diverse representation within
+our management
+DIVERSITY, EQUITY Foster an inclusive culture that
+&amp; INCLUSION embraces differences
+Ensure all associates have equal access
+to opportunities and resources
+
+2022 PROGRESS
+• 21% reduction from a 2019 baseline.
+• More than 80 suppliers have set, committed to setting, and/or
+tracked their progress against science-based reduction targets.
+• More than a 5% reduction from a 2019 baseline.
+• In 2022, we expanded the ways that associates can self-identify
+within gender and ethnicity designations.
+• Established an inclusion index to foster a culture that puts
+people first and values diverse perspectives.
+• Continued to expand programs and offer training
+and development opportunities.
+
+Zero food waste to landfill
+WASTE REDUCTION
+&amp; CIRCULARITY
+Increase the recyclability, reusability,
+and/or compostability of our Own Brands
+packaging by 2025
+Enable the donation of
+1 billion meals by 2030
+
+• Continued efforts to prevent food waste, donate edible food,
+and divert inedible food from landfill. Expanded store food
+donation programs to include new categories and had over
+90% of stores donating weekly by the end of 2022.
+• Diverted more than 321 million pounds of food and trimmings
+through inedible food waste diversion programs that are in
+place in the majority of our stores.
+• Established our Own Brands primary plastics and packaging baseline.
+• Achieved providing standardized recycling communications
+on all Own Brands products by 2022.
+• Enabled 254 million meals in 2022, and more than 950
+million meals since 2019.
+
+COMMUNITY
+STEWARDSHIP
+Champion innovative programs
+and partnerships to help break
+the cycle of hunger
+
+• Continued to build partnerships and launch new
+programs to help break the cycle of hunger.
+
+REPORT REFERENCE
+Climate Action – Page 9
+Value Chain Emissions – Page 10
+Value Chain Emissions – Page 10
+Representation – Page 14
+
+Inclusion – Page 15
+Inclusion – Page 15
+Training &amp; Development – Page 16
+Preventing Food Waste – Page 18
+Donating Edible Food – Page 18
+Diverting Inedible Food – Page 18
+Plastics and Packaging – Page 19
+Recycling Communications – Page 19
+
+Donating Food from our Stores – Page 23
+Albertsons Companies Foundation
+Nourishing Neighbors Program - Page 23
+
+Engaging Students in Finding Solutions
+in Their Communities – Page 24
+Teaming Up with State Governments to
+Increase Access to Healthy Foods – Page 24
+Improving Food Access – Page 24
+Supporting the White House Conference
+on Hunger, Nutrition, and Health – Page 24
+
+29</pre></section>
+<section><h3>Parser B</h3><pre>Appendices
+Appendix 1: Goals and 2022 Progress
+TOPIC GOAL
+Reduce scope 1 and 2 emissions by
+47% by 2030 from a 2019 baseline
+Engage top suppliers to set science-based
+CLIMATE ACTION carbon reduction goals based on a 2019 baseline
+Reduce emissions from the use of sold goods
+by 27.5% from a 2019 baseline
+Increase diverse representation within
+our management
+DIVERSITY, EQUITY Foster an inclusive culture that
+&amp; INCLUSION embraces differences
+Ensure all associates have equal access
+to opportunities and resources
+Zero food waste to landfill
+WASTE REDUCTION
+&amp; CIRCULARITY
+Increase the recyclability, reusability,
+and/or compostability of our Own Brands
+packaging by 2025
+Enable the donation of
+1 billion meals by 2030
+COMMUNITY
+STEWARDSHIP
+Champion innovative programs
+and partnerships to help break
+the cycle of hunger
+
+2022 PROGRESS
+• 21% reduction from a 2019 baseline.
+• More than 80 suppliers have set, committed to setting, and/or
+tracked their progress against science-based reduction targets.
+• More than a 5% reduction from a 2019 baseline.
+• In 2022, we expanded the ways that associates can self-identify
+within gender and ethnicity designations.
+• Established an inclusion index to foster a culture that puts
+people first and values diverse perspectives.
+• Continued to expand programs and offer training
+and development opportunities.
+• Continued efforts to prevent food waste, donate edible food,
+and divert inedible food from landfill. Expanded store food
+donation programs to include new categories and had over
+90% of stores donating weekly by the end of 2022.
+• Diverted more than 321 million pounds of food and trimmings
+through inedible food waste diversion programs that are in
+place in the majority of our stores.
+• Established our Own Brands primary plastics and packaging baseline.
+• Achieved providing standardized recycling communications
+on all Own Brands products by 2022.
+• Enabled 254 million meals in 2022, and more than 950
+million meals since 2019.
+• Continued to build partnerships and launch new
+programs to help break the cycle of hunger.
+
+REPORT REFERENCE
+Climate Action – Page 9
+Value Chain Emissions – Page 10
+Value Chain Emissions – Page 10
+Representation – Page 14
+Inclusion – Page 15
+Inclusion – Page 15
+Training &amp; Development – Page 16
+Preventing Food Waste – Page 18
+Donating Edible Food – Page 18
+Diverting Inedible Food – Page 18
+Plastics and Packaging – Page 19
+Recycling Communications – Page 19
+Donating Food from our Stores – Page 23
+Albertsons Companies Foundation
+Nourishing Neighbors Program - Page 23
+Engaging Students in Finding Solutions
+in Their Communities – Page 24
+Teaming Up with State Governments to
+Increase Access to Healthy Foods – Page 24
+Improving Food Access – Page 24
+Supporting the White House Conference
+on Hunger, Nutrition, and Health – Page 24
+
+29</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="G19" value="A better">A better</label>
+<label><input type="radio" name="G19" value="No difference">No difference</label>
+<label><input type="radio" name="G19" value="B better">B better</label>
+<input type="text" data-note="G19" placeholder="note (optional)">
+</div></article>
+<h2>Group 2 &mdash; production refuses these pages (3)</h2>
+<p class="intro">Production returns <code>ambiguous</code> and emits nothing, so these are shown unblinded and tallied separately. Judge whether the candidate's text is genuinely usable &mdash; not merely present.</p>
+<article data-id="R1"><h3 style="font-size:14px;text-transform:none;color:inherit">R1. ACI p2 &mdash; production refuses (navigation_contents_layout (columns=0))</h3>
+<div class="grid">
+<section><h3>Source page</h3><img src="r01_ACI_2.png" alt="page"></section>
+<section><h3>Production</h3><pre class='empty'>(refuses: emits nothing)</pre></section>
+<section><h3>Candidate</h3><pre>Table of Contents
+
+Letter from Our CEO 4
+Company Overview 5
+Recipe for Change 7
+Planet 8
+People 12
+Product 17
+Community 22
+ESG Governance 27
+Appendices 29
+
+2</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="R1" value="Candidate usable">Candidate usable</label>
+<label><input type="radio" name="R1" value="Candidate not usable">Candidate not usable</label>
+<input type="text" data-note="R1" placeholder="note (optional)">
+</div></article>
+<article data-id="R2"><h3 style="font-size:14px;text-transform:none;color:inherit">R2. ACI p21 &mdash; production refuses (column_vertical_coverage=0.126 (columns=0))</h3>
+<div class="grid">
+<section><h3>Source page</h3><img src="r02_ACI_21.png" alt="page"></section>
+<section><h3>Production</h3><pre class='empty'>(refuses: emits nothing)</pre></section>
+<section><h3>Candidate</h3><pre>Step 3 (GAP-3) standards by 2024. In 2022, the national
+
+Customer Health &amp; Well-Being
+In 2022, we held over 5,700 vaccine clinics at schools,
+nursing homes, local businesses and other organizations
+to help ensure community members have access to
+immunizations. Our pharmacists administered over 7 million
+vaccines to patients to protect the communities we operate
+in and promote preventative health measures.
+In our Denver division, for example, we partnered with
+365 Health, a non-profit organization focused on providing
+
+Supplier Environmental Stewardship and
+Social Responsibility
+Albertsons Companies is always working to improve the
+sustainability of the products we offer, including in our
+Own Brands products. Our sourcing team is shifting our
+buying choices toward ingredients that are produced
+in more socially and environmentally responsible ways,
+and we provide our suppliers with commodity-specific
+requirements as part of our Supplier Sustainability
+Guidelines.
+
+chicken supply chain faced national animal health risks
+from Highly Pathogenic Avian Influenza (HPAI), and many
+suppliers moved flocks indoors to protect the health of the
+animals. Despite these challenges, more than 27% of our
+O Organics chicken supply was either GAP-2 or GAP-
+3 certified in 2022. Additional details about our Animal
+Welfare policies can be found on our website.
+
+health tests and vaccinations to communities in need, and
+completed over 100 flu and Covid clinics—administering
+over 4,300 vaccines.
+The majority of our pharmacies offer Drug Take Back
+Kiosks for proper disposal of unused, unwanted, or expired
+medications, and in 2022 we collected nearly 100,000
+pounds of these products. Responsible disposal of over-
+the-counter and prescription medications can help avoid
+misuse, as medications left in the home can contribute
+to accidental poisonings or drug abuse. In addition,
+unwanted or expired medications can negatively impact
+our environment by polluting waterways and disrupting
+ecosystems if the medications are improperly discarded.
+
+Animal Welfare
+Maintaining high animal care standards is important to
+Albertsons Companies, and we prioritize implementing
+science-based animal welfare policies that ensure safe
+and humane treatment. In 2022, 48% of our liquid and
+shell eggs were cage-free. In addition, all O Organics and
+Open Nature shell and liquid eggs and all Own Brands
+hardboiled eggs are cage-free.
+Last year we expanded our commitment to broiler chicken
+welfare and aim to have 50% of O Organics chicken
+supply chain certified to Global Animal Partnership
+
+21</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="R2" value="Candidate usable">Candidate usable</label>
+<label><input type="radio" name="R2" value="Candidate not usable">Candidate not usable</label>
+<input type="text" data-note="R2" placeholder="note (optional)">
+</div></article>
+<article data-id="R3"><h3 style="font-size:14px;text-transform:none;color:inherit">R3. ACI p31 &mdash; production refuses (column_vertical_coverage=0.264 (columns=0))</h3>
+<div class="grid">
+<section><h3>Source page</h3><img src="r03_ACI_31.png" alt="page"></section>
+<section><h3>Production</h3><pre class='empty'>(refuses: emits nothing)</pre></section>
+<section><h3>Candidate</h3><pre>Appendix 3:
+Materiality Assessment
+In 2020, we refreshed our Materiality Assessment to
+prioritize how we address ESG. This assessment identified
+our internal and external stakeholders’ top-ranking ESG
+topic areas, and the outcome shaped our Recipe for
+Change. We analyzed the most critical ESG topics specific
+to our business and industry and worked with stakeholders
+to better understand where we should focus our efforts. We
+conducted interviews and surveys with internal business
+leaders, customers, investors, suppliers, and industry groups
+and included insights from industry reports and ESG rating
+agencies. Based on the responses received, we aggregated
+topics into ranked, or “tiered,” priorities.
+
+HIGHER
+TIER 1 Invest time and resources to set
+goals, advance our efforts, and
+regularly report on progress.
+
+TIER 2 Proactively manage performance
+and report on continuous
+improvement.
+
+TIER 3 Develop policies, position
+statements, and brand standards
+as needed and report on activities
+as appropriate.
+LOWER IMPORTANCE TO BUSINESS HIGHER
+
+FOUNDATIONAL Focus on internal excellence to
+TOPICS minimize risk and meet or exceed
+regulatory requirements.
+
+The Results of Our Materiality Assessment
+• Climate Action (focus on energy and emissions)
+• Community Stewardship
+• Diversity, Equity &amp; Inclusion
+• Waste Reduction &amp; Circularity
+(focus on food waste, plastics, and consumer packaging)
+
+• Customer Health &amp; Wellness
+• Supplier Environmental Stewardship
+• Supplier Social Responsibility
+• Sustainable Products &amp; Ingredients
+
+• Animal Welfare
+• Product Marketing &amp; Transparency
+• Water Stewardship
+
+• Data Privacy &amp; Security
+• Employee Attraction, Development &amp; Retention
+• Employee Health &amp; Safety
+• Governance Ethics &amp; Compliance
+• Food &amp; Product Safety
+• Resilience &amp; Adaptation
+
+31</pre></section>
+</div>
+<div class="score">
+<label><input type="radio" name="R3" value="Candidate usable">Candidate usable</label>
+<label><input type="radio" name="R3" value="Candidate not usable">Candidate not usable</label>
+<input type="text" data-note="R3" placeholder="note (optional)">
+</div></article>
+<h2>Results</h2>
+<textarea id="out" readonly></textarea>
+<script>const ORDER = [["G1", "AEO p3"], ["G2", "AEO p4"], ["G3", "ACI p4"], ["G4", "ACI p6"], ["G5", "ACI p7"], ["G6", "ACI p9"], ["G7", "ACI p10"], ["G8", "ACI p11"], ["G9", "ACI p13"], ["G10", "ACI p15"], ["G11", "ACI p16"], ["G12", "ACI p18"], ["G13", "ACI p19"], ["G14", "ACI p20"], ["G15", "ACI p23"], ["G16", "ACI p24"], ["G17", "ACI p25"], ["G18", "ACI p26"], ["G19", "ACI p29"], ["R1", "ACI p2"], ["R2", "ACI p21"], ["R3", "ACI p31"]];
+const KEY = 'old_vs_new_scores_v1';
+const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+document.querySelectorAll('input[type=radio]').forEach(i => {
+  if (saved[i.name] && saved[i.name].score === i.value) i.checked = true;
+  i.addEventListener('change', persist);
+});
+document.querySelectorAll('input[type=text]').forEach(i => {
+  const id = i.dataset.note;
+  if (saved[id] && saved[id].note) i.value = saved[id].note;
+  i.addEventListener('input', persist);
+});
+function persist() {
+  const data = {};
+  document.querySelectorAll('article').forEach(a => {
+    const id = a.dataset.id;
+    const picked = a.querySelector('input[type=radio]:checked');
+    const note = a.querySelector('input[type=text]').value.trim();
+    a.classList.toggle('scored', !!picked);
+    if (picked || note) data[id] = { score: picked ? picked.value : '', note };
+  });
+  localStorage.setItem(KEY, JSON.stringify(data));
+  render(data);
+}
+function render(data) {
+  let done = 0;
+  ORDER.forEach(([id]) => { if (data[id] && data[id].score) done++; });
+  document.getElementById('n-done').textContent = done + ' / ' + ORDER.length;
+  const lines = ['# Old vs new reader - blinded scores', ''];
+  ORDER.forEach(([id, label]) => {
+    const v = data[id];
+    if (!v || !v.score) return;
+    lines.push(`${id} | ${label} | ${v.score}${v.note ? ' | ' + v.note : ''}`);
+  });
+  lines.push('', `Scored: ${done} of ${ORDER.length}`);
+  document.getElementById('out').value = lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const out = document.getElementById('out');
+  out.select();
+  try { await navigator.clipboard.writeText(out.value); } catch (e) { document.execCommand('copy'); }
+  const b = document.getElementById('copy'); b.textContent = 'Copied';
+  setTimeout(() => { b.textContent = 'Copy scores'; }, 1200);
+});
+document.getElementById('clear').addEventListener('click', () => {
+  if (!confirm('Clear all scores?')) return;
+  localStorage.removeItem(KEY);
+  document.querySelectorAll('input[type=radio]').forEach(i => { i.checked = false; });
+  document.querySelectorAll('input[type=text]').forEach(i => { i.value = ''; });
+  persist();
+});
+persist();
+</script>
+</body></html>

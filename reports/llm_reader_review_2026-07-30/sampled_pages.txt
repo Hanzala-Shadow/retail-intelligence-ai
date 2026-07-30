@@ -1,0 +1,49 @@
+main_sample	SGC	SGC-SUPERIOR GROUP OF COS INC-2024.pdf	2	production_ambiguous
+main_sample	BIRD	BIRD-ALLBIRDS INC-2024.pdf	5	reconstructed_text_differs
+main_sample	WSM	WSM-WILLIAMS-SONOMA INC-2019.pdf	3	reconstructed_text_differs
+main_sample	TGT	TGT-TARGET CORP-2018.pdf	3	production_ambiguous
+main_sample	WMT	WMT-WALMART INC-2016.pdf	2	reconstructed_text_differs
+main_sample	CVS	CVS-CVS HEALTH CORP-2017.pdf	12	production_ambiguous
+main_sample	TSCO	TSCO-TRACTOR SUPPLY CO-2025.pdf	2	production_ambiguous
+main_sample	ACI	ACI-ALBERTSONS COS INC-2023.pdf	6	reconstructed_text_differs
+main_sample	FND	FND-FLOOR & DECOR HLDGS-2022.pdf	2	production_ambiguous
+main_sample	BRLT	BRLT-BRILLIANT EARTH GP INC-2022.pdf	5	reconstructed_text_differs
+main_sample	BBBY	BBBY-BED BATH & BEYOND INC-2020.pdf	6	reconstructed_text_differs
+main_sample	CRI	CRI-CARTER'S INC-2021.pdf	16	production_ambiguous
+main_sample	PTRN	PTRN-PATTERN GROUP INC-2019.pdf	3	reconstructed_text_differs
+main_sample	WHR	WHR-WHIRLPOOL CORP-2023.pdf	2	production_ambiguous
+main_sample	RL	RL-RALPH LAUREN CORP-2021.pdf	2	production_ambiguous
+main_sample	WMK	WMK-WEIS MARKETS INC-2017.pdf	7	production_ambiguous
+main_sample	LESL	LESL-LESLIE'S INC-2021.pdf	3	reconstructed_text_differs
+main_sample	COLM	COLM-COLUMBIA SPORTSWEAR CO-2022.pdf	8	reconstructed_text_differs
+main_sample	WMT	WMT-WALMART INC-2016.pdf	25	reconstructed_text_differs
+main_sample	COLM	COLM-COLUMBIA SPORTSWEAR CO-2022.pdf	34	production_ambiguous
+main_sample	CRI	CRI-CARTER'S INC-2021.pdf	42	reconstructed_text_differs
+main_sample	WHR	WHR-WHIRLPOOL CORP-2023.pdf	71	production_ambiguous
+main_sample	BRLT	BRLT-BRILLIANT EARTH GP INC-2022.pdf	59	reconstructed_text_differs
+main_sample	SGC	SGC-SUPERIOR GROUP OF COS INC-2024.pdf	5	production_ambiguous
+main_sample	BRLT	BRLT-BRILLIANT EARTH GP INC-2022.pdf	58	reconstructed_text_differs
+main_sample	COLM	COLM-COLUMBIA SPORTSWEAR CO-2022.pdf	49	production_ambiguous
+main_sample	ACI	ACI-ALBERTSONS COS INC-2023.pdf	7	reconstructed_text_differs
+main_sample	SGC	SGC-SUPERIOR GROUP OF COS INC-2024.pdf	22	production_ambiguous
+main_sample	RL	RL-RALPH LAUREN CORP-2021.pdf	26	reconstructed_text_differs
+main_sample	WMT	WMT-WALMART INC-2016.pdf	164	production_ambiguous
+main_sample	CVS	CVS-CVS HEALTH CORP-2017.pdf	60	reconstructed_text_differs
+main_sample	WHR	WHR-WHIRLPOOL CORP-2023.pdf	59	production_ambiguous
+main_sample	WSM	WSM-WILLIAMS-SONOMA INC-2019.pdf	37	reconstructed_text_differs
+main_sample	TSCO	TSCO-TRACTOR SUPPLY CO-2025.pdf	15	production_ambiguous
+main_sample	RL	RL-RALPH LAUREN CORP-2021.pdf	20	reconstructed_text_differs
+main_sample	TGT	TGT-TARGET CORP-2018.pdf	45	production_ambiguous
+human_validation	AEO	AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf	3	reconstructed_text_differs
+human_validation	AEO	AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf	4	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	4	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	6	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	7	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	9	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	10	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	11	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	13	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	15	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	16	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	18	reconstructed_text_differs
+human_validation	ACI	ACI-ALBERTSONS COS INC-2022.pdf	19	reconstructed_text_differs

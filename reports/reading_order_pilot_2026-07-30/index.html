@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Reading-order pilot review — 2026-07-30</title>
+<link rel="stylesheet" href="style.css">
+</head><body>
+<header class="topbar">
+  <strong>Reading-order pilot review</strong>
+  <span class="small">8 named failure pages + 4 held-out "good" control pages. Separate from, and does not touch, the chunk-quality review's 25 saved answers.</span>
+  <span style="flex:1"></span>
+  <span class="progress" id="progress"></span>
+  <button onclick="exportCsv(INDEX_DATA)">Export CSV</button>
+</header>
+<main>
+<table class="index-table">
+<thead><tr><th>role</th><th>ticker</th><th>pdf</th><th>page</th><th>current decision</th><th>candidate status</th><th>region types</th><th>verdict</th><th></th></tr></thead>
+<tbody>
+<tr><td>pilot</td><td>BURL</td><td>BURL-BURLINGTON STORES INC-2023.pdf</td><td>30</td><td>auto_pass_column_order_reconstructed</td><td>candidate_ready</td><td>single_column_prose, row_structured</td><td><span class='badge unreviewed' id='badge-BURL_BURL-BURLINGTON_STORES_INC-2023_p030'>unreviewed</span></td><td><a href='BURL_BURL-BURLINGTON_STORES_INC-2023_p030.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>W</td><td>W-WAYFAIR INC-2024.pdf</td><td>6</td><td>auto_pass_column_order_reconstructed</td><td>candidate_ready</td><td>multi_column_prose, single_column_prose</td><td><span class='badge unreviewed' id='badge-W_W-WAYFAIR_INC-2024_p006'>unreviewed</span></td><td><a href='W_W-WAYFAIR_INC-2024_p006.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>PTRN</td><td>PTRN-PATTERN GROUP INC-2023.pdf</td><td>128</td><td>auto_pass</td><td>candidate_ready</td><td>single_column_prose</td><td><span class='badge unreviewed' id='badge-PTRN_PTRN-PATTERN_GROUP_INC-2023_p128'>unreviewed</span></td><td><a href='PTRN_PTRN-PATTERN_GROUP_INC-2023_p128.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>KTB</td><td>KTB-KONTOOR BRANDS INC-2024.pdf</td><td>20</td><td>auto_pass_region_order_reconstructed</td><td>needs_review</td><td>heading, uncertain</td><td><span class='badge unreviewed' id='badge-KTB_KTB-KONTOOR_BRANDS_INC-2024_p020'>unreviewed</span></td><td><a href='KTB_KTB-KONTOOR_BRANDS_INC-2024_p020.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>KTB</td><td>KTB-KONTOOR BRANDS INC-2024.pdf</td><td>21</td><td>auto_pass_column_order_reconstructed</td><td>candidate_ready</td><td>heading, multi_column_prose</td><td><span class='badge unreviewed' id='badge-KTB_KTB-KONTOOR_BRANDS_INC-2024_p021'>unreviewed</span></td><td><a href='KTB_KTB-KONTOOR_BRANDS_INC-2024_p021.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>UPBD</td><td>UPD-UPBOUND GROUP INC-2023.pdf</td><td>46</td><td>auto_pass_verified_table_extraction</td><td>candidate_ready</td><td>table_verified</td><td><span class='badge unreviewed' id='badge-UPBD_UPD-UPBOUND_GROUP_INC-2023_p046'>unreviewed</span></td><td><a href='UPBD_UPD-UPBOUND_GROUP_INC-2023_p046.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>UPBD</td><td>UPD-UPBOUND GROUP INC-2023.pdf</td><td>47</td><td>auto_pass_verified_table_extraction</td><td>candidate_ready</td><td>table_verified</td><td><span class='badge unreviewed' id='badge-UPBD_UPD-UPBOUND_GROUP_INC-2023_p047'>unreviewed</span></td><td><a href='UPBD_UPD-UPBOUND_GROUP_INC-2023_p047.html'>open &rarr;</a></td></tr><tr><td>pilot</td><td>BBWI</td><td>BBWI-BATH &amp; BODY WORKS INC-2023.pdf</td><td>22</td><td>auto_pass_column_order_reconstructed</td><td>candidate_ready</td><td>heading, single_column_prose, row_structured</td><td><span class='badge unreviewed' id='badge-BBWI_BBWI-BATH_and_BODY_WORKS_INC-2023_p022'>unreviewed</span></td><td><a href='BBWI_BBWI-BATH_and_BODY_WORKS_INC-2023_p022.html'>open &rarr;</a></td></tr><tr><td>control</td><td>AEO</td><td>AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf</td><td>2</td><td>auto_pass</td><td>candidate_ready</td><td>single_column_prose</td><td><span class='badge unreviewed' id='badge-AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2023_p002'>unreviewed</span></td><td><a href='AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2023_p002.html'>open &rarr;</a></td></tr><tr><td>control</td><td>AEO</td><td>AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf</td><td>10</td><td>auto_pass_verified_table_extraction</td><td>candidate_ready</td><td>table_verified</td><td><span class='badge unreviewed' id='badge-AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2023_p010'>unreviewed</span></td><td><a href='AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2023_p010.html'>open &rarr;</a></td></tr><tr><td>control</td><td>AEO</td><td>AEO-AMERICAN EAGLE OUTFITTERS INC-2024.pdf</td><td>2</td><td>auto_pass</td><td>candidate_ready</td><td>single_column_prose, single_column_prose, heading</td><td><span class='badge unreviewed' id='badge-AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2024_p002'>unreviewed</span></td><td><a href='AEO_AEO-AMERICAN_EAGLE_OUTFITTERS_INC-2024_p002.html'>open &rarr;</a></td></tr><tr><td>control</td><td>BBY</td><td>BBY-BEST BUY CO INC-2024.pdf</td><td>46</td><td>auto_pass_column_order_reconstructed</td><td>candidate_ready</td><td>heading, multi_column_prose</td><td><span class='badge unreviewed' id='badge-BBY_BBY-BEST_BUY_CO_INC-2024_p046'>unreviewed</span></td><td><a href='BBY_BBY-BEST_BUY_CO_INC-2024_p046.html'>open &rarr;</a></td></tr>
+</tbody>
+</table>
+</main>
+<script src="index_data.js"></script>
+<script src="app.js"></script>
+<script>
+function refreshAll() {
+  for (const entry of INDEX_DATA) {
+    const rec = getVerdict(entry.page_id);
+    const el = document.getElementById("badge-" + entry.page_id);
+    if (!el) continue;
+    const v = rec && rec.verdict;
+    el.textContent = v || "unreviewed";
+    el.className = "badge " + (v || "unreviewed");
+  }
+  document.getElementById("progress").textContent = reviewedCount(INDEX_DATA) + " / " + INDEX_DATA.length + " reviewed";
+}
+refreshAll();
+</script>
+</body></html>
