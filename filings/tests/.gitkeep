@@ -1,0 +1,4 @@
+# 10-K pipeline tests.
+#
+# Empty for now: every test in the repo drives ESG. New 10-K tests land here
+# and need no path setup -- the rootdir conftest.py covers them.
