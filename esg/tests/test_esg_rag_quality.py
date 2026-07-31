@@ -523,7 +523,7 @@ class ESGRAGQualityTests(unittest.TestCase):
                 ["climate__0001", "community__0001", "climate__0002"],
             )
             for row in rows:
-                self.assertEqual(row["provenance_version"], "contiguous_v1")
+                self.assertEqual(row["provenance_version"], "contiguous_v2")
                 section_file = Path(row["section_file"])
                 self.assertTrue(section_file.is_file())
                 self.assertTrue(section_file.name.endswith(f"__{row['section_instance_id']}.txt"))

@@ -19,6 +19,7 @@ MAX_CHUNK_TOKENS = 600
 SHORT_EVIDENCE_MIN_TOKENS = 25
 CHUNK_TYPE_NORMAL = "normal"
 CHUNK_TYPE_SHORT_EVIDENCE = "short_evidence"
+SECTIONER_VERSION = "contiguous_v2"
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -153,8 +154,8 @@ def validate(parse_rows: list[dict], section_rows: list[dict], chunk_rows: list[
         if not ticker or not pdf_stem or not instance:
             errors.append(f"section row {row_number}: missing v2 section identity")
             continue
-        if row.get("provenance_version") != "contiguous_v1":
-            errors.append(f"{key}: provenance_version is not contiguous_v1")
+        if row.get("provenance_version") != SECTIONER_VERSION:
+            errors.append(f"{key}: provenance_version is not {SECTIONER_VERSION}")
 
         parsed_text, parsed_sha256 = parsed_source((ticker, pdf_stem))
         section_path = resolve_path(row.get("section_file"))

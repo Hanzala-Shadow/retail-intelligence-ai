@@ -6,17 +6,20 @@ import hashlib
 import os
 import re
 import time
+import unicodedata
 import uuid
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import tiktoken
 import _bootstrap  # noqa: F401  (import path: config, pipeline src, common)
 
 import config
+from esg_year import extract_report_year
 
 
 ENCODING = "cl100k_base"
@@ -24,6 +27,10 @@ CHUNK_SIZE = 500
 OVERLAP = 50
 MIN_CHUNK_TOKENS = 100
 MAX_CHUNK_TOKENS = 600
+BGE_MODEL_LIMIT = 512
+BGE_INPUT_LIMIT = 500
+OVERLAP_BGE_TOKENS = 48
+MAX_TABLE_CONTEXT_TOKENS = 64
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
 # Large tables of contents sit far above NAVIGATION_TRACE_MAX_TOKENS, so the
@@ -44,11 +51,42 @@ CITATION_VALIDATION_VERSION = "semantic_v1"
 # Versions the chunking rule set: CHUNK_SIZE, OVERLAP, MAX_CHUNK_TOKENS, the
 # short-section and navigation-trace classifiers, and the source-alignment
 # logic. Bump when any of those change.
-CHUNKER_VERSION = "esg_chunk_v2"
+CHUNKER_VERSION = "esg_chunk_v3"
 VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
 }
+DOCUMENT_LABELS = {
+    "sustainability": "Sustainability Report",
+    "annual_report_with_esg": "Annual Report with ESG Disclosure",
+    "program_impact_report": "Program Impact Report",
+}
+TOPIC_LABELS = {
+    "ceo_letter": "CEO Letter",
+    "about_this_report": "About This Report",
+    "environmental": "Environmental",
+    "climate": "Climate",
+    "energy": "Energy",
+    "emissions": "Emissions",
+    "waste": "Waste",
+    "water": "Water",
+    "social": "Social",
+    "human_capital": "Human Capital",
+    "diversity_equity_inclusion": "Diversity, Equity and Inclusion",
+    "supply_chain_ethics": "Supply Chain and Ethics",
+    "community": "Community",
+    "governance": "Governance",
+    "ethics_compliance": "Ethics and Compliance",
+    "data_summary": "Data Summary",
+    "appendix": "Appendix",
+    "other": "Other",
+    "full_document": "Full Document",
+}
+TABLE_SHORT_LINE_RATIO = 0.50
+TABLE_DIGIT_RATIO = 0.030
+LIST_BULLET_RATIO = 0.30
+SHORT_LINE_MAX_WORDS = 4
+BULLET_RE = re.compile(r"^([•●▪◦\-–—\*]|\(?\d{1,2}[.)])\s+")
 
 _WORKER_OUTPUT_ROOT: Path | None = None
 _WORKER_SECTION_METADATA: dict[tuple[str, str, str], dict] | None = None
@@ -58,6 +96,8 @@ _WORKER_PAGE_MAP_CACHE: dict[Path, list[dict]] | None = None
 _WORKER_INDEX_ROWS_BY_SECTION: dict[tuple[str, str, str], list[dict]] | None = None
 _WORKER_ARTIFACT_KEYS: set[tuple[str, str, str]] | None = None
 _WORKER_ENCODER = None
+_WORKER_BGE_TOKENIZER = None
+_WORKER_COMPANY_NAMES: dict[str, str] | None = None
 
 CHUNKS_INDEX_FIELDS = [
     "chunk_id",
@@ -82,6 +122,7 @@ CHUNKS_INDEX_FIELDS = [
     "short_section_action",
     "short_section_reason",
     "merged_section_ids",
+    "table_context",
     "token_count",
     "char_count",
     "chunk_file",
@@ -123,6 +164,17 @@ class ChunkOutput:
     path: Path
     text: str
     row: dict
+
+
+@dataclass(frozen=True)
+class CandidateChunk:
+    text: str
+    source_start: int
+    source_end: int
+    bge_tokens: int
+    cl100k_tokens: int
+    table_header_start: int | None = None
+    table_context: str = ""
 
 
 @dataclass
@@ -352,6 +404,19 @@ def load_source_registry(registry_path: Path | None) -> dict[tuple[str, str], di
     return metadata
 
 
+def load_company_names(manifest_path: Path | None) -> dict[str, str]:
+    """Load the same canonical company names used by P1 enrichment."""
+    if manifest_path is None or not manifest_path.exists():
+        return {}
+    with manifest_path.open(newline="", encoding="utf-8-sig") as handle:
+        return {
+            (row.get("ticker") or "").strip().upper():
+            (row.get("company_name") or "").strip()
+            for row in csv.DictReader(handle)
+            if (row.get("ticker") or "").strip()
+        }
+
+
 def load_doc_metadata(
     parse_index_path: Path,
     source_registry_path: Path | None = config.ESG_SOURCE_REGISTRY_CSV,
@@ -540,6 +605,310 @@ def locate_text_span_normalized(
 def normalized_text(text: str) -> str:
     normalized, _ = normalize_with_source_map(text)
     return normalized
+
+
+def normalize_for_embedding(text: str) -> str:
+    """Normalize one metadata value without changing the source chunk body."""
+    out = unicodedata.normalize("NFKC", text)
+    out = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", out)
+    out = re.sub(r"(\w)[\-‐‑]\n(\w)", r"\1\2", out)
+    out = re.sub(r"[ \t\u00a0\u2000-\u200a\u202f\u205f\u3000]+", " ", out)
+    out = "\n".join(line.strip() for line in out.split("\n"))
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    return out.strip()
+
+
+def classify_embedding_content(text: str, table_context: str = "") -> str:
+    """Match the live embedding-context classifier for token budgeting."""
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
+    if not lines:
+        return "narrative"
+    short_ratio = sum(
+        len(line.split()) <= SHORT_LINE_MAX_WORDS for line in lines
+    ) / len(lines)
+    digit_ratio = sum(char.isdigit() for char in text) / max(len(text), 1)
+    bullet_ratio = sum(bool(BULLET_RE.match(line)) for line in lines) / len(lines)
+    if bullet_ratio >= LIST_BULLET_RATIO:
+        return "list"
+    if short_ratio >= TABLE_SHORT_LINE_RATIO and digit_ratio >= TABLE_DIGIT_RATIO:
+        return "table_continuation" if table_context else "table"
+    return "narrative"
+
+
+def final_embedding_text(
+    metadata: dict[str, Any], source_text: str, table_context: str = ""
+) -> str:
+    """Build the exact embedding header and byte-exact source chunk body."""
+    ticker = (metadata.get("canonical_ticker") or metadata.get("ticker") or "").strip()
+    year = (metadata.get("report_year") or "").strip() or "unknown"
+    if (metadata.get("report_year_status") or "").strip() == "multi_year_range":
+        span = (metadata.get("report_year_span") or "").strip()
+        if span and span != year:
+            year = f"{year} (report covers {span})"
+    section_code = (metadata.get("section_code") or "").strip()
+    topic = TOPIC_LABELS.get(section_code, section_code.replace("_", " ").title())
+    doc_key = (metadata.get("source_type") or metadata.get("doc_type") or "").strip()
+    document = DOCUMENT_LABELS.get(
+        doc_key, (doc_key or "Sustainability Report").replace("_", " ").title()
+    )
+    subsection = (
+        metadata.get("section_title_original")
+        or metadata.get("section_title")
+        or "unknown"
+    ).strip()
+    header_lines = [
+        f"Company: {(metadata.get('company_name') or '').strip() or 'unknown'}",
+        f"Ticker: {ticker or 'unknown'}",
+        f"Document: {document}",
+        f"Reporting year: {year}",
+        f"ESG topic: {topic}",
+        f"Subsection: {subsection}",
+        f"Content type: {classify_embedding_content(source_text, table_context)}",
+    ]
+    if table_context:
+        clean_context = " ".join(normalize_for_embedding(table_context).split())
+        if clean_context:
+            header_lines.append(f"Table context: {clean_context}")
+    return f"{'\n'.join(header_lines)}\n\n{source_text}"
+
+
+def final_bge_token_count(
+    metadata: dict[str, Any],
+    source_text: str,
+    tokenizer,
+    table_context: str = "",
+) -> int:
+    return len(
+        tokenizer.encode(
+            final_embedding_text(metadata, source_text, table_context),
+            add_special_tokens=True,
+            truncation=False,
+        )
+    )
+
+
+def _is_heading(line: str) -> bool:
+    value = line.strip()
+    letters = [char for char in value if char.isalpha()]
+    if not value or len(value.split()) > 14 or not letters:
+        return False
+    upper_ratio = sum(char.isupper() for char in letters) / len(letters)
+    return value.isupper() or upper_ratio >= 0.75
+
+
+def _looks_like_table_line(line: str) -> bool:
+    value = line.strip()
+    if not value:
+        return False
+    if "|" in value or "\t" in value:
+        return True
+    words = value.split()
+    digit_ratio = sum(char.isdigit() for char in value) / max(len(value), 1)
+    return len(words) <= 12 and digit_ratio >= 0.08
+
+
+def _table_runs(text: str) -> list[tuple[int, int, int, str]]:
+    lines = list(re.finditer(r"[^\n]*(?:\n|$)", text))
+    table_runs: list[tuple[int, int, int, str]] = []
+    run: list[re.Match[str]] = []
+    for match in [*lines, None]:
+        if match is not None and match.group(0).strip() and _looks_like_table_line(match.group(0)):
+            run.append(match)
+            continue
+        if len(run) >= 3:
+            header = run[0].group(0).strip()
+            table_runs.append((run[0].start(), run[-1].end(), run[0].start(), header))
+        run = []
+    return table_runs
+
+
+def source_boundaries(
+    text: str,
+) -> tuple[list[int], list[int], list[tuple[int, int, int, str]]]:
+    preferred = {0, len(text)}
+    table_runs = _table_runs(text)
+    table_starts = {
+        match.start()
+        for match in re.finditer(r"[^\n]*(?:\n|$)", text)
+        if any(start <= match.start() < end for start, end, _, _ in table_runs)
+    }
+    for match in re.finditer(r"[^\n]*(?:\n|$)", text):
+        if match.start() in table_starts:
+            preferred.add(match.end())
+    for match in re.finditer(r"[.!?][\"'\)\]]*(?=\s|$)", text):
+        before = text[text.rfind("\n", 0, match.start()) + 1 : match.start()]
+        if not _is_heading(before):
+            preferred.add(match.end())
+    for match in re.finditer(r"\n\s*\n+", text):
+        preferred.add(match.start() + 1)
+        preferred.add(match.end())
+
+    filtered: list[int] = []
+    for boundary in sorted(preferred):
+        if filtered and _is_heading(text[filtered[-1] : boundary]):
+            continue
+        filtered.append(boundary)
+    filtered = sorted(set(filtered) | {0, len(text)})
+    fallback = set(filtered)
+    fallback.update(match.end() for match in re.finditer(r"\s+", text))
+    return filtered, sorted(fallback), table_runs
+
+
+def _table_context_at(
+    start: int, table_runs: list[tuple[int, int, int, str]]
+) -> tuple[int | None, str]:
+    for run_start, run_end, header_start, header_text in table_runs:
+        if run_start < start < run_end:
+            return header_start, header_text
+    return None, ""
+
+
+def _credible_table_context(header_text: str, tokenizer) -> str:
+    clean = " ".join(normalize_for_embedding(header_text).split())
+    if not clean:
+        return ""
+    tokens = tokenizer.encode(clean, add_special_tokens=False, truncation=False)
+    return clean if len(tokens) <= MAX_TABLE_CONTEXT_TOKENS else ""
+
+
+def _latest_fitting_end(
+    metadata: dict[str, Any],
+    text: str,
+    start: int,
+    boundaries: list[int],
+    tokenizer,
+    table_context: str = "",
+) -> int:
+    candidates = [boundary for boundary in boundaries if boundary > start]
+    first_fit = None
+    for index, boundary in enumerate(candidates[:256]):
+        if final_bge_token_count(
+            metadata, text[start:boundary], tokenizer, table_context
+        ) <= BGE_INPUT_LIMIT:
+            first_fit = index
+            break
+    if first_fit is None:
+        prefix_count = final_bge_token_count(metadata, "", tokenizer, table_context)
+        raise ValueError(f"no boundary fits from source offset {start}; prefix={prefix_count}")
+    low, high = first_fit, len(candidates)
+    while low < high:
+        middle = (low + high) // 2
+        count = final_bge_token_count(
+            metadata, text[start : candidates[middle]], tokenizer, table_context
+        )
+        if count <= BGE_INPUT_LIMIT:
+            low = middle + 1
+        else:
+            high = middle
+    if low:
+        return candidates[low - 1]
+    raise ValueError("a single source word exceeds the BGE input limit")
+
+
+def chunk_section_v3(
+    text: str,
+    metadata: dict[str, Any],
+    bge_tokenizer,
+    cl100k_encoder,
+) -> list[CandidateChunk]:
+    """Split at sentence/table boundaries under the final 500-token budget."""
+    if not text:
+        return []
+    preferred, fallback, table_runs = source_boundaries(text)
+    chunks: list[CandidateChunk] = []
+    start = 0
+    while start < len(text):
+        table_header_start, table_context = _table_context_at(start, table_runs)
+        table_context = _credible_table_context(table_context, bge_tokenizer)
+        if not table_context:
+            table_header_start = None
+        try:
+            end = _latest_fitting_end(
+                metadata, text, start, preferred, bge_tokenizer, table_context
+            )
+        except ValueError:
+            end = _latest_fitting_end(
+                metadata, text, start, fallback, bge_tokenizer, table_context
+            )
+        if end <= start:
+            raise ValueError("v3 produced an empty chunk")
+        chunk_text = text[start:end]
+        chunks.append(
+            CandidateChunk(
+                text=chunk_text,
+                source_start=start,
+                source_end=end,
+                bge_tokens=final_bge_token_count(
+                    metadata, chunk_text, bge_tokenizer, table_context
+                ),
+                cl100k_tokens=len(cl100k_encoder.encode(chunk_text)),
+                table_header_start=table_header_start,
+                table_context=table_context,
+            )
+        )
+        if end >= len(text):
+            break
+        next_start = end
+        possible_starts = [boundary for boundary in preferred if start < boundary < end]
+        for overlap_start in reversed(possible_starts):
+            overlap_text = text[overlap_start:end]
+            if not overlap_text.strip():
+                continue
+            if len(cl100k_encoder.encode(overlap_text)) <= OVERLAP_BGE_TOKENS:
+                next_start = overlap_start
+                break
+        start = next_start
+
+    # A greedy split can leave a tiny bridge or final tail. Expand only that
+    # small chunk backward into safe overlap. This keeps every source token and
+    # avoids moving or cutting the prior sentence/table row.
+    for chunk_index, small_chunk in enumerate(chunks):
+        if chunk_index == 0 or small_chunk.cl100k_tokens >= SHORT_EVIDENCE_MIN_TOKENS:
+            continue
+        for overlap_start in reversed(
+            [boundary for boundary in fallback if boundary < small_chunk.source_start]
+        ):
+            expanded_text = text[overlap_start : small_chunk.source_end]
+            cl100k_tokens = len(cl100k_encoder.encode(expanded_text))
+            if cl100k_tokens < SHORT_EVIDENCE_MIN_TOKENS:
+                continue
+            table_header_start, table_context = _table_context_at(overlap_start, table_runs)
+            table_context = _credible_table_context(table_context, bge_tokenizer)
+            if not table_context:
+                table_header_start = None
+            bge_tokens = final_bge_token_count(
+                metadata, expanded_text, bge_tokenizer, table_context
+            )
+            if bge_tokens > BGE_INPUT_LIMIT:
+                continue
+            chunks[chunk_index] = CandidateChunk(
+                text=expanded_text,
+                source_start=overlap_start,
+                source_end=small_chunk.source_end,
+                bge_tokens=bge_tokens,
+                cl100k_tokens=cl100k_tokens,
+                table_header_start=table_header_start,
+                table_context=table_context,
+            )
+            break
+    return chunks
+
+
+def validate_v3_tiling(text: str, chunks: list[CandidateChunk]) -> list[str]:
+    failures: list[str] = []
+    if not chunks:
+        return ["no_chunks"] if text else []
+    if chunks[0].source_start != 0 or chunks[-1].source_end != len(text):
+        failures.append("outer_bounds")
+    for previous, current in zip(chunks, chunks[1:]):
+        if current.source_start > previous.source_end:
+            failures.append("gap")
+    for chunk in chunks:
+        if text[chunk.source_start : chunk.source_end] != chunk.text:
+            failures.append("source_text_mismatch")
+        if chunk.bge_tokens > BGE_INPUT_LIMIT:
+            failures.append("bge_limit")
+    return failures
 
 
 def chunk_token_ranges(total_tokens: int) -> list[tuple[int, int]]:
@@ -886,6 +1255,7 @@ def build_chunk_output(
     short_section_action: str = "",
     short_section_reason: str = "",
     merged_section_ids: str = "",
+    table_context: str = "",
 ) -> ChunkOutput:
     citation = validate_chunk_citation(
         parsed_text=parsed_text,
@@ -942,6 +1312,7 @@ def build_chunk_output(
         "short_section_action": short_section_action,
         "short_section_reason": short_section_reason,
         "merged_section_ids": merged_section_ids,
+        "table_context": table_context,
         "token_count": token_count,
         "char_count": len(chunk_text),
         "chunk_file": display_path(chunk_file),
@@ -972,6 +1343,8 @@ def build_section_plan(
     doc_metadata: dict[tuple[str, str], dict],
     parsed_text_cache: dict[Path, tuple[str, str]] | None = None,
     page_map_cache: dict[Path, list[dict]] | None = None,
+    bge_tokenizer=None,
+    company_names: dict[str, str] | None = None,
 ) -> SectionPlan:
     ticker = section_file.parent.name.upper()
     parsed_name = parse_section_filename(section_file)
@@ -987,6 +1360,22 @@ def build_section_plan(
         or section_instance_id.rsplit("__", 1)[0]
     ).strip()
     doc_meta = doc_metadata.get((ticker, pdf_stem), {})
+    embedding_metadata = None
+    if bge_tokenizer is not None:
+        year, year_status, year_span = extract_report_year(pdf_stem)
+        canonical_ticker = (doc_meta.get("canonical_ticker") or ticker).strip().upper()
+        embedding_metadata = {
+            **doc_meta,
+            **section_meta,
+            "ticker": ticker,
+            "canonical_ticker": canonical_ticker,
+            "company_name": (company_names or {}).get(canonical_ticker, ""),
+            "report_year": "" if year is None else str(year),
+            "report_year_status": year_status,
+            "report_year_span": year_span,
+            "section_code": section_code,
+            "section_title_original": (section_meta.get("section_title") or "").strip(),
+        }
     text, source_fingerprint = read_section_source(section_file)
     tokens = encoder.encode(text)
     source_token_count = len(tokens)
@@ -1005,6 +1394,8 @@ def build_section_plan(
     ).strip()
 
     navigation_reason = classify_navigation_trace_section(text, source_token_count)
+    v3_short_action = ""
+    v3_short_reason = ""
     # A large table of contents is chunked normally -- splitting it is harmless
     # and keeps every chunk inside the token bounds the validators enforce --
     # but every chunk it produces is marked excluded, so none reaches the index.
@@ -1013,7 +1404,17 @@ def build_section_plan(
             doc_meta,
             "table_of_contents_or_navigation",
         )
-    if MIN_CHUNK_TOKENS <= source_token_count <= NAVIGATION_TRACE_MAX_TOKENS and navigation_reason:
+    navigation_output_token_count = (
+        final_bge_token_count(embedding_metadata, text, bge_tokenizer)
+        if navigation_reason and embedding_metadata is not None
+        else source_token_count
+    )
+    if (
+        MIN_CHUNK_TOKENS <= source_token_count <= NAVIGATION_TRACE_MAX_TOKENS
+        and navigation_reason
+        and navigation_output_token_count <= BGE_INPUT_LIMIT
+    ):
+        output_token_count = navigation_output_token_count
         outputs = [
             build_chunk_output(
                 ticker=ticker,
@@ -1024,7 +1425,7 @@ def build_section_plan(
                 output_root=output_root,
                 chunk_index=0,
                 chunk_text=text,
-                token_count=source_token_count,
+                token_count=output_token_count,
                 source_fingerprint=source_fingerprint,
                 parsed_text=parsed_text,
                 parsed_text_sha256=parsed_text_sha256,
@@ -1039,7 +1440,11 @@ def build_section_plan(
                     doc_meta,
                     navigation_reason,
                 ),
-                chunk_type=CHUNK_TYPE_NORMAL,
+                chunk_type=(
+                    CHUNK_TYPE_SHORT_EVIDENCE
+                    if output_token_count < MIN_CHUNK_TOKENS
+                    else CHUNK_TYPE_NORMAL
+                ),
                 short_section_action=SHORT_SECTION_ACTION_EXCLUDED,
                 short_section_reason=navigation_reason,
             )
@@ -1057,10 +1462,39 @@ def build_section_plan(
             short_section_reason=navigation_reason,
         )
 
-    if source_token_count < MIN_CHUNK_TOKENS:
+    if (
+        MIN_CHUNK_TOKENS <= source_token_count <= NAVIGATION_TRACE_MAX_TOKENS
+        and navigation_reason
+    ):
+        # Dot leaders can make a short cl100k navigation trace exceed the BGE
+        # limit. Split it with v3, but keep every resulting chunk excluded.
+        doc_meta = doc_meta_for_excluded_short_section(doc_meta, navigation_reason)
+        v3_short_action = SHORT_SECTION_ACTION_EXCLUDED
+        v3_short_reason = navigation_reason
+
+    short_output_token_count = (
+        final_bge_token_count(embedding_metadata, text, bge_tokenizer)
+        if embedding_metadata is not None
+        else source_token_count
+    )
+    short_bge_overflow = (
+        SHORT_EVIDENCE_MIN_TOKENS <= source_token_count < MIN_CHUNK_TOKENS
+        and short_output_token_count > BGE_INPUT_LIMIT
+    )
+    if short_bge_overflow:
+        v3_short_action, v3_short_reason = classify_short_section(
+            text, source_token_count
+        )
+        if v3_short_action == SHORT_SECTION_ACTION_EXCLUDED:
+            doc_meta = doc_meta_for_excluded_short_section(
+                doc_meta, v3_short_reason
+            )
+
+    if source_token_count < MIN_CHUNK_TOKENS and not short_bge_overflow:
         short_action, short_reason = classify_short_section(text, source_token_count)
         outputs: list[ChunkOutput] = []
         if source_token_count >= SHORT_EVIDENCE_MIN_TOKENS and text:
+            output_token_count = short_output_token_count
             chunk_doc_meta = doc_meta
             if short_action == SHORT_SECTION_ACTION_EXCLUDED:
                 chunk_doc_meta = doc_meta_for_excluded_short_section(
@@ -1077,7 +1511,7 @@ def build_section_plan(
                     output_root=output_root,
                     chunk_index=0,
                     chunk_text=text,
-                    token_count=source_token_count,
+                    token_count=output_token_count,
                     source_fingerprint=source_fingerprint,
                     parsed_text=parsed_text,
                     parsed_text_sha256=parsed_text_sha256,
@@ -1089,7 +1523,11 @@ def build_section_plan(
                     local_end=len(text),
                     page_spans=page_spans,
                     doc_meta=chunk_doc_meta,
-                    chunk_type=CHUNK_TYPE_SHORT_EVIDENCE,
+                    chunk_type=(
+                        CHUNK_TYPE_SHORT_EVIDENCE
+                        if output_token_count < MIN_CHUNK_TOKENS
+                        else CHUNK_TYPE_NORMAL
+                    ),
                     short_section_action=short_action,
                     short_section_reason=short_reason,
                 )
@@ -1105,6 +1543,65 @@ def build_section_plan(
             outputs=outputs,
             short_section_action=short_action,
             short_section_reason=short_reason,
+        )
+
+    if bge_tokenizer is not None:
+        candidate_chunks = chunk_section_v3(
+            text, embedding_metadata, bge_tokenizer, encoder
+        )
+        failures = validate_v3_tiling(text, candidate_chunks)
+        if failures:
+            raise ValueError(f"v3 invariant failure ({'|'.join(failures)}): {section_file}")
+        outputs = []
+        for chunk_index, chunk in enumerate(candidate_chunks):
+            if chunk.bge_tokens < SHORT_EVIDENCE_MIN_TOKENS:
+                raise ValueError(
+                    f"v3 chunk below {SHORT_EVIDENCE_MIN_TOKENS} BGE tokens: {section_file}"
+                )
+            chunk_type = (
+                CHUNK_TYPE_SHORT_EVIDENCE
+                if chunk.bge_tokens < MIN_CHUNK_TOKENS
+                else CHUNK_TYPE_NORMAL
+            )
+            outputs.append(
+                build_chunk_output(
+                    ticker=ticker,
+                    pdf_stem=pdf_stem,
+                    section_code=section_code,
+                    section_instance_id=section_instance_id,
+                    section_file=section_file,
+                    output_root=output_root,
+                    chunk_index=chunk_index,
+                    chunk_text=chunk.text,
+                    token_count=chunk.bge_tokens,
+                    source_fingerprint=source_fingerprint,
+                    parsed_text=parsed_text,
+                    parsed_text_sha256=parsed_text_sha256,
+                    expected_parsed_text_sha256=expected_parsed_text_sha256,
+                    section_text=text,
+                    section_source_start=section_source_start,
+                    section_source_end=section_source_end,
+                    local_start=chunk.source_start,
+                    local_end=chunk.source_end,
+                    page_spans=page_spans,
+                    doc_meta=doc_meta,
+                    chunk_type=chunk_type,
+                    short_section_action=v3_short_action,
+                    short_section_reason=v3_short_reason,
+                    table_context=chunk.table_context,
+                )
+            )
+        return SectionPlan(
+            ticker=ticker,
+            pdf_stem=pdf_stem,
+            section_code=section_code,
+            section_instance_id=section_instance_id,
+            source_file=section_file,
+            source_fingerprint=source_fingerprint,
+            source_token_count=source_token_count,
+            outputs=outputs,
+            short_section_action=v3_short_action,
+            short_section_reason=v3_short_reason,
         )
 
     token_ranges = chunk_token_ranges(source_token_count)
@@ -1188,6 +1685,8 @@ def init_plan_worker(
     doc_metadata: dict[tuple[str, str], dict],
     index_rows_by_section: dict[tuple[str, str, str], list[dict]],
     artifact_keys: set[tuple[str, str, str]],
+    bge_tokenizer_path: str | None = None,
+    company_names: dict[str, str] | None = None,
 ) -> None:
     """Initialize one worker with the immutable resume-validation snapshot."""
     global _WORKER_OUTPUT_ROOT
@@ -1198,6 +1697,8 @@ def init_plan_worker(
     global _WORKER_INDEX_ROWS_BY_SECTION
     global _WORKER_ARTIFACT_KEYS
     global _WORKER_ENCODER
+    global _WORKER_BGE_TOKENIZER
+    global _WORKER_COMPANY_NAMES
 
     _WORKER_OUTPUT_ROOT = Path(output_root)
     _WORKER_SECTION_METADATA = section_metadata
@@ -1207,6 +1708,15 @@ def init_plan_worker(
     _WORKER_INDEX_ROWS_BY_SECTION = index_rows_by_section
     _WORKER_ARTIFACT_KEYS = artifact_keys
     _WORKER_ENCODER = tiktoken.get_encoding(ENCODING)
+    _WORKER_COMPANY_NAMES = company_names or {}
+    _WORKER_BGE_TOKENIZER = None
+    if bge_tokenizer_path:
+        from transformers import AutoTokenizer
+
+        _WORKER_BGE_TOKENIZER = AutoTokenizer.from_pretrained(
+            bge_tokenizer_path, local_files_only=True
+        )
+        _WORKER_BGE_TOKENIZER.model_max_length = 1_000_000
 
 
 def build_section_plan_worker(
@@ -1234,6 +1744,8 @@ def build_section_plan_worker(
             _WORKER_DOC_METADATA,
             _WORKER_PARSED_TEXT_CACHE,
             _WORKER_PAGE_MAP_CACHE,
+            _WORKER_BGE_TOKENIZER,
+            _WORKER_COMPANY_NAMES,
         )
         marker_exists = section_marker_path(
             _WORKER_OUTPUT_ROOT,
@@ -1389,13 +1901,14 @@ def valid_chunk_file(
     try:
         if not path.is_file():
             return False
-        content = path.read_text(encoding="utf-8", errors="replace").strip()
+        content = path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return False
     if content != expected_text:
         return False
-    token_count = len(encoder.encode(content))
-    return valid_token_count_for_chunk_type(token_count, chunk_type)
+    # The v3 row token count uses the embedding model tokenizer and is checked
+    # against a freshly rebuilt plan. This helper only verifies file identity.
+    return True
 
 
 def section_rows_are_complete(
@@ -1443,6 +1956,7 @@ def section_rows_are_complete(
             "short_section_action",
             "short_section_reason",
             "merged_section_ids",
+            "table_context",
         ):
             if (row.get(field) or "") != (expected.get(field) or ""):
                 return False
@@ -1651,6 +2165,8 @@ def run(
     force: bool = False,
     checkpoint_every: int = 1,
     workers: int = 1,
+    bge_tokenizer_path: str | Path | None = None,
+    company_manifest: str | Path = config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV,
 ) -> list[dict]:
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
@@ -1661,6 +2177,15 @@ def run(
     output_root = Path(out)
     index_path = Path(index)
     encoder = tiktoken.get_encoding(ENCODING)
+    bge_tokenizer = None
+    if bge_tokenizer_path:
+        from transformers import AutoTokenizer
+
+        bge_tokenizer = AutoTokenizer.from_pretrained(
+            str(Path(bge_tokenizer_path).resolve()), local_files_only=True
+        )
+        bge_tokenizer.model_max_length = 1_000_000
+    company_names = load_company_names(Path(company_manifest))
     section_metadata = load_section_metadata(Path(sections_index))
     doc_metadata = load_doc_metadata(Path(parse_index), Path(source_registry))
     section_files = discover_section_files(
@@ -1769,6 +2294,8 @@ def run(
                         doc_metadata,
                         parsed_text_cache,
                         page_map_cache,
+                        bge_tokenizer,
+                        company_names,
                     )
                     marker_exists = section_marker_path(
                         output_root,
@@ -1815,6 +2342,8 @@ def run(
                 doc_metadata,
                 rows_by_section,
                 artifact_keys,
+                str(Path(bge_tokenizer_path).resolve()) if bge_tokenizer_path else None,
+                company_names,
             ),
         ) as executor:
             yield from executor.map(
@@ -1943,6 +2472,15 @@ def main():
         "--source-registry",
         default=str(config.ESG_SOURCE_REGISTRY_CSV),
     )
+    parser.add_argument(
+        "--company-manifest",
+        default=str(config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV),
+    )
+    parser.add_argument(
+        "--bge-tokenizer",
+        default=os.environ.get("ESG_BGE_TOKENIZER_DIR"),
+        help="Local BGE tokenizer directory. Required for esg_chunk_v3.",
+    )
     parser.add_argument("--ticker", default=None)
     parser.add_argument(
         "--pdf-stem",
@@ -1978,6 +2516,8 @@ def main():
         ),
     )
     args = parser.parse_args()
+    if not args.bge_tokenizer:
+        parser.error("--bge-tokenizer or ESG_BGE_TOKENIZER_DIR is required")
 
     run(
         input_root=args.input,
@@ -1992,6 +2532,8 @@ def main():
         force=args.force,
         checkpoint_every=args.checkpoint_every,
         workers=args.workers,
+        bge_tokenizer_path=args.bge_tokenizer,
+        company_manifest=args.company_manifest,
     )
 
 

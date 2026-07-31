@@ -136,6 +136,34 @@ class EsgHeadingQualityTests(unittest.TestCase):
         emissions = [candidate for candidate in candidates if candidate.title == "GHG Emissions"]
         self.assertEqual(len(emissions), 2)
 
+    def test_page_number_before_repeated_header_does_not_create_section(self):
+        pages = [
+            f"{page}\nEnvironmental Responsibility\n" + ("environment evidence " * 60)
+            for page in range(4, 8)
+        ]
+        text, page_spans = paged_text(pages)
+        titles = [
+            candidate.title
+            for candidate in section_splitter_esg.collect_heading_candidates(
+                text, page_spans=page_spans
+            )
+        ]
+        self.assertNotIn("Environmental Responsibility", titles)
+
+    def test_repeated_footer_does_not_create_section(self):
+        pages = [
+            ("governance evidence " * 60) + f"\nGovernance\nPage {page}"
+            for page in range(1, 5)
+        ]
+        text, page_spans = paged_text(pages)
+        titles = [
+            candidate.title
+            for candidate in section_splitter_esg.collect_heading_candidates(
+                text, page_spans=page_spans
+            )
+        ]
+        self.assertNotIn("Governance", titles)
+
     def test_table_cells_and_index_rows_are_not_sections(self):
         text = (
             "Segregated 1% 7% 1%\n"

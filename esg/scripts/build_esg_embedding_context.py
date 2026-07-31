@@ -35,8 +35,8 @@ full 200-character tail appeared within the first 400 characters of the next
 chunk on 151 of 151 (100%). Adding the key would duplicate that text and
 double-weight it in the embedding. Revisit only if the overlap goes to zero.
 
-`Table context` is also not reproduced: it requires extracted table column
-headers, which the ESG pipeline does not yet produce.
+`Table context` is added only on v3 table continuations. The value is produced
+by the chunker and is included in the chunk's 500-token embedding budget.
 
 Outputs are additive: nothing existing is overwritten.
 """
@@ -63,7 +63,7 @@ OUT_TEXT_ROOT = config.ESG_EMBEDDING_CTX_DIR
 OUT_INDEX = config.ESG_CHUNK_EMBEDDING_CONTEXT_CSV
 OUT_SUMMARY = config.ESG_EMBEDDING_CONTEXT_SUMMARY_MD
 
-EMBEDDING_CONTEXT_VERSION = "esg_embed_ctx_v1"
+EMBEDDING_CONTEXT_VERSION = "esg_embed_ctx_v2"
 CONTENT_TYPE_RULE_VERSION = "esg_content_type_v1"
 
 # Content-type thresholds, calibrated on the full live corpus (16,341 chunks).
@@ -180,10 +180,14 @@ def classify_content(text: str) -> tuple[str, str]:
     return "narrative", f"short_lines={short_ratio:.2f};digits={digit_ratio:.3f}"
 
 
-def build_header(row: dict, section_title: str, content_type: str) -> str:
+def build_header(
+    row: dict,
+    section_title: str,
+    content_type: str,
+    table_context: str = "",
+) -> str:
     ticker = (row.get("canonical_ticker") or row.get("ticker") or "").strip()
-    return "\n".join(
-        [
+    lines = [
             f"Company: {(row.get('company_name') or '').strip() or 'unknown'}",
             f"Ticker: {ticker or 'unknown'}",
             f"Document: {document_label(row)}",
@@ -192,7 +196,9 @@ def build_header(row: dict, section_title: str, content_type: str) -> str:
             f"Subsection: {section_title or 'unknown'}",
             f"Content type: {content_type}",
         ]
-    )
+    if table_context:
+        lines.append(f"Table context: {' '.join(table_context.split())}")
+    return "\n".join(lines)
 
 
 def load_section_titles() -> dict[tuple[str, str, str], str]:
@@ -258,7 +264,12 @@ def main(argv: list[str] | None = None) -> int:
         if content_type == "table" and prev_key == key and prev_type in ("table", "table_continuation"):
             content_type = "table_continuation"
 
-        header = build_header(row, section_title, content_type)
+        header = build_header(
+            row,
+            section_title,
+            content_type,
+            (row.get("table_context") or "").strip(),
+        )
         embedding_text = f"{header}\n\n{chunk_text}"
         header_lengths.append(len(header))
 

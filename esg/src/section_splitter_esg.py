@@ -56,7 +56,7 @@ SECTION_INDEX_FIELDS = [
     "source_sha256",
 ]
 
-PROVENANCE_VERSION = "contiguous_v1"
+PROVENANCE_VERSION = "contiguous_v2"
 
 MIN_SECTION_CHARS = 300
 BODY_SENTENCE_RE = re.compile(
@@ -602,12 +602,19 @@ def _running_page_chrome_indexes(
     candidates: list[HeadingCandidate],
     page_spans: list[dict],
     total_chars: int,
+    lines: list[str] | None = None,
 ) -> set[int]:
-    """Find repeated page chrome while retaining one real heading per chapter run."""
+    """Reject high-confidence repeated headers/footers without losing chapters."""
     if not page_spans:
         return set()
 
     page_positions = _candidate_page_positions(candidates, page_spans)
+    page_ends = {
+        parse_int(row.get("page")): parse_int(row.get("char_end"))
+        for row in page_spans
+        if parse_int(row.get("page")) is not None
+        and parse_int(row.get("char_end")) is not None
+    }
     indexes_by_title: dict[str, list[int]] = {}
     for candidate_index, candidate in enumerate(candidates):
         indexes_by_title.setdefault(_title_key(candidate.title), []).append(candidate_index)
@@ -649,6 +656,54 @@ def _running_page_chrome_indexes(
         pages_in_runs = {page for run in qualifying_runs for page in run}
         for run in qualifying_runs:
             run_indexes = [index for index in indexes if page_positions.get(index, (None, None))[0] in run]
+            top_indexes_in_run = []
+            bottom_indexes_in_run = []
+            for index in run_indexes:
+                page, page_offset = page_positions[index]
+                page_end = page_ends.get(page)
+                near_top = page_offset <= PAGE_CHROME_MAX_OFFSET
+                near_bottom = (
+                    page_end is not None
+                    and page_end - candidates[index].char_offset
+                    <= PAGE_CHROME_MAX_OFFSET
+                )
+                if near_top or near_bottom:
+                    if near_top:
+                        top_indexes_in_run.append(index)
+                    if near_bottom:
+                        bottom_indexes_in_run.append(index)
+
+            # Repeated bottom-band copies are unambiguous footers.
+            if len(bottom_indexes_in_run) == len(run_indexes):
+                rejected.update(run_indexes)
+                continue
+
+            # A standalone page number immediately before the same top-band
+            # title on multiple pages is the motivating header pattern:
+            # ``4 / HEADER``, ``5 / HEADER``. Reject every copy, not just all
+            # but the first one.
+            numbered_top = []
+            if lines is not None:
+                for index in top_indexes_in_run:
+                    previous = _nearest_nonempty_line(
+                        lines, candidates[index].line_index, -1
+                    )
+                    if re.fullmatch(
+                        r"(?:p(?:age)?\.?\s*)?(?:\d{1,4}|[ivxlcdm]{1,8})",
+                        previous.strip(),
+                        flags=re.IGNORECASE,
+                    ):
+                        numbered_top.append(index)
+            if (
+                len(top_indexes_in_run) == len(run_indexes)
+                and len(numbered_top) >= 2
+                and len(numbered_top) * 2 >= len(run_indexes)
+            ):
+                rejected.update(run_indexes)
+                continue
+
+            # Otherwise preserve the v1 behavior: retain the first copy as the
+            # chapter boundary and reject later repeats.
             canonical = min(run_indexes, key=lambda index: candidates[index].char_offset)
             rejected.update(index for index in run_indexes if index != canonical)
 
@@ -701,6 +756,7 @@ def collect_heading_candidates(
         raw_candidates,
         page_spans or [],
         total_chars,
+        lines,
     )
 
     filtered: list[HeadingCandidate] = []
