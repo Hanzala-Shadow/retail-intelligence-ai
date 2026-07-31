@@ -1,0 +1,16 @@
+field,meaning
+chunk_id,Chunk identifier in the source corpus. NOT stable across a reparse.
+chunk_text_sha256,SHA256 of the chunk file bytes. Stable across a reparse. Please return this.
+dataset_id,Frozen identifier for this package. Quote it in any question.
+ticker,Company ticker.
+company_name,Canonical company name.
+report_year,Reporting year the document covers (latest year when it spans two).
+report_year_span,"Full covered span, e.g. 2023-2024. Empty when a single year."
+section_code,Normalised ESG topic.
+section_title,Heading as extracted. See README: some are table fragments.
+page_start,First source page of the chunk.
+page_end,Last source page of the chunk.
+chunk_quality_tier,narrative | layout_sensitive. Noise-tier chunks are excluded by default.
+token_count,"BGE token count of the final embedding input, including metadata and table context; maximum 500."
+chunk_text,The chunk text as extracted. This is what you are validating.
+embedding_text,Metadata header + chunk_text; what the search engine will read.

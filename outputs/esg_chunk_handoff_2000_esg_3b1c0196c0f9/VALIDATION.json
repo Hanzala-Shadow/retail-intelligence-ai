@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "dataset_id": "esg_3b1c0196c0f9",
+  "rows": 2000,
+  "unique_chunk_ids": 2000,
+  "documents": 188,
+  "companies": 105,
+  "topics": 18,
+  "token_min": 58,
+  "token_median": 350,
+  "token_max": 500,
+  "multi_page_chunks": 931,
+  "max_chunks_per_document": 15,
+  "exact_citations": 2000,
+  "source_span_matches": 2000,
+  "chunk_hash_matches": 2000,
+  "embedding_text_matches": 2000,
+  "manifest_state_matches": 2000,
+  "errors": 0
+}

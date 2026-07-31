@@ -1,0 +1,162 @@
+{
+  "headline": [
+    {
+      "corpus_chunks": 17329,
+      "handoff_chunks": 2000,
+      "exact_citations": 2000,
+      "topics": 18,
+      "narrative_chunks": 1715,
+      "layout_sensitive_chunks": 285,
+      "seed": 20260731,
+      "min_per_topic": 30,
+      "max_per_document": 15
+    }
+  ],
+  "topic_counts": [
+    {
+      "topic": "human_capital",
+      "handoff_chunks": 304,
+      "safe_pool_chunks": 1666,
+      "rank": 1
+    },
+    {
+      "topic": "supply_chain_ethics",
+      "handoff_chunks": 184,
+      "safe_pool_chunks": 951,
+      "rank": 2
+    },
+    {
+      "topic": "environmental",
+      "handoff_chunks": 158,
+      "safe_pool_chunks": 792,
+      "rank": 3
+    },
+    {
+      "topic": "governance",
+      "handoff_chunks": 146,
+      "safe_pool_chunks": 724,
+      "rank": 4
+    },
+    {
+      "topic": "community",
+      "handoff_chunks": 145,
+      "safe_pool_chunks": 714,
+      "rank": 5
+    },
+    {
+      "topic": "waste",
+      "handoff_chunks": 129,
+      "safe_pool_chunks": 621,
+      "rank": 6
+    },
+    {
+      "topic": "ethics_compliance",
+      "handoff_chunks": 128,
+      "safe_pool_chunks": 613,
+      "rank": 7
+    },
+    {
+      "topic": "diversity_equity_inclusion",
+      "handoff_chunks": 118,
+      "safe_pool_chunks": 555,
+      "rank": 8
+    },
+    {
+      "topic": "about_this_report",
+      "handoff_chunks": 113,
+      "safe_pool_chunks": 528,
+      "rank": 9
+    },
+    {
+      "topic": "emissions",
+      "handoff_chunks": 96,
+      "safe_pool_chunks": 427,
+      "rank": 10
+    },
+    {
+      "topic": "energy",
+      "handoff_chunks": 90,
+      "safe_pool_chunks": 387,
+      "rank": 11
+    },
+    {
+      "topic": "appendix",
+      "handoff_chunks": 83,
+      "safe_pool_chunks": 347,
+      "rank": 12
+    },
+    {
+      "topic": "climate",
+      "handoff_chunks": 81,
+      "safe_pool_chunks": 336,
+      "rank": 13
+    },
+    {
+      "topic": "water",
+      "handoff_chunks": 65,
+      "safe_pool_chunks": 238,
+      "rank": 14
+    },
+    {
+      "topic": "data_summary",
+      "handoff_chunks": 58,
+      "safe_pool_chunks": 198,
+      "rank": 15
+    },
+    {
+      "topic": "social",
+      "handoff_chunks": 40,
+      "safe_pool_chunks": 89,
+      "rank": 16
+    },
+    {
+      "topic": "ceo_letter",
+      "handoff_chunks": 31,
+      "safe_pool_chunks": 38,
+      "rank": 17
+    },
+    {
+      "topic": "other",
+      "handoff_chunks": 31,
+      "safe_pool_chunks": 35,
+      "rank": 18
+    }
+  ],
+  "validation_checks": [
+    {
+      "check": "Chunk SHA-256",
+      "passed_rows": 2000,
+      "expected_rows": 2000,
+      "status": "PASS"
+    },
+    {
+      "check": "Embedding text",
+      "passed_rows": 2000,
+      "expected_rows": 2000,
+      "status": "PASS"
+    },
+    {
+      "check": "Exact citations",
+      "passed_rows": 2000,
+      "expected_rows": 2000,
+      "status": "PASS"
+    },
+    {
+      "check": "Manifest state",
+      "passed_rows": 2000,
+      "expected_rows": 2000,
+      "status": "PASS"
+    },
+    {
+      "check": "Parsed-source span",
+      "passed_rows": 2000,
+      "expected_rows": 2000,
+      "status": "PASS"
+    }
+  ],
+  "queries": {
+    "headline_sql": "SELECT\n  (SELECT COUNT(*) FROM live_chunks WHERE dataset_id = 'esg_3b1c0196c0f9') AS corpus_chunks,\n  (SELECT COUNT(*) FROM handoff_chunks) AS handoff_chunks,\n  (SELECT exact_citations FROM validation_summary) AS exact_citations,\n  (SELECT COUNT(DISTINCT section_code) FROM handoff_chunks) AS topics,\n  (SELECT COUNT(*) FROM handoff_chunks WHERE chunk_quality_tier = 'narrative') AS narrative_chunks,\n  (SELECT COUNT(*) FROM handoff_chunks WHERE chunk_quality_tier = 'layout_sensitive') AS layout_sensitive_chunks,\n  (SELECT seed FROM sampling_parameters) AS seed,\n  (SELECT min_per_topic FROM sampling_parameters) AS min_per_topic,\n  (SELECT max_per_document FROM sampling_parameters) AS max_per_document",
+    "topic_sql": "WITH handoff AS (\n  SELECT section_code AS topic, COUNT(*) AS handoff_chunks\n  FROM handoff_chunks\n  GROUP BY section_code\n), safe AS (\n  SELECT section_code AS topic, COUNT(*) AS safe_pool_chunks\n  FROM safe_pool_chunks\n  GROUP BY section_code\n)\nSELECT\n  handoff.topic,\n  handoff.handoff_chunks,\n  safe.safe_pool_chunks,\n  ROW_NUMBER() OVER (ORDER BY handoff.handoff_chunks DESC, handoff.topic) AS rank\nFROM handoff\nJOIN safe USING (topic)\nORDER BY rank",
+    "validation_sql": "SELECT check_name AS \"check\", passed_rows, expected_rows, status\nFROM validation_checks\nORDER BY check_name"
+  }
+}

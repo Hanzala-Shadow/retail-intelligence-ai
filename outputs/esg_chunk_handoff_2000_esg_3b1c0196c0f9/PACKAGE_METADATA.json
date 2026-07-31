@@ -1,0 +1,32 @@
+{
+  "dataset_id": "esg_3b1c0196c0f9",
+  "package_version": "melek_validation_v2_sampled",
+  "generated_utc": "2026-07-31T05:57:05+00:00",
+  "sampling": {
+    "target": 2000,
+    "seed": 20260731,
+    "min_per_topic": 30,
+    "max_per_doc": 15
+  },
+  "rows": 2000,
+  "eligible_pool": 9259,
+  "topics_in_sample": 18,
+  "topics_in_pool": 18,
+  "documents": 188,
+  "tickers": 105,
+  "tiers": {
+    "narrative": 1715,
+    "layout_sensitive": 285
+  },
+  "years": {
+    "2024": 944,
+    "2023": 1041,
+    "2025": 15
+  },
+  "skipped_from_pool": {
+    "state:held_for_vlm": 7768,
+    "state:excluded_noise": 285,
+    "state:held_for_document_review": 17
+  },
+  "embedding_text_present": true
+}

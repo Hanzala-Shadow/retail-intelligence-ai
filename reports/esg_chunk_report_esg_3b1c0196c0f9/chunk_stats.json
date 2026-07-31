@@ -1,0 +1,100 @@
+{
+  "live_dataset": {
+    "chunks": 17329,
+    "documents": 202,
+    "companies": 110,
+    "tickers": 110,
+    "sections": 9819,
+    "topics": 18,
+    "tokens": {
+      "min": 51,
+      "p25": 222,
+      "median": 402,
+      "mean": 352.6,
+      "p75": 482,
+      "p90": 494,
+      "max": 500
+    },
+    "token_buckets": {
+      "401\u2013500": 8704,
+      "251\u2013400": 3516,
+      "101\u2013250": 4676,
+      "51\u2013100": 433
+    },
+    "chars": {
+      "min": 23,
+      "median": 1676,
+      "p90": 2431,
+      "max": 2901
+    },
+    "page_spans": {
+      "3+ pages": 1278,
+      "2 pages": 8046,
+      "1 page": 8005
+    },
+    "multi_page": 9324,
+    "quality_tiers": {
+      "narrative": 13394,
+      "layout_sensitive": 3650,
+      "noise": 285
+    },
+    "chunk_types": {
+      "normal": 16926,
+      "short_evidence": 403
+    },
+    "citation_status": {
+      "verified_exact": 17329
+    },
+    "chunks_per_document": {
+      "min": 5,
+      "median": 72,
+      "p90": 155,
+      "max": 358
+    },
+    "chunks_per_section": {
+      "one_chunk_sections": 6175,
+      "multi_chunk_sections": 3644,
+      "median": 1,
+      "max": 33
+    },
+    "source_span_overlap": {
+      "adjacent_pairs": 7510,
+      "overlapping_pairs": 6052,
+      "overlap_chars": 676813
+    }
+  },
+  "handoff": {
+    "chunks": 2000,
+    "tokens": {
+      "min": 58,
+      "p25": 198,
+      "median": 350,
+      "mean": 332.2,
+      "p75": 477,
+      "p90": 492,
+      "max": 500
+    },
+    "token_buckets": {
+      "401\u2013500": 871,
+      "101\u2013250": 647,
+      "251\u2013400": 417,
+      "51\u2013100": 65
+    },
+    "chars": {
+      "min": 49,
+      "median": 1584,
+      "p90": 2437,
+      "max": 2847
+    },
+    "multi_page": 931,
+    "page_spans": {
+      "2 pages": 817,
+      "1 page": 1069,
+      "3+ pages": 114
+    },
+    "quality_tiers": {
+      "narrative": 1715,
+      "layout_sensitive": 285
+    }
+  }
+}
