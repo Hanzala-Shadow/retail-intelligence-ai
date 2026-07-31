@@ -33,7 +33,7 @@ import pytest
 
 import config
 from esg_order_recovery import OUTCOME_CURRENT, PARSER_CURRENT, recover_reading_order
-from esg_order_safety import has_full_page_image
+from esg_order_safety import has_full_page_image, has_wide_content_image
 from esg_layout_qa import _column_metrics
 from esg_page_role import classify_page_role
 
@@ -129,6 +129,11 @@ def _recover(row: dict[str, str]):
             visual_object_count=visual_object_count,
             mixed_column_lines=int(layout["mixed_column_lines"]),
             full_page_image=has_full_page_image(
+                list(getattr(page, "images", []) or []),
+                float(page.width),
+                float(page.height),
+            ),
+            wide_content_image=has_wide_content_image(
                 list(getattr(page, "images", []) or []),
                 float(page.width),
                 float(page.height),

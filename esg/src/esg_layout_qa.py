@@ -40,7 +40,7 @@ from pdf_parser import (
 from esg_reading_order import canonical_order_text, reconstruct_column_order
 from esg_page_role import AUTO_EXCLUDE_NAVIGATION, apply_navigation_override
 from esg_order_recovery import recover_reading_order
-from esg_order_safety import has_full_page_image
+from esg_order_safety import has_full_page_image, has_wide_content_image
 import _bootstrap  # noqa: F401  (import path: config, pipeline src, common)
 
 import config
@@ -808,6 +808,11 @@ def audit_document(parse_row: dict) -> list[dict]:
                             visual_object_count=int(metrics["visual_object_count"]),
                             mixed_column_lines=int(metrics["mixed_column_lines"]),
                             full_page_image=has_full_page_image(
+                                list(getattr(page, "images", []) or []),
+                                float(page.width),
+                                float(page.height),
+                            ),
+                            wide_content_image=has_wide_content_image(
                                 list(getattr(page, "images", []) or []),
                                 float(page.width),
                                 float(page.height),

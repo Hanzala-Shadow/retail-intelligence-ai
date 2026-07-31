@@ -33,7 +33,7 @@ from esg_layout_qa import (
     resolve_path,
 )
 from esg_order_recovery import recover_reading_order
-from esg_order_safety import has_full_page_image
+from esg_order_safety import has_full_page_image, has_wide_content_image
 from esg_page_role import apply_navigation_override
 
 DEFAULT_AUDIT = (
@@ -102,6 +102,11 @@ def rescore(rows: list[dict[str, str]], lookup: dict, quiet: bool) -> list[dict[
                     visual_object_count=int(row.get("visual_object_count") or 0),
                     mixed_column_lines=int(row.get("mixed_column_lines") or 0),
                     full_page_image=has_full_page_image(
+                        list(getattr(page, "images", []) or []),
+                        float(page.width),
+                        float(page.height),
+                    ),
+                    wide_content_image=has_wide_content_image(
                         list(getattr(page, "images", []) or []),
                         float(page.width),
                         float(page.height),

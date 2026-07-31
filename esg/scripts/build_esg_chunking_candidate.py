@@ -18,6 +18,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "esg" / "src"))
 
+import _bootstrap  # noqa: E402,F401
+import config  # noqa: E402
+
 from esg_chunker_candidate import (  # noqa: E402
     BGE_INPUT_LIMIT,
     BGE_MODEL_LIMIT,
@@ -224,8 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     bge = AutoTokenizer.from_pretrained(str(args.tokenizer), local_files_only=True)
     cl100k = tiktoken.get_encoding("cl100k_base")
 
-    sections = read_csv(source_root / "data/00_reference/esg_sections_index.csv")
-    enriched = read_csv(source_root / "data/00_reference/esg_chunks_index_enriched.csv")
+    sections = read_csv(source_root / config.as_repo_relative(config.ESG_SECTIONS_INDEX_CSV))
+    enriched = read_csv(source_root / config.as_repo_relative(config.ESG_CHUNKS_INDEX_ENRICHED_CSV))
     count_path = source_root / "tmp/esg_task8_20260730/esg_bge_token_counts_prefixed.csv"
     counts = read_csv(count_path) if count_path.exists() else []
     bge_count_by_id = {row["chunk_id"]: row for row in counts}
@@ -237,7 +240,7 @@ def main(argv: list[str] | None = None) -> int:
     for row in enriched:
         current_by_key[(row["ticker"], row["pdf_stem"], row["section_instance_id"])].append(row)
 
-    parse_rows = read_csv(source_root / "data/00_reference/esg_parse_index.csv")
+    parse_rows = read_csv(source_root / config.as_repo_relative(config.ESG_PARSE_INDEX_CSV))
     page_map_by_doc: dict[tuple[str, str], list[dict[str, str]]] = {}
     for row in parse_rows:
         page_file = row.get("page_map_file") or ""

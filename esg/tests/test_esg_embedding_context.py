@@ -33,6 +33,7 @@ MANDATORY_KEYS = [
     "Subsection",
     "Content type",
 ]
+OPTIONAL_KEYS = {"Table context"}
 
 ROW = {
     "ticker": "AAPL",
@@ -137,7 +138,8 @@ class GeneratedOutputTests(unittest.TestCase):
             header, sep, body = path.read_text(encoding="utf-8").partition("\n\n")
             self.assertEqual(sep, "\n\n", msg=row["chunk_id"])
             keys = [line.split(": ", 1)[0] for line in header.split("\n")]
-            self.assertEqual(keys, MANDATORY_KEYS, msg=row["chunk_id"])
+            self.assertEqual(keys[: len(MANDATORY_KEYS)], MANDATORY_KEYS, msg=row["chunk_id"])
+            self.assertTrue(set(keys[len(MANDATORY_KEYS) :]) <= OPTIONAL_KEYS, msg=row["chunk_id"])
             self.assertTrue(body, msg=row["chunk_id"])
 
 

@@ -99,6 +99,7 @@ def recover_reading_order(
     visual_object_count: int = 0,
     mixed_column_lines: int = 0,
     full_page_image: bool = False,
+    wide_content_image: bool = False,
 ) -> RecoveryResult:
     """Pick a retrieval-safe reading of a held multi-column page, or keep it held."""
 
@@ -115,6 +116,7 @@ def recover_reading_order(
             visual_object_count=visual_object_count,
             mixed_column_lines=mixed_column_lines,
             full_page_image=full_page_image,
+            wide_content_image=wide_content_image,
         )
         for name, text in candidates.items()
     }

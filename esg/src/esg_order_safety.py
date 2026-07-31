@@ -85,6 +85,12 @@ MIN_FULL_ROW_SHARE = 0.60
 #: across the gutter as if they were one.
 MIN_PARALLEL_LABEL_LINES = 2
 MIN_PARALLEL_LABELS = 2
+# A wide report image can carry chart labels and values that never enter the
+# native word stream. Without vision, a candidate made only from native text
+# cannot prove that visible evidence survived.
+CONTENT_IMAGE_MIN_WIDTH_SHARE = 0.75
+CONTENT_IMAGE_MIN_HEIGHT_SHARE = 0.30
+CONTENT_IMAGE_MIN_ASPECT_RATIO = 2.35
 # A page with more drawn objects than native words is often a table whose
 # visible labels and values are painted as shapes or an inaccessible layer.
 # The native word stream cannot prove completeness on such a page.
@@ -172,6 +178,27 @@ def has_full_page_image(
         if (
             width >= page_width * FULL_PAGE_IMAGE_SHARE
             and height >= page_height * FULL_PAGE_IMAGE_SHARE
+        ):
+            return True
+    return False
+
+
+def has_wide_content_image(
+    images: list[dict], page_width: float, page_height: float
+) -> bool:
+    """Whether a wide raster may contain chart labels missing from native text."""
+
+    if page_width <= 0 or page_height <= 0:
+        return False
+    for item in images or []:
+        width = float(item.get("width") or 0)
+        height = float(item.get("height") or 0)
+        if height <= 0:
+            continue
+        if (
+            width >= page_width * CONTENT_IMAGE_MIN_WIDTH_SHARE
+            and height >= page_height * CONTENT_IMAGE_MIN_HEIGHT_SHARE
+            and width / height >= CONTENT_IMAGE_MIN_ASPECT_RATIO
         ):
             return True
     return False
@@ -321,6 +348,7 @@ def evaluate_order_safety(
     visual_object_count: int = 0,
     mixed_column_lines: int = 0,
     full_page_image: bool = False,
+    wide_content_image: bool = False,
 ) -> OrderSafetyResult:
     """Decide whether ``candidate_text`` is a retrieval-safe reading of the page.
 
@@ -346,6 +374,7 @@ def evaluate_order_safety(
     metrics["visual_object_count"] = int(visual_object_count)
     metrics["mixed_column_lines"] = int(mixed_column_lines)
     metrics["full_page_image"] = int(bool(full_page_image))
+    metrics["wide_content_image"] = int(bool(wide_content_image))
     if not candidate_tokens:
         return OrderSafetyResult(False, ("no_candidate_text",), metrics)
 
@@ -359,6 +388,8 @@ def evaluate_order_safety(
             f"visual_grid_unread(objects={visual_object_count},ratio={object_word_ratio:.2f})"
         )
 
+    if wide_content_image:
+        failures.append("wide_image_text_unproven")
     if full_page_image and mixed_column_lines >= RASTER_ORDER_MIN_MIXED_LINES:
         failures.append(
             f"raster_order_unproven(mixed_lines={mixed_column_lines})"

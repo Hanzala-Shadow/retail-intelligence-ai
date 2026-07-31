@@ -12,6 +12,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "esg" / "src"))
 
+import _bootstrap  # noqa: E402,F401
+import config  # noqa: E402
+
 from esg_chunker_candidate import (  # noqa: E402
     BGE_INPUT_LIMIT,
     chunk_section_candidate,
@@ -108,8 +111,8 @@ def main() -> int:
     args = parser.parse_args()
 
     source_root = args.source_root.resolve()
-    sections = read_csv(source_root / "data/00_reference/esg_sections_index.csv")
-    enriched = read_csv(source_root / "data/00_reference/esg_chunks_index_enriched.csv")
+    sections = read_csv(source_root / config.as_repo_relative(config.ESG_SECTIONS_INDEX_CSV))
+    enriched = read_csv(source_root / config.as_repo_relative(config.ESG_CHUNKS_INDEX_ENRICHED_CSV))
     enriched_by_key = {
         (row["ticker"], row["pdf_stem"], row["section_instance_id"]): row
         for row in enriched
