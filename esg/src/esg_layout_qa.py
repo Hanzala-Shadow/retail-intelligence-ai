@@ -38,24 +38,47 @@ from pdf_parser import (
     reconstruct_region_order,
 )
 from esg_reading_order import canonical_order_text, reconstruct_column_order
+from esg_page_role import AUTO_EXCLUDE_NAVIGATION, apply_navigation_override
+from esg_order_recovery import recover_reading_order
+from esg_order_safety import has_full_page_image
 import _bootstrap  # noqa: F401  (import path: config, pipeline src, common)
 
 import config
 
 
-# v7 auto-passes ambiguous navigation/contents-layout pages instead of
-# holding them, since they have no defensible prose order and no retrieval
-# value worth VLM spend. This changes page decisions, so v6 rows must be
-# rebuilt.
-AUDIT_VERSION = "layout_v7"
+# v7 auto-passed ambiguous navigation/contents-layout pages instead of holding
+# them, reasoning that they have no defensible prose order and no retrieval
+# value worth VLM spend. The second half of that inference was wrong: a page
+# with no retrieval value must stay out of the index, not enter it unordered.
+#
+# v8 makes three changes, all of which move page decisions, so v7 rows must be
+# rebuilt:
+#
+# 1. Navigation exclusion is decided by page ROLE (esg_page_role), not by the
+#    reading-order verdict. The verdict answers "can a prose order be
+#    established?"; measured against the AI gold set the old coupling both
+#    missed navigation pages certified by other paths and flagged real content.
+#    AUTO_EXCLUDE_NAVIGATION pre-empts every other decision, including
+#    AUTO_HOLD -- hold is a VLM queue, not a terminal state.
+# 2. A two-column signal alone now holds a page; extractor agreement is no
+#    longer accepted as evidence of correct order.
+# 3. Verified table extraction no longer certifies reading order by itself,
+#    because the table check is order-blind. It must be paired with a proof.
+AUDIT_VERSION = "layout_v8"
 AUTO_PASS = "auto_pass"
 AUTO_PASS_PDFIUM_COVERAGE = "auto_pass_pdfium_coverage"
 AUTO_PASS_COLUMN_ORDER = "auto_pass_column_order_reconstructed"
 AUTO_PASS_REGION_ORDER = "auto_pass_region_order_reconstructed"
 AUTO_PASS_VERIFIED_TABLE = "auto_pass_verified_table_extraction"
 AUTO_PASS_NAVIGATION = "auto_pass_navigation_contents"
+AUTO_PASS_RECOVERED_ORDER = "auto_pass_recovered_region_order"
 AUTO_HOLD = "auto_hold"
 AUDIT_ERROR = "audit_error"
+
+# Opt-in, read through the environment so spawned audit workers inherit it.
+# Off by default: the live v8 audit and manifest stay the safe baseline
+# until a candidate run has been reviewed.
+RECOVER_MULTI_COLUMN = os.environ.get("ESG_RECOVER_MULTI_COLUMN", "").strip() in {"1", "true", "yes"}
 
 LAYOUT_AUDIT_FIELDS = [
     "ticker",
@@ -95,6 +118,9 @@ LAYOUT_AUDIT_FIELDS = [
     "reading_order_current_match",
     "reading_order_reason",
     "candidate_preference",
+    "page_role",
+    "recovery_parser",
+    "recovery_metrics",
     "decision",
     "decision_reason",
     "audit_version",
@@ -439,10 +465,18 @@ def automatic_decision(
     native_score = scores["pdfplumber"]
     best_score = max(scores.values(), default=0)
     coverage_disagreement = best_score >= max(native_score * 3, native_score + 80)
-    # Occupancy in both page halves and same-y words also occurs in ordinary
-    # full-width prose. Hold this coarse signal only when extractors materially
-    # disagree; coordinate reconstruction handles genuine stable columns.
-    structural_risk = bool(metrics["two_column_candidate"]) and coverage_disagreement
+    # v8: a two-column signal alone now holds the page.
+    #
+    # This used to additionally require that the extractors materially disagree,
+    # on the reasoning that occupancy in both page halves also occurs in
+    # ordinary full-width prose. The measured problem with that: two extractors
+    # that share the same row-major bias agree with each other while both being
+    # wrong, so agreement is not evidence of correct order. Against the AI gold
+    # set this path certified 6 badly-ordered development pages out of 12.
+    #
+    # Cost of the stricter rule, measured on the development split: 5 badly
+    # ordered pages newly held, 2 correctly ordered pages newly held.
+    structural_risk = bool(metrics["two_column_candidate"])
     missing_text = (
         int(metrics["native_word_count"]) >= LOW_TEXT_MIN_NATIVE_WORDS
         and reliable_token_count(current_text) < MIN_PAGE_CHARS
@@ -515,6 +549,29 @@ def region_order_decision(
         f"preservation_ratio={region_order.preservation_ratio:.4f}; "
         f"extra_token_ratio={region_order.extra_token_ratio:.4f}",
     )
+
+
+def order_is_proven(reading_order, current_text: str, metrics: dict) -> bool:
+    """Is this page's reading order demonstrated, rather than merely assumed?
+
+    Only two things count as proof:
+
+    * the coordinate reconstruction succeeded and the parsed text already agrees
+      with it, so an independent reader reached the same order; or
+    * there is no multi-column signal at all, from either the coordinate reader
+      or the coarse text metrics, so there is no order to get wrong.
+
+    Everything else is an assumption. Measured against the AI gold set, the two
+    assumption-based certifications were close to coin flips: verified table
+    extraction failed 4 of 7 development pages and the plain no-signal pass
+    failed 6 of 12, while the two proof-based paths failed 2 of 9 combined.
+    """
+
+    if reading_order.status == "reconstructed":
+        return canonical_order_text(current_text) == canonical_order_text(reading_order.text)
+    if reading_order.status == "not_applicable":
+        return not bool(metrics["two_column_candidate"])
+    return False
 
 
 def reading_order_decision(reading_order, current_text: str) -> tuple[str | None, str, bool]:
@@ -595,6 +652,9 @@ def _error_row(parse_row: dict, message: str) -> dict:
         "reading_order_current_match": "",
         "reading_order_reason": "",
         "candidate_preference": "",
+        "page_role": "",
+        "recovery_parser": "",
+        "recovery_metrics": "",
         "decision": AUDIT_ERROR,
         "decision_reason": message,
         "audit_version": AUDIT_VERSION,
@@ -686,6 +746,14 @@ def audit_document(parse_row: dict) -> list[dict]:
                     current_order_matches = False
                     if table_decision is not None:
                         decision, reason = table_decision, table_reason
+                        # Verified table extraction proves the table's tokens
+                        # survived. It is order-blind, so on its own it cannot
+                        # certify the page's reading order.
+                        if decision == AUTO_PASS_VERIFIED_TABLE and not order_is_proven(
+                            reading_order, current_text, metrics
+                        ):
+                            decision = AUTO_HOLD
+                            reason = "auto_hold_table_order_not_proven: " + table_reason
                     else:
                         decision, reason, current_order_matches = reading_order_decision(
                             reading_order,
@@ -715,6 +783,54 @@ def audit_document(parse_row: dict) -> list[dict]:
                             pdfium_text,
                             current_is_pdfium=current_is_pdfium,
                         )
+                    recovery_parser = ""
+                    recovery_metrics = ""
+                    if (
+                        RECOVER_MULTI_COLUMN
+                        and decision == AUTO_HOLD
+                        and reason.startswith("auto_hold_structural_multi_column")
+                    ):
+                        # Table handling is the parser's own signal, not the
+                        # coarse visual grid risk: the latter also fires on
+                        # decorative card layouts this rule should recover.
+                        table_like = bool(
+                            parse_int(page_record.get("table_candidate_count")) or 0
+                        ) or any(
+                            line.strip().startswith("|")
+                            for line in current_text.splitlines()
+                        )
+                        recovery = recover_reading_order(
+                            words,
+                            float(page.width),
+                            float(page.height),
+                            current_text,
+                            table_like=table_like,
+                            visual_object_count=int(metrics["visual_object_count"]),
+                            mixed_column_lines=int(metrics["mixed_column_lines"]),
+                            full_page_image=has_full_page_image(
+                                list(getattr(page, "images", []) or []),
+                                float(page.width),
+                                float(page.height),
+                            ),
+                        )
+                        recovery_parser = recovery.parser
+                        recovery_metrics = ";".join(
+                            f"{k}={v}" for k, v in sorted(recovery.metrics.items())
+                        )
+                        if recovery.recovered_now:
+                            decision = AUTO_PASS_RECOVERED_ORDER
+                            reason = f"{recovery.reason}: {recovery_metrics}"
+                        else:
+                            # A safe reconstruction is not a pass: the corpus
+                            # still holds the old text until a reparse applies
+                            # the chosen reader. Recorded, still held.
+                            reason = f"auto_hold_{recovery.outcome}: {recovery.reason}"
+
+                    decision, reason, page_role = apply_navigation_override(
+                        decision,
+                        reason,
+                        current_text,
+                    )
                     rows.append(
                         {
                             "ticker": (parse_row.get("ticker") or "").upper(),
@@ -753,6 +869,9 @@ def audit_document(parse_row: dict) -> list[dict]:
                             "reading_order_current_match": str(current_order_matches).lower(),
                             "reading_order_reason": reading_order.reason,
                             "candidate_preference": preference,
+                            "page_role": page_role.reason,
+                            "recovery_parser": recovery_parser,
+                            "recovery_metrics": recovery_metrics,
                             "decision": decision,
                             "decision_reason": reason,
                             "audit_version": AUDIT_VERSION,

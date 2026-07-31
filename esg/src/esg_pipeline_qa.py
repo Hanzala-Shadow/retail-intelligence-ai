@@ -56,7 +56,7 @@ VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
 }
-LAYOUT_AUDIT_VERSION = "layout_v7"
+LAYOUT_AUDIT_VERSION = "layout_v8"
 LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
 
 

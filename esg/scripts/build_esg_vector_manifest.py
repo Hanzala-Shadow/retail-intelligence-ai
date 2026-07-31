@@ -56,13 +56,20 @@ MANIFEST_FIELDS = [
 
 VERIFIED_CITATION_STATUSES = {"verified_exact", "verified_whitespace_normalized"}
 LAYOUT_AUDIT_DEFAULT = str(config.ESG_PAGE_LAYOUT_QA_CSV)
-LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"}
+# A navigation page is excluded for a different reason than a held page -- its
+# text may be perfectly readable, it simply must not be retrievable. It shares
+# the hold path rather than getting its own layout status so that there is a
+# single place where a chunk can be kept out of the index; a second status would
+# have to be repeated at every downstream gate, and one miss silently indexes
+# navigation. The reason string below keeps the two distinguishable.
+LAYOUT_NAVIGATION_DECISIONS = {"auto_exclude_navigation"}
+LAYOUT_HOLD_DECISIONS = {"auto_hold", "audit_error"} | LAYOUT_NAVIGATION_DECISIONS
 # Must equal esg_layout_qa.AUDIT_VERSION. It is duplicated rather than imported
 # so this script stays free of the parser's pdfplumber/pypdfium dependencies;
 # tests/test_esg_vector_manifest.py fails if the two ever drift. Any audit row
 # carrying a different version is treated as stale and holds its chunk, so a
 # mismatch here silently quarantines the entire corpus.
-LAYOUT_AUDIT_VERSION = "layout_v7"
+LAYOUT_AUDIT_VERSION = "layout_v8"
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -201,6 +208,14 @@ def layout_policy_for_chunk(
         if not source_hash_bound:
             return "auto_hold", f"layout_audit_stale_source_version_page={page}"
         page_rows.append((page, row))
+
+    navigation_pages = [
+        page
+        for page, row in page_rows
+        if (row.get("decision") or "").strip() in LAYOUT_NAVIGATION_DECISIONS
+    ]
+    if navigation_pages:
+        return "auto_hold", "layout_navigation_page=" + ",".join(map(str, navigation_pages))
 
     held_pages = [
         page

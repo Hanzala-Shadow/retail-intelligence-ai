@@ -93,6 +93,8 @@ CURATED = {
     "esg_manual_headings_clean.csv": "manual heading curation",
     "esg_manual_headings_clean.txt": "manual heading curation",
     "esg_layout_gold_labels.csv": "449-page adjudicated gold set",
+    "esg_ai_gold_v1.jsonl": "59-page AI-transcribed, AI-reviewed parser benchmark gold set",
+    "esg_recovery_safety_labels.csv": "Terra-reviewed safe/unsafe verdicts for the reading-order recovery gate; the review directories that produced them are disposable, these are not",
     "esg_layout_gold_annotator1.csv": "gold set, annotator 1 pass",
     "esg_layout_gold_annotator2.csv": "gold set, annotator 2 pass",
     "esg_layout_gold_disagreements.csv": "gold set adjudication record",
