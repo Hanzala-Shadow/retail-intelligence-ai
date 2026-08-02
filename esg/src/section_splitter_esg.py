@@ -154,18 +154,18 @@ HEADING_PATTERNS: list[tuple[str, str]] = [
     ("data_summary", r"\b(data\s+summary|esg\s+data|performance\s+data|metrics|kpis?|scorecard|performance\s+tables?|performance\s+at\s+a\s+glance|by\s+the\s+numbers|esg\s+ratings?|target\s+commitment\s+report|base\s+year\s+emissions\s+report|mitigation\s+action\s+report|voluntary\s+carbon\s+market\s+disclosure)\b"),
     ("appendix", r"\b(appendix|appendices|annex|assurance|limited\s+assurance|verification\s+statement|memberships?\s+and\s+associations?|complete\s+material\s+topic\s+list|(?:gri|sasb|tcfd|ungprf|sdgs?|esg|sustainability|disclosure|content|report(?:ing)?|context)\s+(?:content\s+)?index|(?:content|disclosure|report(?:ing)?|tcfd|sasb|gri|sdgs?|ungprf)\s+index|indices)\b"),
     ("about_this_report", r"^about$|\b(about\s+this\s+report|about\s+the\s+report|introduction|company\s+overview|about\s+[a-z0-9&.,'\s]+\s+brands?|sustainable\s+value\s+creation|value\s+creation\s+model|our\s+journey|esg\s+through\s+the\s+years|reporting\s+scope|reporting\s+framework|framework\s+alignment|gri|sasb|tcfd|materiality\s+(?:assessment|analysis|matrix|approach)?|double\s+materiality|material\s+esg\s+topics?|material\s+topics?)\b"),
-    ("emissions", r"\b(greenhouse\s+gas|ghg|scope\s+1|scope\s+2|scope\s+3|emissions?|emissions?\s+reduction|carbon\s+footprints?|carbon\s+footprint\s+transparency|annual\s+ghg\s+inventory)\b"),
+    ("emissions", r"\b(carbon\s+neutral\w*|greenhouse\s+gas|ghg|scope\s+1|scope\s+2|scope\s+3|emissions?|emissions?\s+reduction|carbon\s+footprints?|carbon\s+footprint\s+transparency|annual\s+ghg\s+inventory)\b"),
     ("climate", r"\b(climate|climate\s+change|climate\s+risk|climate\s+stability|decarbonization|net\s+zero|comfort\s+without\s+carbon|carbon\s+reduction)\b"),
     ("energy", r"\b(energy|renewable\s+energy|renewables?|electricity|powered\s+by\s+renewables?)\b"),
-    ("waste", r"\b(waste|recycling|circularity|circular\s+economy|circular\s+design|end-of-life|packaging|bags\s+and\s+boxes|warding\s+off\s+waste)\b"),
+    ("waste", r"\b(recycled\s+content|extending\s+product\s+life|product\s+life\s+extension|trade-?in|resale|reuse|repairability|waste|recycling|circularity|circular\s+economy|circular\s+design|end-of-life|packaging|bags\s+and\s+boxes|warding\s+off\s+waste)\b"),
     ("water", r"\b(water|wastewater|water\s+stewardship|water\s+leadership|water\s+goals|woman\s+\+\s+water|women\s+\+\s+water)\b"),
-    ("environmental", r"\b(environmental|environment|planet|sustainability\s+strategy|sustainable\s+(raw\s+)?materials?|responsible\s+materials?|preferred\s+materials?|recycled\s+materials?|raw\s+materials?|materials?\s+(?:management|targets?|choices?|innovation|traceability|sourcing)|sustainable\s+cotton|sustainable\s+polyester|sustainable\s+ingredients?|chemicals?\s+management|chemical\s+safety|resource\s+management|resource\s+efficiency|material\s+footprint|bio-circular|product\s+carbon|product\s+life\s+cycle|biodiversity|natural\s+fibers?|synthetics|cellulosics|advanced\s+resource\s+recovery|circular\s+business\s+models?)\b|^materials?$"),
+    ("environmental", r"\b(sustainable\s+operations|environmental|environment|planet|sustainability\s+strategy|sustainable\s+(raw\s+)?materials?|responsible\s+materials?|preferred\s+materials?|recycled\s+materials?|raw\s+materials?|materials?\s+(?:management|targets?|choices?|innovation|traceability|sourcing)|sustainable\s+cotton|sustainable\s+polyester|sustainable\s+ingredients?|chemicals?\s+management|chemical\s+safety|resource\s+management|resource\s+efficiency|material\s+footprint|bio-circular|product\s+carbon|product\s+life\s+cycle|biodiversity|natural\s+fibers?|synthetics|cellulosics|advanced\s+resource\s+recovery|circular\s+business\s+models?)\b|^materials?$"),
     ("diversity_equity_inclusion", r"\b(diversity|equity|inclusion|inclusivity|inclusive|dei|idea:|idea\s+alliance|belonging|representation|racial\s+justice|inclusive\s+behaviors?|empowering\s+women|women['’]s\s+equity|equality\s+and\s+belonging)\b"),
     ("supply_chain_ethics", r"\b(supply\s+chain|responsible\s+sourcing|sourcing|human\s+rights|supplier|vendor|factory|labor\s+rights|purchasing\s+practices|betterwork|workers?\s+voice|women\s+workers|fair\s+compensation|due\s+diligence|supply\s+chain\s+standards?|supplier\s+performance|communicating\s+with\s+workers|safe\s+working\s+conditions|assessment\s+and\s+remediation|capability\s+building|digital\s+wage\s+payments|gender-based\s+violence|gbv|textile\s+manufacturing|tier\s+[12]\s+suppliers|product\s+and\s+finishing)\b"),
-    ("human_capital", r"\b(human\s+capital|employees?|associates?|workforce|our\s+people|people|talent|workplace|culture|our\s+values|total\s+rewards?|compensation|benefits?|wellbeing|well-being|mental\s+health|physical\s+health|health\s+and\s+safety|safe\s+and\s+inclusive\s+workplace|new\s+hires?|associate\s+networks?|people\s+data|real\s+opportunities|opportunity\s+hiring|enabling\s+opportunity|supervisory\s+skills|skills\s+training|personalized\s+growth|mentorship)\b"),
+    ("human_capital", r"\b(learning\s+and\s+development|training\s+and\s+development|human\s+capital|employees?|associates?|workforce|our\s+people|people|talent|workplace|culture|our\s+values|total\s+rewards?|compensation|benefits?|wellbeing|well-being|mental\s+health|physical\s+health|health\s+and\s+safety|safe\s+and\s+inclusive\s+workplace|new\s+hires?|associate\s+networks?|people\s+data|real\s+opportunities|opportunity\s+hiring|enabling\s+opportunity|supervisory\s+skills|skills\s+training|personalized\s+growth|mentorship)\b"),
     ("community", r"\b(community|communities|philanthropy|volunteer|giving\s+back|giving|social\s+impact|nonprofit|relief\s+efforts|disaster\s+relief|crocs\s+cares|impact\s+partnerships?|partnerships?\s+that\s+make\s+a\s+difference|supporting\s+people\s+and\s+strengthening\s+our\s+communities|refugees|opportunity\s+village|honoring\s+native\s+origins|this\s+way\s+onward)\b"),
     ("social", r"^social$|^society$|\b(corporate\s+social\s+responsibility|social\s+impact|social\s+sustainability|social\s+compliance|social\s+responsibility)\b"),
-    ("ethics_compliance", r"\b(ethics|compliance|code\s+of\s+conduct|anti-corruption|privacy|data\s+privacy|data\s+security|cyber\s*security|cybersecurity|consumer\s+trust|product\s+and\s+consumer\s+safety|product\s+safety)\b"),
+    ("ethics_compliance", r"\b(zero[-\s]tolerance|ethics|compliance|code\s+of\s+conduct|anti-corruption|privacy|data\s+privacy|data\s+security|cyber\s*security|cybersecurity|consumer\s+trust|product\s+and\s+consumer\s+safety|product\s+safety)\b"),
     ("governance", r"\b(governance|corporate\s+governance|board\s+of\s+directors|board\s+(?:composition|oversight|committees?)|oversight|esg\s+oversight|risk\s+management|managing\s+esg\s+risk|responsible\s+business|business\s+practices|policies\s+and\s+guidelines|public\s+policy|stakeholder\s+engagement|external\s+commitments|general\s+disclosures)\b"),
 ]
 
@@ -340,9 +340,20 @@ def line_looks_structural(line: str) -> bool:
         return False
     if re.search(r"^last\s+year\b", lower):
         return False
+    # A lowercase first letter usually means a sentence fragment, but not
+    # always: some reports set their headings in lowercase by design. Carter's
+    # 2024 does it throughout -- 92 of its 265 headings start lowercase, and
+    # rejecting them outright cost that document a third of its structure
+    # ('memberships & trade associations', 'esg rankings & ratings').
+    #
+    # A short line with no sentence-ending punctuation is heading-shaped
+    # whatever its case. Longer lowercase lines keep the old treatment, which
+    # is what catches an actual mid-paragraph fragment.
     first_alpha = next((ch for ch in stripped if ch.isalpha()), "")
     if first_alpha and not first_alpha.isupper():
-        return False
+        heading_shaped = len(words) <= 6 and not re.search(r"[.!?]$", stripped)
+        if not heading_shaped:
+            return False
     if len(words) > 3 and BODY_SENTENCE_RE.search(stripped):
         return False
     if len(words) >= 4 and re.search(r"\b(?:has|have|had|requires?|makes?)\b", lower):
@@ -1131,9 +1142,32 @@ def _repeated_table_header_indexes(
     return rejected
 
 
+def read_heading_map(txt_file: Path) -> set[int]:
+    """Character offsets docling identified as headings, if a sidecar exists.
+
+    bridge_docling_to_pipeline.py writes <STEM>.headings.csv alongside the
+    text. When present, only lines starting at one of these offsets may become
+    a section boundary -- docling's layout model decides what is a heading,
+    and the topic patterns only decide which of those are topical.
+
+    Without the sidecar, nothing changes: every line is tested, as before.
+    """
+    path = txt_file.with_suffix(".headings.csv")
+    if not path.exists():
+        return set()
+    offsets: set[int] = set()
+    with path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            start = parse_int(row.get("char_start"))
+            if start is not None:
+                offsets.add(start)
+    return offsets
+
+
 def collect_heading_candidates(
     text: str,
     page_spans: list[dict] | None = None,
+    heading_offsets: set[int] | None = None,
 ) -> list[HeadingCandidate]:
     lines_with_endings = text.splitlines(keepends=True)
     lines = [line.rstrip("\r\n") for line in lines_with_endings]
@@ -1146,6 +1180,13 @@ def collect_heading_candidates(
         line_offsets.append(offset)
         line = line_with_ending.rstrip("\r\n")
         if is_markdown_table_row(lines, i):
+            offset += len(line_with_ending)
+            continue
+        # When docling told us where the headings are, a line that is not one
+        # cannot start a section. This is what stops a wrapped mid-paragraph
+        # line -- '(TCFD)', 'Hometown Giving Program.' -- from becoming a
+        # boundary because it happens to contain a topic word.
+        if heading_offsets is not None and offset not in heading_offsets:
             offset += len(line_with_ending)
             continue
         code = map_heading_to_code(line)
@@ -1553,8 +1594,11 @@ def subsection_spans_json(
 def split_esg_sections(
     text: str,
     page_spans: list[dict] | None = None,
+    heading_offsets: set[int] | None = None,
 ) -> list[SectionSegment]:
-    candidates = collect_heading_candidates(text, page_spans=page_spans)
+    candidates = collect_heading_candidates(
+        text, page_spans=page_spans, heading_offsets=heading_offsets
+    )
 
     if len(candidates) == 1 and candidates[0].char_offset > len(text) * 0.75:
         return [
@@ -1737,10 +1781,13 @@ def clear_existing_sections(
 def _output_sections(
     text: str,
     page_spans: list[dict] | None = None,
+    heading_offsets: set[int] | None = None,
 ) -> list[SectionSegment]:
     sections = [
         section
-        for section in split_esg_sections(text, page_spans=page_spans)
+        for section in split_esg_sections(
+            text, page_spans=page_spans, heading_offsets=heading_offsets
+        )
         if section.text.strip()
     ]
     if not sections:
@@ -1800,7 +1847,9 @@ def process_text_file(
     sections = (
         _assign_section_instance_ids(sections)
         if sections is not None
-        else _output_sections(text, page_spans=page_spans)
+        else _output_sections(
+            text, page_spans=page_spans, heading_offsets=read_heading_map(txt_file) or None
+        )
     )
     if not sections:
         raise ValueError("Parsed text produced no non-empty ESG sections")
@@ -2176,7 +2225,10 @@ def run(
             source_fingerprint = fingerprint_source_file(txt_file)
             text = txt_file.read_text(encoding="utf-8", errors="replace")
             page_spans = read_page_map(txt_file)
-            sections = _output_sections(text, page_spans=page_spans)
+            heading_offsets = read_heading_map(txt_file) or None
+            sections = _output_sections(
+                text, page_spans=page_spans, heading_offsets=heading_offsets
+            )
             validation = validate_completed_text_file(
                 txt_file,
                 output_root,
