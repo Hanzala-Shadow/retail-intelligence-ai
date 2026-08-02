@@ -36,6 +36,26 @@ from typing import Any
 # not part of the document, and must not reach sectioning.
 REGION_TAG_RE = re.compile(r"^\[\d+:[^\]]*\][ \t]*\n?", re.M)
 
+# The fuse stage ends a page with "[unplaced words]" followed by any words that
+# landed in no region -- roughly 3.4% of a page, mostly nav ribbons and page
+# numbers that docling deliberately does not box. The marker itself is NOT
+# matched by REGION_TAG_RE (no digits, no colon), so before this it survived
+# into the document text: 64 occurrences in one Best Buy file, reaching 206
+# section files.
+UNPLACED_MARKER = "[unplaced words]"
+
+# The fuse stage writes this for a region with no words under it -- a picture,
+# or a cell whose text is vector art. It is a note to a human reading the fused
+# file, not document content, and leaked 875 times into the v2 corpus and 176
+# section files before being caught. Same class of bug as UNPLACED_MARKER.
+EMPTY_REGION_NOTE = "(no text layer in this region)"
+
+# A block header looks like "[6:text|band=footer]". The band suffix marks a
+# region sitting in the top or bottom 12% of the page. It is a hint, not a
+# verdict: on ORLY p12 the line "2,013 LEADERSHIP AWARDS EARNED IN 2023." sits
+# in the band and is real content.
+BLOCK_HEADER_RE = re.compile(r"^\[(\d+):([^\]|]*)(?:\|band=(header|footer))?\][ \t]*$", re.M)
+
 # section_splitter_esg.read_page_map only reads page, char_start and char_end.
 # The remaining columns exist because layout QA and the vector manifest consume
 # them. They are filled with values describing what this actually is, rather
@@ -54,13 +74,84 @@ PAGES_CSV_COLUMNS = [
     "layout_risk",
     "visual_review_status",
     "repair_method",
+    "band_region_count",
+    "band_dropped_count",
+    "unplaced_char_count",
     "text_source",
     "table_candidate_count",
 ]
 
 
+def split_page_blocks(raw: str) -> tuple[list[tuple[str, str]], str]:
+    """Split a fused page into (kind, text) blocks plus its unplaced tail.
+
+    ``kind`` is "body" or "band". The tail is whatever followed the
+    ``[unplaced words]`` marker.
+    """
+    tail = ""
+    if UNPLACED_MARKER in raw:
+        raw, _, tail = raw.partition(UNPLACED_MARKER)
+
+    blocks: list[tuple[str, str]] = []
+    matches = list(BLOCK_HEADER_RE.finditer(raw))
+    for i, m in enumerate(matches):
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
+        text = raw[start:end].strip()
+        if text == EMPTY_REGION_NOTE:
+            continue
+        text = text.replace(EMPTY_REGION_NOTE, "").strip()
+        if text:
+            blocks.append(("band" if m.group(3) else "body", text))
+    if not matches:
+        stripped = raw.strip()
+        if stripped:
+            blocks.append(("body", stripped))
+    return blocks, tail.strip()
+
+
+def _furniture_key(text: str) -> str:
+    """Normalise a block for repetition comparison.
+
+    Page numbers change from page to page, so digits are dropped: a footer
+    reading "Sustainability Report 14" and "Sustainability Report 15" is the
+    same ribbon.
+    """
+    return re.sub(r"[^a-z]+", " ", text.lower()).strip()
+
+
+def repeated_band_keys(
+    pages: list[int], stem: str, fused_dir: Path, min_pages: int
+) -> set[str]:
+    """Band blocks whose text appears on at least ``min_pages`` pages.
+
+    Position alone does not make a block furniture -- on ORLY p12 the line
+    "2,013 LEADERSHIP AWARDS EARNED IN 2023." sits in the bottom band and is
+    real content. Repetition alone does not either: a section heading can
+    legitimately recur. Requiring BOTH is what separates a nav ribbon from a
+    sentence that happens to sit low on the page.
+    """
+    seen: dict[str, set[int]] = {}
+    for page_no in pages:
+        fused = fused_dir / f"{stem}_p{page_no}.txt"
+        if not fused.exists():
+            continue
+        blocks, _ = split_page_blocks(fused.read_text(encoding="utf-8"))
+        for kind, text in blocks:
+            if kind != "band":
+                continue
+            key = _furniture_key(text)
+            if key:
+                seen.setdefault(key, set()).add(page_no)
+    return {k for k, v in seen.items() if len(v) >= min_pages}
+
+
 def build_document(
-    cached: dict[str, Any], fused_dir: Path
+    cached: dict[str, Any],
+    fused_dir: Path,
+    keep_band: bool = True,
+    keep_unplaced: bool = True,
+    drop_repeated_band: int = 0,
 ) -> tuple[str, list[dict[str, Any]], int]:
     """Concatenate a document's fused pages, tracking character offsets."""
     stem = cached["pdf_stem"]
@@ -70,6 +161,14 @@ def build_document(
     offset = 0
     missing = 0
 
+    # Needs the whole document: a single page cannot tell a running footer
+    # from a line that happens to sit low.
+    repeated = (
+        repeated_band_keys(pages, stem, fused_dir, drop_repeated_band)
+        if drop_repeated_band
+        else set()
+    )
+
     for page_no in pages:
         fused = fused_dir / f"{stem}_p{page_no}.txt"
         if fused.exists():
@@ -78,7 +177,28 @@ def build_document(
             missing += 1
             raw = ""
 
-        body = REGION_TAG_RE.sub("", raw).strip()
+        blocks, unplaced = split_page_blocks(raw)
+        n_dropped = 0
+        if repeated:
+            kept_blocks = []
+            for kind, text in blocks:
+                if kind == "band" and _furniture_key(text) in repeated:
+                    n_dropped += 1
+                    continue
+                kept_blocks.append((kind, text))
+            blocks = kept_blocks
+        kept = [t for kind, t in blocks if kind == "body" or keep_band]
+        n_band = sum(1 for kind, _ in blocks if kind == "band")
+
+        # Unplaced words go LAST, which is where page furniture naturally sits
+        # and where section_splitter's ribbon detector looks for it: that rule
+        # drops a repeated heading seen on two pages when both copies are in
+        # the bottom band. Dropping them here instead would also discard real
+        # body text -- MHK-MOHAWK 2024 p15 has 57 unplaced words out of 413.
+        if unplaced and keep_unplaced:
+            kept.append(unplaced)
+
+        body = "\n\n".join(kept).strip()
         # A blank line between pages so a heading at a page top is not glued to
         # the previous page's final sentence.
         block = body + "\n\n"
@@ -98,6 +218,9 @@ def build_document(
                 "layout_risk": "false",
                 "visual_review_status": "not_required",
                 "repair_method": "none",
+                "band_region_count": n_band,
+                "band_dropped_count": n_dropped,
+                "unplaced_char_count": len(unplaced),
                 "text_source": "docling_fusion",
                 "table_candidate_count": sum(1 for i in items if i.get("grid")),
             }
@@ -172,6 +295,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--work-dir", type=Path, default=Path("outputs/docling_fullrun"))
     parser.add_argument("--out", type=Path, default=None, help="default <work-dir>/pipeline_input")
+    parser.add_argument("--drop-repeated-band", type=int, default=2, metavar="N",
+                        help="drop header/footer-band blocks whose text repeats on N or more "
+                             "pages (0 disables). Position alone is not enough -- band text "
+                             "appearing once is usually real content.")
+    parser.add_argument("--drop-band", action="store_true",
+                        help="drop regions in the header/footer band instead of letting the "
+                             "sectioner's ribbon detector judge them")
+    parser.add_argument("--drop-unplaced", action="store_true",
+                        help="drop words that landed in no region (~3%% of a page; mostly nav "
+                             "ribbons, but sometimes real body text)")
     parser.add_argument("--parse-index-in", type=Path,
                         default=Path("data/00_reference/esg_parse_index.csv"))
     parser.add_argument("--parse-index-out", type=Path, default=None,
@@ -198,7 +331,13 @@ def main(argv: list[str] | None = None) -> int:
         stem = cached["pdf_stem"]
         ticker = stem.split("-", 1)[0].strip() or "UNKNOWN"
 
-        text, rows, missing = build_document(cached, fused_dir)
+        text, rows, missing = build_document(
+            cached,
+            fused_dir,
+            keep_band=not args.drop_band,
+            keep_unplaced=not args.drop_unplaced,
+            drop_repeated_band=args.drop_repeated_band,
+        )
         if not rows:
             continue
 

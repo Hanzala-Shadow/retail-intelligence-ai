@@ -962,105 +962,6 @@ def _matching_section_code_count(title: str) -> int:
     )
 
 
-def _local_navigation_ribbon_indexes(
-    candidates: list[HeadingCandidate],
-    page_positions: dict[int, tuple[int, int]],
-    page_ends: dict[int, int | None],
-    lines: list[str],
-) -> set[int]:
-    """Find exact occurrences that sit inside a repeated page ribbon.
-
-    The title alone is never enough.  An occurrence must sit next to other
-    heading-like navigation labels on the same page.  We then require that
-    local shape on at least three pages, or on two pages when both copies are
-    in the bottom page band.  Only the proven ribbon occurrences are removed;
-    a later body heading with the same words remains eligible.
-    """
-    local_members: set[int] = set()
-    for index, candidate in enumerate(candidates):
-        position = page_positions.get(index)
-        if position is None:
-            continue
-        page, _ = position
-        # Page-referenced rows and duplicate same-page labels are common in
-        # contents/index tables.  They must stay out of the ribbon detector:
-        # this rule classifies page furniture, not all repeated short text.
-        same_page_title_copies = sum(
-            1
-            for other_index, other in enumerate(candidates)
-            if page_positions.get(other_index, (None, None))[0] == page
-            and _title_key(other.title) == _title_key(candidate.title)
-        )
-        if candidate.toc_like or same_page_title_copies >= 2:
-            continue
-        neighbors = [
-            other_index
-            for other_index, other in enumerate(candidates)
-            if other_index != index
-            and page_positions.get(other_index, (None, None))[0] == page
-            and abs(other.line_index - candidate.line_index) <= 10
-        ]
-        strong_neighbor = any(
-            _navigation_term_hits(candidates[other_index].title) >= 2
-            for other_index in neighbors
-        )
-        if (
-            len(neighbors) >= 2
-            or _is_navigation_or_report_chrome(candidate.title)
-            or (
-                strong_neighbor
-                and (
-                    not _has_substantial_narrative_following(candidate, lines)
-                    or _matching_section_code_count(candidate.title) >= 2
-                )
-            )
-        ):
-            local_members.add(index)
-
-    groups: dict[str, list[int]] = {}
-    for index in local_members:
-        groups.setdefault(_title_key(candidates[index].title), []).append(index)
-
-    rejected: set[int] = set()
-    for indexes in groups.values():
-        pages = {page_positions[index][0] for index in indexes}
-        if len(pages) >= NAVIGATION_CHROME_MIN_OCCURRENCES:
-            rejected.update(indexes)
-
-        bottom_indexes = []
-        for index in indexes:
-            page, _ = page_positions[index]
-            page_end = page_ends.get(page)
-            if (
-                page_end is not None
-                and page_end - candidates[index].char_offset <= PAGE_CHROME_MAX_OFFSET
-            ):
-                bottom_indexes.append(index)
-        if len({page_positions[index][0] for index in bottom_indexes}) >= 2:
-            rejected.update(bottom_indexes)
-
-    # Ribbons often add or drop one label on alternate page templates. Group
-    # only occurrences already proven to have local ribbon shape, then apply
-    # the same three-page requirement to similar multi-topic titles.
-    fuzzy_groups: list[list[int]] = []
-    for index in sorted(local_members):
-        if not _is_navigation_or_report_chrome(candidates[index].title):
-            continue
-        for group in fuzzy_groups:
-            if _similar_chrome_titles(
-                candidates[index].title,
-                candidates[group[0]].title,
-            ):
-                group.append(index)
-                break
-        else:
-            fuzzy_groups.append([index])
-    for indexes in fuzzy_groups:
-        if len({page_positions[index][0] for index in indexes}) >= NAVIGATION_CHROME_MIN_OCCURRENCES:
-            rejected.update(indexes)
-    return rejected
-
-
 def _running_page_chrome_indexes(
     candidates: list[HeadingCandidate],
     page_spans: list[dict],
@@ -1078,12 +979,17 @@ def _running_page_chrome_indexes(
         if parse_int(row.get("page")) is not None
         and parse_int(row.get("char_end")) is not None
     }
-    rejected = _local_navigation_ribbon_indexes(
-        candidates,
-        page_positions,
-        page_ends,
-        lines or [],
-    )
+    # Page furniture is removed upstream now, by
+    # esg/scripts/bridge_docling_to_pipeline.py, which drops a header/footer
+    # band block whose text repeats across pages. That rule works on the
+    # geometry docling gives us -- it knows a block sits in the top or bottom
+    # band of the page -- rather than inferring position from character offsets
+    # in a flattened text stream, which is all this detector could see.
+    #
+    # The detector it replaces lives on Phase_4.3_Aziz along with its held-out
+    # validation set (esg/scripts/build_furniture_validation_set.py). Recover
+    # with: git checkout Phase_4.3_Aziz -- esg/src/section_splitter_esg.py
+    rejected: set[int] = set()
     indexes_by_title: dict[str, list[int]] = {}
     for candidate_index, candidate in enumerate(candidates):
         indexes_by_title.setdefault(_title_key(candidate.title), []).append(candidate_index)
