@@ -54,7 +54,14 @@ EMPTY_REGION_NOTE = "(no text layer in this region)"
 # region sitting in the top or bottom 12% of the page. It is a hint, not a
 # verdict: on ORLY p12 the line "2,013 LEADERSHIP AWARDS EARNED IN 2023." sits
 # in the band and is real content.
-BLOCK_HEADER_RE = re.compile(r"^\[(\d+):([^\]|]*)(?:\|band=(header|footer))?\][ \t]*$", re.M)
+# The trailing (.*) matters: the fuse stage writes an empty region as
+# "[19:picture] (no text layer in this region)" -- tag and note on ONE line.
+# Anchoring the tag to end-of-line missed those, so the note and every later
+# tag were swallowed into the preceding block's text, producing heading text
+# like 'Whistleblower Policy\n\n[6:picture]'.
+BLOCK_HEADER_RE = re.compile(
+    r"^\[(\d+):([^\]|]*)(?:\|band=(header|footer))?\][ \t]*(.*)$", re.M
+)
 
 # section_splitter_esg.read_page_map only reads page, char_start and char_end.
 # The remaining columns exist because layout QA and the vector manifest consume
@@ -97,18 +104,22 @@ def split_page_blocks(raw: str) -> tuple[list[tuple[str, str]], str]:
     blocks: list[tuple[str, str]] = []
     matches = list(BLOCK_HEADER_RE.finditer(raw))
     for i, m in enumerate(matches):
-        start = m.end()
+        # m.end() now sits after any same-line trailing text, so start from
+        # the captured remainder instead of dropping it.
+        trailing = (m.group(4) or "").strip()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
-        text = raw[start:end].strip()
+        rest = raw[m.end():end].strip()
+        text = (trailing + ("\n" + rest if rest else "")).strip()
         if text == EMPTY_REGION_NOTE:
             continue
         text = text.replace(EMPTY_REGION_NOTE, "").strip()
         if text:
-            blocks.append(("band" if m.group(3) else "body", text))
+            kind = "band" if m.group(3) else "body"
+            blocks.append((kind, text, (m.group(2) or "").strip()))
     if not matches:
         stripped = raw.strip()
         if stripped:
-            blocks.append(("body", stripped))
+            blocks.append(("body", stripped, ""))
     return blocks, tail.strip()
 
 
@@ -139,7 +150,7 @@ def repeated_band_keys(
         if not fused.exists():
             continue
         blocks, _ = split_page_blocks(fused.read_text(encoding="utf-8"))
-        for kind, text in blocks:
+        for kind, text, _label in blocks:
             if kind != "band":
                 continue
             key = _furniture_key(text)
@@ -148,18 +159,28 @@ def repeated_band_keys(
     return {k for k, v in seen.items() if len(v) >= min_pages}
 
 
+HEADINGS_CSV_COLUMNS = ["char_start", "char_end", "page", "label", "level", "text"]
+
+# The fuse stage prefixes a section_header block with "## " so it reads as
+# markdown. That prefix ends up inside section titles ('## ABOUT THIS REPORT')
+# and inside 80% of chunk texts, where it is a meaningless repeated token.
+MD_HEADING_PREFIX = re.compile(r"^#{1,6}\s+")
+
+
 def build_document(
     cached: dict[str, Any],
     fused_dir: Path,
     keep_band: bool = True,
     keep_unplaced: bool = True,
     drop_repeated_band: int = 0,
-) -> tuple[str, list[dict[str, Any]], int]:
+    strip_md_prefix: bool = True,
+) -> tuple[str, list[dict[str, Any]], int, list[dict[str, Any]]]:
     """Concatenate a document's fused pages, tracking character offsets."""
     stem = cached["pdf_stem"]
     pages = sorted(int(k) for k in cached.get("pages", {}))
     chunks: list[str] = []
     rows: list[dict[str, Any]] = []
+    headings: list[dict[str, Any]] = []
     offset = 0
     missing = 0
 
@@ -190,14 +211,26 @@ def build_document(
         n_dropped = 0
         if repeated:
             kept_blocks = []
-            for kind, text in blocks:
+            for kind, text, label in blocks:
                 if kind == "band" and _furniture_key(text) in repeated:
                     n_dropped += 1
                     continue
-                kept_blocks.append((kind, text))
+                kept_blocks.append((kind, text, label))
             blocks = kept_blocks
-        kept = [t for kind, t in blocks if kind == "body" or keep_band]
-        n_band = sum(1 for kind, _ in blocks if kind == "band")
+
+        kept: list[str] = []
+        page_headings: list[tuple[int, str, str]] = []
+        for kind, text, label in blocks:
+            if kind == "band" and not keep_band:
+                continue
+            if strip_md_prefix and label in ("section_header", "title"):
+                text = MD_HEADING_PREFIX.sub("", text)
+            if label in ("section_header", "title"):
+                # Offset within the page block, resolved to document offset
+                # once the page's own start is known.
+                page_headings.append((sum(len(x) + 2 for x in kept), label, text))
+            kept.append(text)
+        n_band = sum(1 for kind, _, _ in blocks if kind == "band")
 
         # Unplaced words go LAST, which is where page furniture naturally sits
         # and where section_splitter's ribbon detector looks for it: that rule
@@ -235,10 +268,22 @@ def build_document(
                 "table_candidate_count": sum(1 for i in items if i.get("grid")),
             }
         )
+        for rel, label, htext in page_headings:
+            headings.append(
+                {
+                    "char_start": offset + rel,
+                    "char_end": offset + rel + len(htext),
+                    "page": page_no,
+                    "label": label,
+                    "level": "",
+                    "text": htext,
+                }
+            )
+
         chunks.append(block)
         offset += len(block)
 
-    return "".join(chunks), rows, missing
+    return "".join(chunks), rows, missing, headings
 
 
 def write_parse_index(
@@ -309,6 +354,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="drop header/footer-band blocks whose text repeats on N or more "
                              "pages (0 disables). Position alone is not enough -- band text "
                              "appearing once is usually real content.")
+    parser.add_argument("--keep-md-prefix", action="store_true",
+                        help="keep the '## ' markdown prefix on heading text")
     parser.add_argument("--drop-band", action="store_true",
                         help="drop regions in the header/footer band instead of letting the "
                              "sectioner's ribbon detector judge them")
@@ -341,12 +388,13 @@ def main(argv: list[str] | None = None) -> int:
         stem = cached["pdf_stem"]
         ticker = stem.split("-", 1)[0].strip() or "UNKNOWN"
 
-        text, rows, missing = build_document(
+        text, rows, missing, headings = build_document(
             cached,
             fused_dir,
             keep_band=not args.drop_band,
             keep_unplaced=not args.drop_unplaced,
             drop_repeated_band=args.drop_repeated_band,
+            strip_md_prefix=not args.keep_md_prefix,
         )
         if not rows:
             continue
@@ -354,6 +402,10 @@ def main(argv: list[str] | None = None) -> int:
         target = out_dir / ticker
         target.mkdir(parents=True, exist_ok=True)
         (target / f"{stem}.txt").write_text(text, encoding="utf-8")
+        with (target / f"{stem}.headings.csv").open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=HEADINGS_CSV_COLUMNS)
+            writer.writeheader()
+            writer.writerows(headings)
         with (target / f"{stem}.pages.csv").open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=PAGES_CSV_COLUMNS)
             writer.writeheader()
