@@ -121,3 +121,10 @@ data/04_vlm/
 
 # data/04_chunks/ is ignored at line ~44. Two '!' negations here used to
 # cancel that, which would have committed ~17k generated chunk files.
+
+# Parallel v2 trees: docling+PyMuPDF fusion run through the full pipeline.
+# Same rationale as the v1 dirs above -- generated output, regenerable from
+# outputs/docling_fullrun via esg/scripts/bridge_docling_to_pipeline.py.
+data/02_interim_v2/
+data/03_sections_v2/
+data/04_chunks_v2/
