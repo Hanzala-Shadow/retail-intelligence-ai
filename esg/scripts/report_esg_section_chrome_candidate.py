@@ -95,6 +95,32 @@ def signature(row: dict[str, str]) -> tuple[str, str, int, int]:
     )
 
 
+def section_shape(rows: list[dict[str, str]]) -> dict[str, int]:
+    """Summarize fragmentation signals using the Tier 2 QA thresholds."""
+    max_ordinal_by_code: dict[str, int] = defaultdict(int)
+    short_sections = 0
+    full_document_fallbacks = 0
+    for row in rows:
+        code = row.get("section_code", "")
+        if code == "full_document":
+            full_document_fallbacks += 1
+        char_count = int(row.get("char_count") or 0)
+        if char_count < 500:
+            short_sections += 1
+        instance_id = row.get("section_instance_id", "")
+        ordinal = instance_id.rsplit("__", 1)[-1]
+        if ordinal.isdigit():
+            max_ordinal_by_code[code] = max(max_ordinal_by_code[code], int(ordinal))
+    return {
+        "total_sections": len(rows),
+        "short_sections_under_500_chars": short_sections,
+        "full_document_fallbacks": full_document_fallbacks,
+        "doc_code_groups_at_or_above_ordinal_10": sum(
+            ordinal >= 10 for ordinal in max_ordinal_by_code.values()
+        ),
+    }
+
+
 def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
     text_path_raw, page_map_raw, old_rows, ticker, pdf_stem = task
     text_path = Path(text_path_raw)
@@ -113,8 +139,10 @@ def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
             "section_title": section.title,
             "source_start_char": str(section.source_start_char or 0),
             "source_end_char": str(section.source_end_char or 0),
+            "char_count": str(len(section.text)),
+            "section_instance_id": section.section_instance_id,
         }
-        for section in new_sections
+        for section in splitter._assign_section_instance_ids(new_sections)
     ]
 
     failures: list[str] = []
@@ -131,6 +159,12 @@ def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
             and current.source_start_char < previous.source_end_char
         ):
             failures.append("overlap")
+        elif (
+            previous.source_end_char is not None
+            and current.source_start_char is not None
+            and text[previous.source_end_char : current.source_start_char].strip()
+        ):
+            failures.append("gap")
 
     old_signatures = [signature(row) for row in old_rows]
     new_signatures = [signature(row) for row in new_rows]
@@ -144,6 +178,10 @@ def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
         for section in legacy_sections
     ]
     legacy_signatures = [signature(row) for row in legacy_rows]
+    old_titles = Counter(
+        (row.get("section_code", ""), row.get("section_title", ""))
+        for row in old_rows
+    )
     legacy_titles = Counter(
         (row.get("section_code", ""), row.get("section_title", ""))
         for row in legacy_rows
@@ -152,13 +190,14 @@ def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
         (row.get("section_code", ""), row.get("section_title", ""))
         for row in new_rows
     )
-    removed = list((legacy_titles - new_titles).elements())
-    added = list((new_titles - legacy_titles).elements())
+    removed = list((old_titles - new_titles).elements())
+    added = list((new_titles - old_titles).elements())
+    chrome_removed = list((legacy_titles - new_titles).elements())
 
     page_number_removed = 0
     for row in legacy_rows:
         title_pair = (row.get("section_code", ""), row.get("section_title", ""))
-        if title_pair not in removed:
+        if title_pair not in chrome_removed:
             continue
         start = int(row.get("source_start_char") or 0)
         prior_lines = [line.strip() for line in text[:start].splitlines() if line.strip()]
@@ -177,6 +216,8 @@ def check_one(task: tuple[str, str, list[dict[str, str]], str, str]) -> dict:
         "removed_titles": [f"{code}: {title}" for code, title in removed[:20]],
         "added_titles": [f"{code}: {title}" for code, title in added[:20]],
         "page_number_removed": page_number_removed,
+        "before": section_shape(old_rows),
+        "after": section_shape(new_rows),
         "failures": sorted(set(failures)),
     }
 
@@ -237,6 +278,17 @@ def main() -> int:
         ),
         "page_number_preceded_headings_removed": sum(row["page_number_removed"] for row in results),
         "source_or_tiling_failures": len(failures),
+        "before": {
+            key: sum(row["before"][key] for row in results)
+            for key in section_shape([])
+        },
+        "after": {
+            key: sum(row["after"][key] for row in results)
+            for key in section_shape([])
+        },
+        "top_added_titles": Counter(
+            title for row in results for title in row["added_titles"]
+        ).most_common(30),
         "top_removed_titles": removed.most_common(30),
         "changed_examples": chrome_changed[:30],
         "failure_examples": failures[:20],

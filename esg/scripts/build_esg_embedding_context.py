@@ -256,7 +256,13 @@ def main(argv: list[str] | None = None) -> int:
             prev_key, prev_type = key, ""
             continue
 
-        section_title = titles.get(key, "")
+        # New candidates carry the heading active for this exact chunk. Older
+        # indexes fall back to the physical section's first title.
+        section_title = (
+            row.get("subsection_context")
+            or row.get("section_title_original")
+            or titles.get(key, "")
+        ).strip()
         if not section_title:
             missing_title += 1
 

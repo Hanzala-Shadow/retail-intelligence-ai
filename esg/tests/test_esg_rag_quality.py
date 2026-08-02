@@ -276,6 +276,40 @@ class ESGRAGQualityTests(unittest.TestCase):
             (esg_chunker.SHORT_SECTION_ACTION_EXCLUDED, "table_of_contents_or_navigation"),
         )
 
+    def test_spaced_dot_leader_toc_is_excluded(self) -> None:
+        text = "\n".join(
+            [
+                "About This Report " + ". " * 70 + "3",
+                "A Message from the CEO " + ". " * 65 + "4",
+                "Protecting Our Environment " + ". " * 60 + "19",
+            ]
+        )
+        token_count = len(
+            esg_chunker.tiktoken.get_encoding(esg_chunker.ENCODING).encode(text)
+        )
+        self.assertEqual(
+            esg_chunker.retrieval_chunk_exclusion_reason(text, token_count),
+            "table_of_contents_or_navigation",
+        )
+
+    def test_orphan_numeric_fragment_is_excluded(self) -> None:
+        text = "$9,476,055\n$29,908,723\n$117,756,498\n$498,712,263"
+        self.assertEqual(
+            esg_chunker.retrieval_chunk_exclusion_reason(text, 40),
+            "orphan_numeric_fragment",
+        )
+
+    def test_labeled_metrics_are_not_orphan_numbers(self) -> None:
+        text = "Scope 1 emissions | 2023 | 125 tCO2e\nScope 2 emissions | 2023 | 98 tCO2e"
+        self.assertEqual(esg_chunker.retrieval_chunk_exclusion_reason(text, 40), "")
+
+    def test_short_navigation_plan_is_not_indexed(self) -> None:
+        text = (
+            "About This Report ................................................................ 3\n"
+            "A Message from the CEO ....................................................... 4\n"
+            "About CarMax ................................................................... 6\n"
+            "Our Approach to ESG ................................................................. .8"
+        )
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             parsed_file = root / "parsed" / "KMX" / "KMX-CARMAX INC-2024.txt"
@@ -461,7 +495,7 @@ class ESGRAGQualityTests(unittest.TestCase):
             )
         self.assertLess(sections[0].source_end_char, sections[2].source_start_char)
 
-    def test_only_adjacent_same_code_sections_coalesce(self) -> None:
+    def test_adjacent_real_same_code_headings_share_physical_section_with_spans(self) -> None:
         def long_body(label: str) -> str:
             return (f"{label} evidence and measurable community progress. " * 20).strip()
 
@@ -485,12 +519,35 @@ class ESGRAGQualityTests(unittest.TestCase):
             ["community__0001", "governance__0001", "community__0002"],
         )
         self.assertIn("Community Partnerships", sections[0].text)
+        self.assertEqual(
+            [span.title for span in sections[0].subsection_spans],
+            ["Community", "Community Partnerships"],
+        )
         self.assertNotIn("Governance", sections[0].text)
         for section in sections:
             self.assertEqual(
                 text[section.source_start_char : section.source_end_char],
                 section.text,
             )
+
+    def test_weak_adjacent_same_code_noise_still_coalesces(self) -> None:
+        text = "Community\nStrong body.\n\nCommunity\nWeak repeated furniture."
+        first_end = text.index("\n\nCommunity")
+        second_start = first_end + 2
+        sections = [
+            section_splitter_esg.SectionSegment(
+                "community", "Community", text[:first_end], "heading_regex", "high",
+                0, first_end, heading_confidence="high",
+            ),
+            section_splitter_esg.SectionSegment(
+                "community", "Community", text[second_start:], "heading_regex", "low",
+                second_start, len(text), heading_confidence="low",
+            ),
+        ]
+        coalesced = section_splitter_esg.coalesce_adjacent_same_code_segments(sections, text)
+        self.assertEqual(len(coalesced), 1)
+        self.assertEqual(coalesced[0].title, "Community")
+        self.assertEqual(coalesced[0].text, text)
 
     def test_section_rows_use_instance_ids_and_exact_provenance(self) -> None:
         def long_body(label: str) -> str:
@@ -523,7 +580,7 @@ class ESGRAGQualityTests(unittest.TestCase):
                 ["climate__0001", "community__0001", "climate__0002"],
             )
             for row in rows:
-                self.assertEqual(row["provenance_version"], "contiguous_v2")
+                self.assertEqual(row["provenance_version"], "contiguous_v3")
                 section_file = Path(row["section_file"])
                 self.assertTrue(section_file.is_file())
                 self.assertTrue(section_file.name.endswith(f"__{row['section_instance_id']}.txt"))

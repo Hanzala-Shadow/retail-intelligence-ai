@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import json
 import os
 import re
 import time
@@ -19,6 +20,7 @@ import tiktoken
 import _bootstrap  # noqa: F401  (import path: config, pipeline src, common)
 
 import config
+from esg_compact_toc import has_compact_toc_cluster
 from esg_year import extract_report_year
 
 
@@ -31,6 +33,7 @@ BGE_MODEL_LIMIT = 512
 BGE_INPUT_LIMIT = 500
 OVERLAP_BGE_TOKENS = 48
 MAX_TABLE_CONTEXT_TOKENS = 64
+VALIDATED_TABLE_TRANSITION_REPAIRS = frozenset({("AMZN", "2023"), ("LOW", "2023")})
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
 # Large tables of contents sit far above NAVIGATION_TRACE_MAX_TOKENS, so the
@@ -40,12 +43,19 @@ NAVIGATION_TRACE_MAX_TOKENS = 150
 # 0.134 and is genuine navigation, while prose chunks containing incidental dot
 # runs measured 0.108 and 0.101. The cut sits between those observations.
 NAVIGATION_DOT_LEADER_CHAR_RATIO = 0.12
+NAVIGATION_SPACED_DOT_LEADER_CHAR_RATIO = 0.18
 DOT_LEADER_RUN = re.compile(r"\.{6,}")
+SPACED_DOT_LEADER_RUN = re.compile(r"(?:\.\s+){5,}\.")
 CHUNK_TYPE_NORMAL = "normal"
 CHUNK_TYPE_SHORT_EVIDENCE = "short_evidence"
 SHORT_SECTION_ACTION_PRESERVED = "preserved"
 SHORT_SECTION_ACTION_EXCLUDED = "excluded"
 QUALITY_FLAG_SHORT_SECTION_EXCLUDED = "short_section_excluded_from_retrieval"
+QUALITY_FLAG_UNSAFE_RETRIEVAL_CONTENT = "unsafe_retrieval_content"
+QUALITY_FLAG_SECTION_HELD = "section_held_by_manual_review"
+SECTION_HOLD_ACTIONS = frozenset(
+    {"manual_review_before_indexing", "exclude_from_esg_index"}
+)
 DOC_TYPE = "sustainability"
 CITATION_VALIDATION_VERSION = "semantic_v1"
 # Versions the chunking rule set: CHUNK_SIZE, OVERLAP, MAX_CHUNK_TOKENS, the
@@ -117,6 +127,9 @@ CHUNKS_INDEX_FIELDS = [
     "pdf_stem",
     "section_code",
     "section_instance_id",
+    "physical_section_title",
+    "subsection_context",
+    "subsection_contexts_json",
     "chunk_index",
     "chunk_type",
     "short_section_action",
@@ -175,6 +188,15 @@ class CandidateChunk:
     cl100k_tokens: int
     table_header_start: int | None = None
     table_context: str = ""
+    subsection_context: str = ""
+    subsection_contexts: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class SubsectionContextSpan:
+    title: str
+    start_char: int
+    end_char: int
 
 
 @dataclass
@@ -229,6 +251,87 @@ def parse_int(value: str | int | None) -> int | None:
         return None
 
 
+def parse_subsection_spans(metadata: dict[str, Any], text_length: int) -> list[SubsectionContextSpan]:
+    """Read validated, ordered heading spans from the physical section row."""
+    raw = (metadata.get("subsection_spans_json") or "").strip()
+    spans: list[SubsectionContextSpan] = []
+    if raw:
+        try:
+            values = json.loads(raw)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            values = []
+        if isinstance(values, list):
+            for value in values:
+                if not isinstance(value, dict):
+                    continue
+                title = str(value.get("title") or "").strip()
+                start = parse_int(value.get("start_char"))
+                end = parse_int(value.get("end_char"))
+                if (
+                    title
+                    and start is not None
+                    and end is not None
+                    and 0 <= start < end <= text_length
+                ):
+                    spans.append(SubsectionContextSpan(title, start, end))
+    spans.sort(key=lambda span: (span.start_char, span.end_char, span.title))
+    return spans
+
+
+def subsection_context_for_range(
+    spans: list[SubsectionContextSpan],
+    start: int,
+    end: int,
+    fallback_title: str = "",
+) -> tuple[str, tuple[str, ...]]:
+    """Return the active heading plus any ordered transitions inside a chunk."""
+    titles: list[str] = []
+    seen_titles: set[str] = set()
+    active = None
+    for span in spans:
+        if span.start_char <= start < span.end_char:
+            active = span
+        elif span.start_char > start:
+            break
+    if active is None:
+        prior = [span for span in spans if span.start_char <= start]
+        active = prior[-1] if prior else None
+    if active is not None:
+        titles.append(active.title)
+        seen_titles.add(active.title.casefold())
+    for span in spans:
+        if (
+            start < span.start_char < end
+            and span.title.casefold() not in seen_titles
+        ):
+            titles.append(span.title)
+            seen_titles.add(span.title.casefold())
+    if not titles and fallback_title.strip():
+        titles.append(fallback_title.strip())
+    return " → ".join(titles), tuple(titles)
+
+
+def metadata_with_subsection(
+    metadata: dict[str, Any],
+    spans: list[SubsectionContextSpan],
+    start: int,
+    end: int,
+) -> tuple[dict[str, Any], str, tuple[str, ...]]:
+    if "subsection_fallback" in metadata:
+        fallback = str(metadata.get("subsection_fallback") or "")
+    else:
+        fallback = str(
+            metadata.get("physical_section_title")
+            or metadata.get("section_title")
+            or metadata.get("section_title_original")
+            or ""
+        )
+    context, titles = subsection_context_for_range(spans, start, end, fallback)
+    value = dict(metadata)
+    value["section_title_original"] = context or "unknown"
+    return value, context, titles
+
+
 def parse_bool(value: str | bool | None) -> bool:
     if isinstance(value, bool):
         return value
@@ -253,6 +356,16 @@ def dot_leader_char_ratio(text: str) -> float:
     return sum(len(match.group()) for match in DOT_LEADER_RUN.finditer(text)) / len(text)
 
 
+def spaced_dot_leader_char_ratio(text: str) -> float:
+    """Share of characters that are dots in spaced leaders such as '. . . .' ."""
+    if not text:
+        return 0.0
+    dot_count = sum(
+        match.group().count(".") for match in SPACED_DOT_LEADER_RUN.finditer(text)
+    )
+    return dot_count / len(text)
+
+
 def is_large_navigation_trace_section(text: str, token_count: int) -> bool:
     """Recognise tables of contents too large for the short-section heuristic.
 
@@ -264,7 +377,45 @@ def is_large_navigation_trace_section(text: str, token_count: int) -> bool:
     """
     if token_count <= NAVIGATION_TRACE_MAX_TOKENS:
         return False  # already covered by classify_navigation_trace_section
-    return dot_leader_char_ratio(text) >= NAVIGATION_DOT_LEADER_CHAR_RATIO
+    return (
+        has_compact_toc_cluster(text)
+        or dot_leader_char_ratio(text) >= NAVIGATION_DOT_LEADER_CHAR_RATIO
+        or spaced_dot_leader_char_ratio(text)
+        >= NAVIGATION_SPACED_DOT_LEADER_CHAR_RATIO
+    )
+
+
+_NUMERIC_ONLY_LINE = re.compile(
+    r"^[\s$€£¥+\-–—()\[\],.:;%‰/\\|]+"
+    r"(?:\d[\d\s$€£¥+\-–—()\[\],.:;%‰/\\|]*)$"
+)
+
+
+def is_orphan_numeric_fragment(text: str) -> bool:
+    """Return true for chunks dominated by values with no usable labels."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines:
+        return False
+    numeric_only = sum(
+        bool(
+            any(char.isdigit() for char in line)
+            and _NUMERIC_ONLY_LINE.fullmatch(line.strip().strip("|").strip())
+        )
+        for line in lines
+    )
+    prose_lines = sum(
+        bool(re.search(r"[A-Za-z]{3,}\s+[A-Za-z]{3,}", line)) for line in lines
+    )
+    return numeric_only >= 3 and numeric_only / len(lines) >= 0.60 and prose_lines <= 1
+
+
+def retrieval_chunk_exclusion_reason(text: str, token_count: int) -> str:
+    """High-precision content gates applied after chunk boundaries are known."""
+    if is_large_navigation_trace_section(text, token_count):
+        return "table_of_contents_or_navigation"
+    if is_orphan_numeric_fragment(text):
+        return "orphan_numeric_fragment"
+    return ""
 
 
 def classify_navigation_trace_section(text: str, token_count: int) -> str:
@@ -289,12 +440,16 @@ def classify_navigation_trace_section(text: str, token_count: int) -> str:
 
 def classify_short_section(text: str, token_count: int) -> tuple[str, str]:
     """Keep real short evidence; drop only obvious navigation or tiny fragments."""
+    if has_compact_toc_cluster(text):
+        return SHORT_SECTION_ACTION_EXCLUDED, "table_of_contents_or_navigation"
     if token_count < SHORT_EVIDENCE_MIN_TOKENS:
         return SHORT_SECTION_ACTION_EXCLUDED, "below_short_evidence_min_tokens"
 
     navigation_reason = classify_navigation_trace_section(text, token_count)
     if navigation_reason:
         return SHORT_SECTION_ACTION_EXCLUDED, navigation_reason
+    if is_orphan_numeric_fragment(text):
+        return SHORT_SECTION_ACTION_EXCLUDED, "orphan_numeric_fragment"
 
     normalized = normalized_text(text)
     sentence_marks = len(re.findall(r"[.!?](?:\s|$)", normalized))
@@ -339,6 +494,104 @@ def quality_flags_with_existing(raw_flags: str, *new_flags: str) -> str:
     return "|".join(flags)
 
 
+def apply_section_hold(doc_meta: dict, section_meta: dict) -> dict:
+    """Let a reviewer stop one section from reaching the index.
+
+    Document-level quality gates cannot express "this document is fine but this
+    section is not". A manual review that fails a single section -- a corrupted
+    table, a wrong physical boundary, interleaved reading order -- records the
+    decision in the section hold registry, and it is applied here so the
+    section's chunks are still built and citable but never indexed blind.
+    """
+    action = (section_meta.get("hold_rag_action") or "").strip()
+    if not action:
+        return doc_meta
+    if action not in SECTION_HOLD_ACTIONS:
+        raise ValueError(
+            f"unsupported hold action {action!r}; expected one of "
+            f"{sorted(SECTION_HOLD_ACTIONS)}"
+        )
+    held_meta = dict(doc_meta)
+    held_meta["include_in_esg_index"] = False
+    held_meta["rag_action"] = action
+    held_meta["quality_flags"] = quality_flags_with_existing(
+        str(doc_meta.get("quality_flags") or ""),
+        QUALITY_FLAG_SECTION_HELD,
+        (section_meta.get("hold_reason") or "").strip(),
+    )
+    return held_meta
+
+
+def load_section_hold_registry(
+    hold_path: Path | None,
+) -> dict[tuple[str, str, str], dict]:
+    """Load sparse per-section review decisions; unlisted sections are untouched."""
+    holds: dict[tuple[str, str, str], dict] = {}
+    if hold_path is None:
+        return holds
+    if not hold_path.exists():
+        raise FileNotFoundError(f"section hold registry does not exist: {hold_path}")
+    with hold_path.open(newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        required_fields = {
+            "ticker",
+            "pdf_stem",
+            "section_instance_id",
+            "rag_action",
+            "reason",
+        }
+        fieldnames = set(reader.fieldnames or ())
+        missing_fields = sorted(required_fields - fieldnames)
+        if missing_fields:
+            raise ValueError(
+                f"{hold_path}: malformed section hold registry; missing column(s): "
+                f"{', '.join(missing_fields)}"
+            )
+        for line_number, row in enumerate(reader, start=2):
+            if None in row:
+                raise ValueError(
+                    f"{hold_path}:{line_number}: malformed CSV row with extra field(s)"
+                )
+            ticker = (row.get("ticker") or "").strip().upper()
+            pdf_stem = (row.get("pdf_stem") or "").strip()
+            section_instance_id = (row.get("section_instance_id") or "").strip()
+            action = (row.get("rag_action") or "").strip()
+            if not (ticker and pdf_stem and section_instance_id):
+                raise ValueError(
+                    f"{hold_path}:{line_number}: ticker, pdf_stem, and "
+                    "section_instance_id are required"
+                )
+            if action not in SECTION_HOLD_ACTIONS:
+                raise ValueError(
+                    f"{hold_path}: unsupported rag_action {action!r} for "
+                    f"{ticker}/{pdf_stem}/{section_instance_id}"
+                )
+            key = (ticker, pdf_stem, section_instance_id)
+            if key in holds:
+                raise ValueError(
+                    f"{hold_path}:{line_number}: duplicate section hold for "
+                    f"{ticker}/{pdf_stem}/{section_instance_id}"
+                )
+            holds[key] = row
+    return holds
+
+
+def merge_section_holds(
+    section_metadata: dict[tuple[str, str, str], dict],
+    holds: dict[tuple[str, str, str], dict],
+) -> int:
+    """Fold hold decisions into section metadata so workers inherit them."""
+    applied = 0
+    for key, hold_row in holds.items():
+        section_meta = section_metadata.get(key)
+        if section_meta is None:
+            raise ValueError(f"held section is not in the sections index: {key}")
+        section_meta["hold_rag_action"] = (hold_row.get("rag_action") or "").strip()
+        section_meta["hold_reason"] = (hold_row.get("reason") or "").strip()
+        applied += 1
+    return applied
+
+
 def doc_meta_for_excluded_short_section(doc_meta: dict, reason: str) -> dict:
     """Keep a citation trail for non-evidence short sections without indexing them."""
     excluded_meta = dict(doc_meta)
@@ -347,6 +600,20 @@ def doc_meta_for_excluded_short_section(doc_meta: dict, reason: str) -> dict:
     excluded_meta["quality_flags"] = quality_flags_with_existing(
         str(doc_meta.get("quality_flags") or ""),
         QUALITY_FLAG_SHORT_SECTION_EXCLUDED,
+        reason,
+    )
+    return excluded_meta
+
+
+def doc_meta_for_excluded_retrieval_content(doc_meta: dict, reason: str) -> dict:
+    """Keep unsafe content citable while preventing retrieval indexing."""
+    excluded_meta = dict(doc_meta)
+    if parse_bool(excluded_meta.get("include_in_esg_index", True)):
+        excluded_meta["include_in_esg_index"] = False
+        excluded_meta["rag_action"] = "exclude_from_esg_index"
+    excluded_meta["quality_flags"] = quality_flags_with_existing(
+        str(doc_meta.get("quality_flags") or ""),
+        QUALITY_FLAG_UNSAFE_RETRIEVAL_CONTENT,
         reason,
     )
     return excluded_meta
@@ -763,9 +1030,25 @@ def _table_context_at(
     return None, ""
 
 
+def _next_table_start(
+    text: str,
+    start: int,
+    end: int,
+    table_runs: list[tuple[int, int, int, str]],
+) -> int | None:
+    """Start a later table in a new chunk without orphaning its header."""
+    for run_start, run_end, _, _ in table_runs:
+        if not start < run_start < end:
+            continue
+        return run_start
+    return None
+
+
 def _credible_table_context(header_text: str, tokenizer) -> str:
     clean = " ".join(normalize_for_embedding(header_text).split())
-    if not clean:
+    # A numeric value is not a table header. Treating it as context gives later
+    # values a false label and makes the chunk look safer than it is.
+    if not clean or not re.search(r"[A-Za-z]", clean):
         return ""
     tokens = tokenizer.encode(clean, add_special_tokens=False, truncation=False)
     return clean if len(tokens) <= MAX_TABLE_CONTEXT_TOKENS else ""
@@ -778,12 +1061,16 @@ def _latest_fitting_end(
     boundaries: list[int],
     tokenizer,
     table_context: str = "",
+    subsection_spans: list[SubsectionContextSpan] | None = None,
 ) -> int:
     candidates = [boundary for boundary in boundaries if boundary > start]
     first_fit = None
     for index, boundary in enumerate(candidates[:256]):
+        candidate_metadata, _, _ = metadata_with_subsection(
+            metadata, subsection_spans or [], start, boundary
+        )
         if final_bge_token_count(
-            metadata, text[start:boundary], tokenizer, table_context
+            candidate_metadata, text[start:boundary], tokenizer, table_context
         ) <= BGE_INPUT_LIMIT:
             first_fit = index
             break
@@ -793,8 +1080,11 @@ def _latest_fitting_end(
     low, high = first_fit, len(candidates)
     while low < high:
         middle = (low + high) // 2
+        candidate_metadata, _, _ = metadata_with_subsection(
+            metadata, subsection_spans or [], start, candidates[middle]
+        )
         count = final_bge_token_count(
-            metadata, text[start : candidates[middle]], tokenizer, table_context
+            candidate_metadata, text[start : candidates[middle]], tokenizer, table_context
         )
         if count <= BGE_INPUT_LIMIT:
             low = middle + 1
@@ -810,44 +1100,95 @@ def chunk_section_v3(
     metadata: dict[str, Any],
     bge_tokenizer,
     cl100k_encoder,
+    subsection_spans: list[SubsectionContextSpan] | None = None,
 ) -> list[CandidateChunk]:
     """Split at sentence/table boundaries under the final 500-token budget."""
     if not text:
         return []
+    subsection_spans = subsection_spans or []
+    # Subsections add embedding context, but they are not hard chunk boundaries.
+    # Forcing every internal heading into a new chunk creates tiny fragments and
+    # can detach table values from their labels. Sentence and table boundaries
+    # still control chunking; metadata records all subsection spans a chunk uses.
     preferred, fallback, table_runs = source_boundaries(text)
+    use_table_transition_repair = (
+        str(metadata.get("ticker") or "").upper(),
+        str(metadata.get("report_year") or ""),
+    ) in VALIDATED_TABLE_TRANSITION_REPAIRS
     chunks: list[CandidateChunk] = []
     start = 0
     while start < len(text):
+        ended_before_new_table = False
         table_header_start, table_context = _table_context_at(start, table_runs)
         table_context = _credible_table_context(table_context, bge_tokenizer)
         if not table_context:
             table_header_start = None
         try:
             end = _latest_fitting_end(
-                metadata, text, start, preferred, bge_tokenizer, table_context
+                metadata,
+                text,
+                start,
+                preferred,
+                bge_tokenizer,
+                table_context,
+                subsection_spans,
             )
         except ValueError:
             end = _latest_fitting_end(
-                metadata, text, start, fallback, bge_tokenizer, table_context
+                metadata,
+                text,
+                start,
+                fallback,
+                bge_tokenizer,
+                table_context,
+                subsection_spans,
             )
         if end <= start:
             raise ValueError("v3 produced an empty chunk")
+        next_table_start = (
+            _next_table_start(text, start, end, table_runs)
+            if use_table_transition_repair
+            else None
+        )
+        if next_table_start is not None:
+            # End before the next table. Its next chunk then contains the real
+            # header and its rows together. Cutting after the header creates a
+            # header-only chunk followed by orphan values.
+            end = next_table_start
+            ended_before_new_table = True
+        # The overlap back-off below can land on a start whose latest fitting
+        # end is still the previous chunk's end, when the next boundary is too
+        # far to reach under the token budget. Emitting that chunk would add a
+        # strict subset of the previous chunk: a redundant retrieval vector
+        # carrying the same subsection context. Give up the overlap at this
+        # boundary rather than the forward progress.
+        if chunks and end <= chunks[-1].source_end:
+            start = chunks[-1].source_end
+            continue
         chunk_text = text[start:end]
+        chunk_metadata, subsection_context, subsection_contexts = metadata_with_subsection(
+            metadata, subsection_spans, start, end
+        )
         chunks.append(
             CandidateChunk(
                 text=chunk_text,
                 source_start=start,
                 source_end=end,
                 bge_tokens=final_bge_token_count(
-                    metadata, chunk_text, bge_tokenizer, table_context
+                    chunk_metadata, chunk_text, bge_tokenizer, table_context
                 ),
                 cl100k_tokens=len(cl100k_encoder.encode(chunk_text)),
                 table_header_start=table_header_start,
                 table_context=table_context,
+                subsection_context=subsection_context,
+                subsection_contexts=subsection_contexts,
             )
         )
         if end >= len(text):
             break
+        if ended_before_new_table:
+            start = end
+            continue
         next_start = end
         possible_starts = [boundary for boundary in preferred if start < boundary < end]
         for overlap_start in reversed(possible_starts):
@@ -865,8 +1206,15 @@ def chunk_section_v3(
     for chunk_index, small_chunk in enumerate(chunks):
         if chunk_index == 0 or small_chunk.cl100k_tokens >= SHORT_EVIDENCE_MIN_TOKENS:
             continue
+        # Expanding at or past the previous chunk's start would make this chunk
+        # a superset of it, which is the same redundancy in the other direction.
+        previous_start = chunks[chunk_index - 1].source_start
         for overlap_start in reversed(
-            [boundary for boundary in fallback if boundary < small_chunk.source_start]
+            [
+                boundary
+                for boundary in fallback
+                if previous_start < boundary < small_chunk.source_start
+            ]
         ):
             expanded_text = text[overlap_start : small_chunk.source_end]
             cl100k_tokens = len(cl100k_encoder.encode(expanded_text))
@@ -877,7 +1225,12 @@ def chunk_section_v3(
             if not table_context:
                 table_header_start = None
             bge_tokens = final_bge_token_count(
-                metadata, expanded_text, bge_tokenizer, table_context
+                metadata_with_subsection(
+                    metadata, subsection_spans, overlap_start, small_chunk.source_end
+                )[0],
+                expanded_text,
+                bge_tokenizer,
+                table_context,
             )
             if bge_tokens > BGE_INPUT_LIMIT:
                 continue
@@ -889,6 +1242,12 @@ def chunk_section_v3(
                 cl100k_tokens=cl100k_tokens,
                 table_header_start=table_header_start,
                 table_context=table_context,
+                subsection_context=metadata_with_subsection(
+                    metadata, subsection_spans, overlap_start, small_chunk.source_end
+                )[1],
+                subsection_contexts=metadata_with_subsection(
+                    metadata, subsection_spans, overlap_start, small_chunk.source_end
+                )[2],
             )
             break
     return chunks
@@ -903,6 +1262,12 @@ def validate_v3_tiling(text: str, chunks: list[CandidateChunk]) -> list[str]:
     for previous, current in zip(chunks, chunks[1:]):
         if current.source_start > previous.source_end:
             failures.append("gap")
+        # Neither direction of containment may survive: a chunk whose span sits
+        # inside its neighbour's is a duplicate embedding, not new evidence.
+        if current.source_end <= previous.source_end:
+            failures.append("contained_chunk")
+        if current.source_start <= previous.source_start:
+            failures.append("contains_previous_chunk")
     for chunk in chunks:
         if text[chunk.source_start : chunk.source_end] != chunk.text:
             failures.append("source_text_mismatch")
@@ -1256,6 +1621,9 @@ def build_chunk_output(
     short_section_reason: str = "",
     merged_section_ids: str = "",
     table_context: str = "",
+    physical_section_title: str = "",
+    subsection_context: str = "",
+    subsection_contexts: tuple[str, ...] = (),
 ) -> ChunkOutput:
     citation = validate_chunk_citation(
         parsed_text=parsed_text,
@@ -1307,6 +1675,13 @@ def build_chunk_output(
         "pdf_stem": pdf_stem,
         "section_code": section_code,
         "section_instance_id": section_instance_id,
+        "physical_section_title": physical_section_title,
+        "subsection_context": subsection_context or physical_section_title,
+        "subsection_contexts_json": json.dumps(
+            list(subsection_contexts or ((subsection_context or physical_section_title),)),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ) if (subsection_context or physical_section_title) else "[]",
         "chunk_index": chunk_index,
         "chunk_type": chunk_type,
         "short_section_action": short_section_action,
@@ -1359,7 +1734,14 @@ def build_section_plan(
         section_meta.get("section_code")
         or section_instance_id.rsplit("__", 1)[0]
     ).strip()
-    doc_meta = doc_metadata.get((ticker, pdf_stem), {})
+    physical_section_title = (section_meta.get("section_title") or "").strip()
+    has_subsection_span_metadata = bool(
+        (section_meta.get("subsection_spans_json") or "").strip()
+    )
+    subsection_fallback = (
+        "unknown" if has_subsection_span_metadata else physical_section_title
+    )
+    doc_meta = apply_section_hold(doc_metadata.get((ticker, pdf_stem), {}), section_meta)
     embedding_metadata = None
     if bge_tokenizer is not None:
         year, year_status, year_span = extract_report_year(pdf_stem)
@@ -1374,9 +1756,12 @@ def build_section_plan(
             "report_year_status": year_status,
             "report_year_span": year_span,
             "section_code": section_code,
-            "section_title_original": (section_meta.get("section_title") or "").strip(),
+            "physical_section_title": physical_section_title,
+            "section_title_original": physical_section_title,
+            "subsection_fallback": subsection_fallback,
         }
     text, source_fingerprint = read_section_source(section_file)
+    subsection_spans = parse_subsection_spans(section_meta, len(text))
     tokens = encoder.encode(text)
     source_token_count = len(tokens)
     page_spans = read_page_map_cached(
@@ -1393,6 +1778,17 @@ def build_section_plan(
         section_meta.get("source_sha256") or ""
     ).strip()
 
+    def chunk_subsection(start: int, end: int) -> tuple[str, tuple[str, ...]]:
+        return subsection_context_for_range(
+            subsection_spans, start, end, subsection_fallback
+        )
+
+    whole_section_embedding_metadata = embedding_metadata
+    if embedding_metadata is not None:
+        whole_section_embedding_metadata = metadata_with_subsection(
+            embedding_metadata, subsection_spans, 0, len(text)
+        )[0]
+
     navigation_reason = classify_navigation_trace_section(text, source_token_count)
     v3_short_action = ""
     v3_short_reason = ""
@@ -1405,7 +1801,7 @@ def build_section_plan(
             "table_of_contents_or_navigation",
         )
     navigation_output_token_count = (
-        final_bge_token_count(embedding_metadata, text, bge_tokenizer)
+        final_bge_token_count(whole_section_embedding_metadata, text, bge_tokenizer)
         if navigation_reason and embedding_metadata is not None
         else source_token_count
     )
@@ -1414,6 +1810,7 @@ def build_section_plan(
         and navigation_reason
         and navigation_output_token_count <= BGE_INPUT_LIMIT
     ):
+        subsection_context, subsection_contexts = chunk_subsection(0, len(text))
         output_token_count = navigation_output_token_count
         outputs = [
             build_chunk_output(
@@ -1447,6 +1844,9 @@ def build_section_plan(
                 ),
                 short_section_action=SHORT_SECTION_ACTION_EXCLUDED,
                 short_section_reason=navigation_reason,
+                physical_section_title=physical_section_title,
+                subsection_context=subsection_context,
+                subsection_contexts=subsection_contexts,
             )
         ]
         return SectionPlan(
@@ -1473,7 +1873,7 @@ def build_section_plan(
         v3_short_reason = navigation_reason
 
     short_output_token_count = (
-        final_bge_token_count(embedding_metadata, text, bge_tokenizer)
+        final_bge_token_count(whole_section_embedding_metadata, text, bge_tokenizer)
         if embedding_metadata is not None
         else source_token_count
     )
@@ -1494,6 +1894,7 @@ def build_section_plan(
         short_action, short_reason = classify_short_section(text, source_token_count)
         outputs: list[ChunkOutput] = []
         if source_token_count >= SHORT_EVIDENCE_MIN_TOKENS and text:
+            subsection_context, subsection_contexts = chunk_subsection(0, len(text))
             output_token_count = short_output_token_count
             chunk_doc_meta = doc_meta
             if short_action == SHORT_SECTION_ACTION_EXCLUDED:
@@ -1530,6 +1931,9 @@ def build_section_plan(
                     ),
                     short_section_action=short_action,
                     short_section_reason=short_reason,
+                    physical_section_title=physical_section_title,
+                    subsection_context=subsection_context,
+                    subsection_contexts=subsection_contexts,
                 )
             )
         return SectionPlan(
@@ -1547,7 +1951,7 @@ def build_section_plan(
 
     if bge_tokenizer is not None:
         candidate_chunks = chunk_section_v3(
-            text, embedding_metadata, bge_tokenizer, encoder
+            text, embedding_metadata, bge_tokenizer, encoder, subsection_spans
         )
         failures = validate_v3_tiling(text, candidate_chunks)
         if failures:
@@ -1562,6 +1966,14 @@ def build_section_plan(
                 CHUNK_TYPE_SHORT_EVIDENCE
                 if chunk.bge_tokens < MIN_CHUNK_TOKENS
                 else CHUNK_TYPE_NORMAL
+            )
+            retrieval_reason = retrieval_chunk_exclusion_reason(
+                chunk.text, chunk.cl100k_tokens
+            )
+            chunk_doc_meta = (
+                doc_meta_for_excluded_retrieval_content(doc_meta, retrieval_reason)
+                if retrieval_reason
+                else doc_meta
             )
             outputs.append(
                 build_chunk_output(
@@ -1584,11 +1996,18 @@ def build_section_plan(
                     local_start=chunk.source_start,
                     local_end=chunk.source_end,
                     page_spans=page_spans,
-                    doc_meta=doc_meta,
+                    doc_meta=chunk_doc_meta,
                     chunk_type=chunk_type,
-                    short_section_action=v3_short_action,
-                    short_section_reason=v3_short_reason,
+                    short_section_action=(
+                        SHORT_SECTION_ACTION_EXCLUDED
+                        if retrieval_reason
+                        else v3_short_action
+                    ),
+                    short_section_reason=retrieval_reason or v3_short_reason,
                     table_context=chunk.table_context,
+                    physical_section_title=physical_section_title,
+                    subsection_context=chunk.subsection_context,
+                    subsection_contexts=chunk.subsection_contexts,
                 )
             )
         return SectionPlan(
@@ -1642,6 +2061,10 @@ def build_section_plan(
         if local_start is not None and local_end is not None:
             search_pos = max(search_pos, local_start + 1)
 
+        subsection_context, subsection_contexts = chunk_subsection(
+            local_start or 0, local_end or len(text)
+        )
+
         outputs.append(
             build_chunk_output(
                 ticker=ticker,
@@ -1664,6 +2087,9 @@ def build_section_plan(
                 local_end=local_end,
                 page_spans=page_spans,
                 doc_meta=doc_meta,
+                physical_section_title=physical_section_title,
+                subsection_context=subsection_context,
+                subsection_contexts=subsection_contexts,
             )
         )
 
@@ -2167,6 +2593,7 @@ def run(
     workers: int = 1,
     bge_tokenizer_path: str | Path | None = None,
     company_manifest: str | Path = config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV,
+    section_hold: str | Path | None = None,
 ) -> list[dict]:
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
@@ -2187,6 +2614,12 @@ def run(
         bge_tokenizer.model_max_length = 1_000_000
     company_names = load_company_names(Path(company_manifest))
     section_metadata = load_section_metadata(Path(sections_index))
+    held = merge_section_holds(
+        section_metadata,
+        load_section_hold_registry(Path(section_hold) if section_hold else None),
+    )
+    if held:
+        print(f"Section holds applied: {held}")
     doc_metadata = load_doc_metadata(Path(parse_index), Path(source_registry))
     section_files = discover_section_files(
         input_root, ticker=ticker, pdf_stem=pdf_stem
@@ -2477,6 +2910,15 @@ def main():
         default=str(config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV),
     )
     parser.add_argument(
+        "--section-hold",
+        default=None,
+        help=(
+            "Sparse CSV of manual-review decisions "
+            "(ticker,pdf_stem,section_instance_id,rag_action,reason). Held "
+            "sections are still chunked and citable but never indexed."
+        ),
+    )
+    parser.add_argument(
         "--bge-tokenizer",
         default=os.environ.get("ESG_BGE_TOKENIZER_DIR"),
         help="Local BGE tokenizer directory. Required for esg_chunk_v3.",
@@ -2534,6 +2976,7 @@ def main():
         workers=args.workers,
         bge_tokenizer_path=args.bge_tokenizer,
         company_manifest=args.company_manifest,
+        section_hold=args.section_hold,
     )
 
 

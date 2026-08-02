@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
-import json
 import os
 import re
 from dataclasses import dataclass, replace
@@ -12,7 +11,6 @@ from pathlib import Path
 import _bootstrap  # noqa: F401  (import path: config, pipeline src, common)
 
 import config
-from esg_compact_toc import CompactTocEntry, detect_compact_toc_entries
 
 
 CANONICAL_SECTION_CODES = {
@@ -43,7 +41,6 @@ SECTION_INDEX_FIELDS = [
     "section_instance_id",
     "section_code",
     "section_title",
-    "subsection_spans_json",
     "section_file",
     "source_start_char",
     "source_end_char",
@@ -59,7 +56,7 @@ SECTION_INDEX_FIELDS = [
     "source_sha256",
 ]
 
-PROVENANCE_VERSION = "contiguous_v3"
+PROVENANCE_VERSION = "contiguous_v2"
 
 MIN_SECTION_CHARS = 300
 BODY_SENTENCE_RE = re.compile(
@@ -130,24 +127,6 @@ NAVIGATION_CHROME_TERMS = {
     "workplace",
 }
 
-# These are report-navigation labels, not section-code keywords.  Keeping this
-# list separate avoids teaching the splitter company-specific title strings.
-NAVIGATION_TOPIC_LABELS = (
-    "introduction",
-    "climate action",
-    "circular economy",
-    "digital inclusion",
-    "inclusive workforce",
-    "people in supply chains",
-    "product supply chain sustainability",
-    "animal welfare",
-    "environmental",
-    "social",
-    "governance",
-    "appendix",
-    "indexes and glossary",
-)
-
 
 HEADING_PATTERNS: list[tuple[str, str]] = [
     ("ceo_letter", r"\bceo\s+welcome\b|\bceo\s+message\b|\b(?:letter|message)\s+(?:from\s+)?(?:our\s+)?(?:ceo|chief executive|leadership|president|founder)\b|\ba\s+message\s+from\s+our\s+ceo\b"),
@@ -177,18 +156,6 @@ class HeadingCandidate:
     section_code: str
     title: str
     toc_like: bool
-    heading_confidence: str = "medium"
-
-
-@dataclass(frozen=True)
-class SubsectionSpan:
-    """One accepted heading and the source range where it is active."""
-
-    title: str
-    section_code: str
-    source_start_char: int
-    source_end_char: int
-    heading_confidence: str
 
 
 @dataclass
@@ -201,21 +168,6 @@ class SectionSegment:
     source_start_char: int | None = None
     source_end_char: int | None = None
     section_instance_id: str = ""
-    # This describes the detected boundary, independently of the amount of
-    # body text that later landed in the section.
-    heading_confidence: str = "low"
-    subsection_spans: tuple[SubsectionSpan, ...] = ()
-
-
-@dataclass(frozen=True)
-class CompactTocPage:
-    """One page proven to be a compact table of contents."""
-
-    page_number: int
-    char_start: int
-    char_end: int
-    context_line_index: int
-    entries: tuple[CompactTocEntry, ...]
 
 
 @dataclass(frozen=True)
@@ -485,61 +437,8 @@ def code_allowed_for_heading(code: str, normalized: str) -> bool:
     return True
 
 
-def _markdown_table_row_shape(line: str) -> bool:
-    """Return whether a line has strict multi-cell Markdown row syntax."""
-    stripped = line.strip()
-    return (
-        len(stripped) >= 3
-        and stripped.startswith("|")
-        and stripped.endswith("|")
-        and stripped.count("|") >= 3
-    )
-
-
-def _markdown_table_separator_row(line: str) -> bool:
-    """Recognise ``| --- | :---: |`` without accepting ordinary pipe prose."""
-    if not _markdown_table_row_shape(line):
-        return False
-    cells = [cell.strip() for cell in line.strip()[1:-1].split("|")]
-    return bool(cells) and all(
-        not cell or re.fullmatch(r":?-{3,}:?", cell) is not None
-        for cell in cells
-    ) and any(cell for cell in cells)
-
-
-def is_markdown_table_row(lines: list[str], line_index: int) -> bool:
-    """Detect a Markdown row using strict syntax plus local table evidence."""
-    if not 0 <= line_index < len(lines):
-        return False
-    line = lines[line_index]
-    if not _markdown_table_row_shape(line):
-        return False
-    if _markdown_table_separator_row(line):
-        return True
-
-    adjacent_rows = []
-    for step in (-1, 1):
-        index = line_index + step
-        if 0 <= index < len(lines):
-            adjacent_rows.append(lines[index])
-    if any(_markdown_table_row_shape(value) for value in adjacent_rows):
-        return True
-
-    # Allow one blank line when looking for the standard separator row. This
-    # still requires the candidate itself to use strict multi-cell row syntax.
-    for index in range(max(0, line_index - 2), min(len(lines), line_index + 3)):
-        if index != line_index and _markdown_table_separator_row(lines[index]):
-            return True
-    return False
-
-
 def map_heading_to_code(line: str) -> str | None:
     raw = line.strip()
-    # A complete multi-cell Markdown row is data, even when one of its labels
-    # contains an ESG keyword. Context-aware confirmation also runs in the
-    # document scan below.
-    if _markdown_table_row_shape(raw):
-        return None
     if len(re.findall(r"[A-Za-z][A-Za-z-]*", raw)) > 4 and raw.endswith(("-", "\u2013")):
         return None
     title = normalize_heading_text(line)
@@ -577,125 +476,6 @@ def _nearest_nonempty_line(lines: list[str], start: int, step: int) -> str:
             return lines[index].strip()
         index += step
     return ""
-
-
-def _page_number(row: dict) -> int | None:
-    return parse_int(row.get("page") or row.get("page_number"))
-
-
-def _compact_toc_pages(
-    text: str,
-    page_spans: list[dict],
-) -> tuple[CompactTocPage, ...]:
-    """Find strict compact-TOC clusters independently on each source page."""
-    if not page_spans:
-        return ()
-    lines_with_endings = text.splitlines(keepends=True)
-    line_offsets: list[int] = []
-    offset = 0
-    for line in lines_with_endings:
-        line_offsets.append(offset)
-        offset += len(line)
-
-    page_numbers = [number for row in page_spans if (number := _page_number(row))]
-    max_page_number = max(page_numbers, default=None)
-    detected: list[CompactTocPage] = []
-    for row in page_spans:
-        page_number = _page_number(row)
-        char_start = parse_int(row.get("char_start"))
-        char_end = parse_int(row.get("char_end"))
-        if page_number is None or char_start is None or char_end is None:
-            continue
-        indexes = [
-            index
-            for index, line_offset in enumerate(line_offsets)
-            if char_start <= line_offset < char_end
-        ]
-        if not indexes:
-            continue
-        page_lines = [lines_with_endings[index].rstrip("\r\n") for index in indexes]
-        local_entries = detect_compact_toc_entries(
-            page_lines,
-            max_page_number=max_page_number,
-        )
-        if not local_entries:
-            continue
-        entries = tuple(
-            replace(entry, line_index=indexes[entry.line_index])
-            for entry in local_entries
-        )
-        context_line_index = next(
-            index
-            for index in indexes
-            if re.fullmatch(
-                r"(?:table\s+of\s+contents|contents)",
-                lines_with_endings[index].strip(),
-                flags=re.IGNORECASE,
-            )
-        )
-        detected.append(
-            CompactTocPage(
-                page_number,
-                char_start,
-                char_end,
-                context_line_index,
-                entries,
-            )
-        )
-    return tuple(detected)
-
-
-def _front_matter_candidates_from_compact_toc(
-    lines_with_endings: list[str],
-    line_offsets: list[int],
-    page_spans: list[dict],
-    toc_pages: tuple[CompactTocPage, ...],
-) -> list[HeadingCandidate]:
-    """Restore nearby real page headings referenced by a proven compact TOC."""
-    page_rows = {
-        number: row
-        for row in page_spans
-        if (number := _page_number(row)) is not None
-    }
-    candidates: list[HeadingCandidate] = []
-    for toc_page in toc_pages:
-        for entry in toc_page.entries:
-            if not toc_page.page_number < entry.page_number <= toc_page.page_number + 2:
-                continue
-            target = page_rows.get(entry.page_number)
-            if target is None:
-                continue
-            target_start = parse_int(target.get("char_start"))
-            target_end = parse_int(target.get("char_end"))
-            if target_start is None or target_end is None:
-                continue
-            expected_words = re.findall(r"[a-z0-9]+", entry.title.casefold())
-            if len(expected_words) < 2:
-                continue
-            for line_index, line_offset in enumerate(line_offsets):
-                if not target_start <= line_offset < min(target_end, target_start + 500):
-                    continue
-                title = normalize_heading_text(lines_with_endings[line_index])
-                actual_words = re.findall(r"[a-z0-9]+", title.casefold())
-                if len(actual_words) < 2 or actual_words[:2] != expected_words[:2]:
-                    continue
-                code = map_heading_to_code(entry.title)
-                if code is None and entry.title.casefold().startswith("welcome to "):
-                    code = "about_this_report"
-                if code is None:
-                    continue
-                candidates.append(
-                    HeadingCandidate(
-                        line_index=line_index,
-                        char_offset=line_offset,
-                        section_code=code,
-                        title=entry.title,
-                        toc_like=False,
-                        heading_confidence="high",
-                    )
-                )
-                break
-    return candidates
 
 
 def _looks_like_table_or_index_candidate(
@@ -773,132 +553,9 @@ def _title_key(title: str) -> str:
     )
 
 
-def _chrome_tokens(title: str) -> frozenset[str]:
-    """Return a stable title signature for page furniture comparisons."""
-    normalized = _title_key(title)
-    normalized = re.sub(r"\d+", " ", normalized)
-    tokens = re.findall(r"[a-z]+", normalized)
-    return frozenset(token for token in tokens if token not in {"and", "the", "of", "our"})
-
-
-def _topic_label_count(title: str) -> int:
-    normalized = " ".join(re.findall(r"[a-z]+", _title_key(title)))
-    return sum(label in normalized for label in NAVIGATION_TOPIC_LABELS)
-
-
-def _similar_chrome_titles(left: str, right: str) -> bool:
-    """Match breadcrumb variants while requiring a substantial shared core."""
-    left_tokens = _chrome_tokens(left)
-    right_tokens = _chrome_tokens(right)
-    if not left_tokens or not right_tokens:
-        return False
-    overlap = len(left_tokens & right_tokens)
-    union = len(left_tokens | right_tokens)
-    if overlap >= 3 and overlap / union >= 0.65:
-        return True
-    if overlap >= 3 and overlap / min(len(left_tokens), len(right_tokens)) >= 0.80:
-        return True
-    # Breadcrumbs are often extended at the end on alternate page templates.
-    left_words = re.findall(r"[a-z]+", _title_key(left))
-    right_words = re.findall(r"[a-z]+", _title_key(right))
-    return len(left_words) >= 3 and left_words[:3] == right_words[:3]
-
-
-def _looks_like_uppercase_column_header(title: str) -> bool:
-    words = re.findall(r"[A-Za-z]+", title)
-    if len(words) < 3:
-        return False
-    if _looks_like_narrative_heading_shape(title):
-        return False
-    letters = "".join(words)
-    return letters.isupper() and ("/" in title or len(words) >= 4)
-
-
-def _looks_like_narrative_heading_shape(title: str) -> bool:
-    """Separate real long-form headings from terse uppercase column labels."""
-    words = re.findall(r"[A-Za-z]+", title)
-    if not 5 <= len(words) <= 14 or re.search(r"\d", title):
-        return False
-    connectors = {"and", "for", "in", "of", "our", "the", "to", "with"}
-    return bool({word.lower() for word in words} & connectors)
-
-
-def _nearby_table_signal(lines: list[str], line_index: int) -> bool:
-    nearby = [
-        _nearest_nonempty_line(lines, line_index, -1),
-        _nearest_nonempty_line(lines, line_index, 1),
-    ]
-    for line in nearby:
-        words = re.findall(r"[A-Za-z]+", line)
-        numeric_cells = len(re.findall(r"\d+(?:[.,]\d+)?%?", line))
-        if numeric_cells >= 2 or (len(words) >= 3 and "".join(words).isupper()):
-            return True
-    return False
-
-
-def heading_confidence(
-    candidate: HeadingCandidate,
-    lines: list[str],
-    page_position: tuple[int, int] | None = None,
-) -> str:
-    """Score boundary quality separately from the amount of following body text."""
-    title = candidate.title.strip()
-    words = re.findall(r"[A-Za-z]+", title)
-    before_blank = candidate.line_index == 0 or not lines[candidate.line_index - 1].strip()
-    after_blank = candidate.line_index + 1 >= len(lines) or not lines[candidate.line_index + 1].strip()
-    score = 1 + int(before_blank) + int(after_blank)
-    narrative_shape = _looks_like_narrative_heading_shape(title)
-    uppercase_column_header = _looks_like_uppercase_column_header(title)
-    if 1 <= len(words) <= 12 and len(title) <= 120 and not uppercase_column_header:
-        score += 1
-    if re.search(r"[.!?;]$", title) or ". " in title:
-        score -= 2
-    if (
-        uppercase_column_header
-        or (_nearby_table_signal(lines, candidate.line_index) and not narrative_shape)
-    ):
-        score -= 2
-    if narrative_shape:
-        score += 1
-    if page_position is not None and page_position[1] <= PAGE_CHROME_MAX_OFFSET:
-        score -= 1
-    if _topic_label_count(title) >= 3:
-        score -= 3
-    if score >= 3:
-        return "high"
-    if score >= 1:
-        return "medium"
-    return "low"
-
-
-def _has_substantial_narrative_following(
-    candidate: HeadingCandidate,
-    lines: list[str],
-) -> bool:
-    """Keep real headings that are followed by prose, regardless of casing."""
-    following: list[str] = []
-    for line in lines[candidate.line_index + 1 : candidate.line_index + 16]:
-        stripped = line.strip()
-        if stripped:
-            following.append(stripped)
-        if len(" ".join(following)) >= 900:
-            break
-    body = " ".join(following)
-    words = re.findall(r"[A-Za-z]+", body)
-    sentences = len(re.findall(r"[.!?](?:\s|$)", body))
-    numeric_cells = len(re.findall(r"\b\d+(?:[.,]\d+)?%?\b", body))
-    table_like = _nearby_table_signal(lines, candidate.line_index)
-    prose_dense = len(words) >= 75 and numeric_cells * 8 < max(len(words), 1)
-    return not table_like and prose_dense and (sentences >= 2 or len(body) >= 500)
-
-
 def _is_navigation_or_report_chrome(title: str) -> bool:
     normalized = _title_key(title)
     if normalized == "appendix":
-        return True
-    # A normal heading can name one topic.  A run of several report topics is
-    # navigation, even when small wording changes appear on different pages.
-    if _topic_label_count(title) >= 3:
         return True
     words = set(re.findall(r"[a-z]+", normalized))
     navigation_hits = len(words & NAVIGATION_CHROME_TERMS)
@@ -941,126 +598,6 @@ def _candidate_page_positions(
     return positions
 
 
-def _navigation_term_hits(title: str) -> int:
-    """Count distinct report-navigation words in one extracted line."""
-    words = set(re.findall(r"[a-z]+", _title_key(title)))
-    return len(words & NAVIGATION_CHROME_TERMS)
-
-
-def _matching_section_code_count(title: str) -> int:
-    """Count distinct section families named by one structural line."""
-    normalized = normalize_heading_text(title).lower().replace("&", " and ")
-    normalized = re.sub(r"[^a-z0-9\s-]", " ", normalized)
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-    return len(
-        {
-            code
-            for code, pattern in HEADING_PATTERNS
-            if re.search(pattern, normalized, flags=re.IGNORECASE)
-            and code_allowed_for_heading(code, normalized)
-        }
-    )
-
-
-def _local_navigation_ribbon_indexes(
-    candidates: list[HeadingCandidate],
-    page_positions: dict[int, tuple[int, int]],
-    page_ends: dict[int, int | None],
-    lines: list[str],
-) -> set[int]:
-    """Find exact occurrences that sit inside a repeated page ribbon.
-
-    The title alone is never enough.  An occurrence must sit next to other
-    heading-like navigation labels on the same page.  We then require that
-    local shape on at least three pages, or on two pages when both copies are
-    in the bottom page band.  Only the proven ribbon occurrences are removed;
-    a later body heading with the same words remains eligible.
-    """
-    local_members: set[int] = set()
-    for index, candidate in enumerate(candidates):
-        position = page_positions.get(index)
-        if position is None:
-            continue
-        page, _ = position
-        # Page-referenced rows and duplicate same-page labels are common in
-        # contents/index tables.  They must stay out of the ribbon detector:
-        # this rule classifies page furniture, not all repeated short text.
-        same_page_title_copies = sum(
-            1
-            for other_index, other in enumerate(candidates)
-            if page_positions.get(other_index, (None, None))[0] == page
-            and _title_key(other.title) == _title_key(candidate.title)
-        )
-        if candidate.toc_like or same_page_title_copies >= 2:
-            continue
-        neighbors = [
-            other_index
-            for other_index, other in enumerate(candidates)
-            if other_index != index
-            and page_positions.get(other_index, (None, None))[0] == page
-            and abs(other.line_index - candidate.line_index) <= 10
-        ]
-        strong_neighbor = any(
-            _navigation_term_hits(candidates[other_index].title) >= 2
-            for other_index in neighbors
-        )
-        if (
-            len(neighbors) >= 2
-            or _is_navigation_or_report_chrome(candidate.title)
-            or (
-                strong_neighbor
-                and (
-                    not _has_substantial_narrative_following(candidate, lines)
-                    or _matching_section_code_count(candidate.title) >= 2
-                )
-            )
-        ):
-            local_members.add(index)
-
-    groups: dict[str, list[int]] = {}
-    for index in local_members:
-        groups.setdefault(_title_key(candidates[index].title), []).append(index)
-
-    rejected: set[int] = set()
-    for indexes in groups.values():
-        pages = {page_positions[index][0] for index in indexes}
-        if len(pages) >= NAVIGATION_CHROME_MIN_OCCURRENCES:
-            rejected.update(indexes)
-
-        bottom_indexes = []
-        for index in indexes:
-            page, _ = page_positions[index]
-            page_end = page_ends.get(page)
-            if (
-                page_end is not None
-                and page_end - candidates[index].char_offset <= PAGE_CHROME_MAX_OFFSET
-            ):
-                bottom_indexes.append(index)
-        if len({page_positions[index][0] for index in bottom_indexes}) >= 2:
-            rejected.update(bottom_indexes)
-
-    # Ribbons often add or drop one label on alternate page templates. Group
-    # only occurrences already proven to have local ribbon shape, then apply
-    # the same three-page requirement to similar multi-topic titles.
-    fuzzy_groups: list[list[int]] = []
-    for index in sorted(local_members):
-        if not _is_navigation_or_report_chrome(candidates[index].title):
-            continue
-        for group in fuzzy_groups:
-            if _similar_chrome_titles(
-                candidates[index].title,
-                candidates[group[0]].title,
-            ):
-                group.append(index)
-                break
-        else:
-            fuzzy_groups.append([index])
-    for indexes in fuzzy_groups:
-        if len({page_positions[index][0] for index in indexes}) >= NAVIGATION_CHROME_MIN_OCCURRENCES:
-            rejected.update(indexes)
-    return rejected
-
-
 def _running_page_chrome_indexes(
     candidates: list[HeadingCandidate],
     page_spans: list[dict],
@@ -1078,37 +615,21 @@ def _running_page_chrome_indexes(
         if parse_int(row.get("page")) is not None
         and parse_int(row.get("char_end")) is not None
     }
-    rejected = _local_navigation_ribbon_indexes(
-        candidates,
-        page_positions,
-        page_ends,
-        lines or [],
-    )
     indexes_by_title: dict[str, list[int]] = {}
     for candidate_index, candidate in enumerate(candidates):
         indexes_by_title.setdefault(_title_key(candidate.title), []).append(candidate_index)
 
-    # Exact keys handle ordinary repeating headings.  Navigation labels also
-    # get a conservative fuzzy pass, so a breadcrumb with one added label does
-    # not evade page-chrome detection.
-    title_groups = list(indexes_by_title.values())
-    navigation_indexes = [
-        index for index, candidate in enumerate(candidates)
-        if _topic_label_count(candidate.title) >= 2
-    ]
-    fuzzy_groups: list[list[int]] = []
-    for index in navigation_indexes:
-        for group in fuzzy_groups:
-            if _similar_chrome_titles(candidates[index].title, candidates[group[0]].title):
-                group.append(index)
-                break
-        else:
-            fuzzy_groups.append([index])
-    title_groups.extend(group for group in fuzzy_groups if len(group) >= PAGE_CHROME_MIN_PAGES)
-
-    for indexes in title_groups:
-        indexes = [index for index in indexes if index not in rejected]
+    rejected: set[int] = set()
+    for indexes in indexes_by_title.values():
         if len(indexes) < PAGE_CHROME_MIN_PAGES:
+            continue
+
+        title = candidates[indexes[0]].title
+        if (
+            len(indexes) >= NAVIGATION_CHROME_MIN_OCCURRENCES
+            and _is_navigation_or_report_chrome(title)
+        ):
+            rejected.update(indexes)
             continue
 
         paged_indexes = [index for index in indexes if index in page_positions]
@@ -1201,30 +722,6 @@ def _running_page_chrome_indexes(
     return rejected
 
 
-def _repeated_table_header_indexes(
-    candidates: list[HeadingCandidate],
-    page_spans: list[dict],
-    lines: list[str],
-) -> set[int]:
-    """Reject repeated uppercase column labels, but only with table evidence."""
-    page_positions = _candidate_page_positions(candidates, page_spans)
-    groups: dict[str, list[int]] = {}
-    for index, candidate in enumerate(candidates):
-        if _looks_like_uppercase_column_header(candidate.title):
-            groups.setdefault(" ".join(sorted(_chrome_tokens(candidate.title))), []).append(index)
-
-    rejected: set[int] = set()
-    for indexes in groups.values():
-        pages = {page_positions[index][0] for index in indexes if index in page_positions}
-        if len(indexes) < 2 or len(pages) < 2:
-            continue
-        for index in indexes:
-            page_offset = page_positions.get(index, (None, PAGE_CHROME_MAX_OFFSET + 1))[1]
-            if page_offset <= PAGE_CHROME_MAX_OFFSET or _nearby_table_signal(lines, candidates[index].line_index):
-                rejected.add(index)
-    return rejected
-
-
 def collect_heading_candidates(
     text: str,
     page_spans: list[dict] | None = None,
@@ -1233,15 +730,10 @@ def collect_heading_candidates(
     lines = [line.rstrip("\r\n") for line in lines_with_endings]
     total_chars = max(len(text), 1)
     offset = 0
-    line_offsets: list[int] = []
     raw_candidates: list[HeadingCandidate] = []
 
     for i, line_with_ending in enumerate(lines_with_endings):
-        line_offsets.append(offset)
         line = line_with_ending.rstrip("\r\n")
-        if is_markdown_table_row(lines, i):
-            offset += len(line_with_ending)
-            continue
         code = map_heading_to_code(line)
         if code:
             raw_candidates.append(
@@ -1255,37 +747,6 @@ def collect_heading_candidates(
             )
         offset += len(line_with_ending)
 
-    toc_pages = _compact_toc_pages(text, page_spans or [])
-    if toc_pages:
-        raw_candidates = [
-            candidate
-            for candidate in raw_candidates
-            if not any(
-                page.char_start <= candidate.char_offset < page.char_end
-                for page in toc_pages
-            )
-        ]
-        for page in toc_pages:
-            raw_candidates.append(
-                HeadingCandidate(
-                    line_index=page.context_line_index,
-                    char_offset=line_offsets[page.context_line_index],
-                    section_code="about_this_report",
-                    title="Table of Contents",
-                    toc_like=True,
-                    heading_confidence="high",
-                )
-            )
-        raw_candidates.extend(
-            _front_matter_candidates_from_compact_toc(
-                lines_with_endings,
-                line_offsets,
-                page_spans or [],
-                toc_pages,
-            )
-        )
-        raw_candidates.sort(key=lambda candidate: (candidate.char_offset, candidate.line_index))
-
     early_candidates = [c for c in raw_candidates if c.char_offset < total_chars * 0.10]
     toc_heavy = (
         len(early_candidates) >= 5
@@ -1297,24 +758,11 @@ def collect_heading_candidates(
         total_chars,
         lines,
     )
-    repeated_table_headers = _repeated_table_header_indexes(
-        raw_candidates, page_spans or [], lines
-    )
-    page_positions = _candidate_page_positions(raw_candidates, page_spans or [])
 
     filtered: list[HeadingCandidate] = []
     seen_positions: set[tuple[int, str]] = set()
     for candidate_index, candidate in enumerate(raw_candidates):
         if candidate_index in repeated_chrome:
-            continue
-        if candidate_index in repeated_table_headers:
-            continue
-        # A multi-topic line can still be a legitimate section heading.  Only
-        # reject it as chrome when its following material is not normal prose.
-        if (
-            _is_navigation_or_report_chrome(candidate.title)
-            and not _has_substantial_narrative_following(candidate, lines)
-        ):
             continue
         if _looks_like_table_or_index_candidate(candidate, lines):
             continue
@@ -1324,31 +772,17 @@ def collect_heading_candidates(
         if key in seen_positions:
             continue
         seen_positions.add(key)
-        filtered.append(
-            replace(
-                candidate,
-                heading_confidence=heading_confidence(
-                    candidate, lines, page_positions.get(candidate_index)
-                ),
-            )
-        )
+        filtered.append(candidate)
 
     return filtered
 
 
-def confidence_for(
-    code: str,
-    text: str,
-    fallback: bool = False,
-    heading_quality: str = "high",
-) -> str:
+def confidence_for(code: str, text: str, fallback: bool = False) -> str:
     if fallback:
         return "low"
     char_count = len(text.strip())
     if code == "other":
         return "low" if char_count < 1000 else "medium"
-    if heading_quality == "low":
-        return "low" if char_count < 1500 else "medium"
     if char_count >= 1000:
         return "high"
     if char_count >= MIN_SECTION_CHARS:
@@ -1377,38 +811,16 @@ def _segment_from_source(
     split_method: str,
     *,
     fallback: bool = False,
-    heading_quality: str = "high",
 ) -> SectionSegment:
     body, source_start, source_end = _trimmed_source_span(source_text, start, end)
-    subsection_spans = ()
-    # Low-confidence boundaries are useful for broad tiling, but they are not
-    # safe enough to become retrieval context. Medium/high headings have
-    # already passed the chrome, navigation, table, and narrative guards.
-    if (
-        split_method == "heading_regex"
-        and not fallback
-        and heading_quality in {"medium", "high"}
-        and title
-    ):
-        subsection_spans = (
-            SubsectionSpan(
-                title=title,
-                section_code=section_code,
-                source_start_char=source_start,
-                source_end_char=source_end,
-                heading_confidence=heading_quality,
-            ),
-        )
     return SectionSegment(
         section_code,
         title,
         body,
         split_method,
-        confidence_for(section_code, body, fallback=fallback, heading_quality=heading_quality),
+        confidence_for(section_code, body, fallback=fallback),
         source_start,
         source_end,
-        heading_confidence=heading_quality,
-        subsection_spans=subsection_spans,
     )
 
 
@@ -1429,7 +841,7 @@ def build_segments(text: str, candidates: list[HeadingCandidate]) -> list[Sectio
     segments: list[SectionSegment] = []
 
     preamble, _, _ = _trimmed_source_span(text, 0, candidates[0].char_offset)
-    if preamble:
+    if len(preamble) >= MIN_SECTION_CHARS:
         segments.append(
             _segment_from_source(
                 text,
@@ -1437,7 +849,7 @@ def build_segments(text: str, candidates: list[HeadingCandidate]) -> list[Sectio
                 candidates[0].char_offset,
                 "other",
                 "Preamble",
-                "preamble",
+                "heading_regex",
             )
         )
 
@@ -1450,7 +862,6 @@ def build_segments(text: str, candidates: list[HeadingCandidate]) -> list[Sectio
             candidate.section_code,
             candidate.title or candidate.section_code.replace("_", " ").title(),
             "heading_regex",
-            heading_quality=candidate.heading_confidence,
         )
         if segment.text:
             segments.append(segment)
@@ -1505,17 +916,6 @@ def _merge_contiguous_segments(
         confidence_for(keep.section_code, combined_text),
         source_start,
         source_end,
-        heading_confidence=keep.heading_confidence,
-        subsection_spans=tuple(
-            sorted(
-                (
-                    span
-                    for span in (*left.subsection_spans, *right.subsection_spans)
-                    if span.section_code == keep.section_code
-                ),
-                key=lambda span: (span.source_start_char, span.source_end_char),
-            )
-        ),
     )
 
 
@@ -1591,7 +991,7 @@ def coalesce_adjacent_same_code_segments(
     segments: list[SectionSegment],
     source_text: str,
 ) -> list[SectionSegment]:
-    """Merge neighboring equal-code spans while retaining heading spans."""
+    """Coalesce only neighboring equal-code spans separated by whitespace."""
     coalesced: list[SectionSegment] = []
     for segment in segments:
         if not coalesced:
@@ -1618,30 +1018,6 @@ def coalesce_adjacent_same_code_segments(
         else:
             coalesced.append(segment)
     return coalesced
-
-
-def subsection_spans_json(
-    section: SectionSegment,
-    section_start: int,
-    section_end: int,
-) -> str:
-    """Serialize accepted heading spans relative to one physical section."""
-    spans: list[dict[str, str | int]] = []
-    for span in section.subsection_spans:
-        start = max(section_start, span.source_start_char)
-        end = min(section_end, span.source_end_char)
-        if end <= start:
-            continue
-        spans.append(
-            {
-                "title": span.title,
-                "section_code": span.section_code,
-                "start_char": start - section_start,
-                "end_char": end - section_start,
-                "heading_confidence": span.heading_confidence,
-            }
-        )
-    return json.dumps(spans, ensure_ascii=False, separators=(",", ":"))
 
 
 def split_esg_sections(
@@ -1949,9 +1325,6 @@ def process_text_file(
                 "section_instance_id": section.section_instance_id,
                 "section_code": section.section_code,
                 "section_title": section.title,
-                "subsection_spans_json": subsection_spans_json(
-                    section, source_start, source_end
-                ),
                 "section_file": display_path(section_file),
                 "source_start_char": source_start if source_start is not None else "",
                 "source_end_char": source_end if source_end is not None else "",
@@ -2222,26 +1595,8 @@ def run(
     resume: bool = True,
     force: bool = False,
     checkpoint_every: int = 1,
-    experimental_sectioning: bool = False,
 ) -> list[dict]:
     """Section parsed ESG text with restart-safe per-file checkpoints."""
-    if not experimental_sectioning:
-        # The broad heading/table changes in this module remain available for
-        # isolated experiments, but they changed 365 sections in a full-corpus
-        # frozen-text rebuild. Keep the proven 9,819-section implementation as
-        # the pipeline default until the new rules pass semantic retrieval QA.
-        import section_splitter_esg_legacy
-
-        return section_splitter_esg_legacy.run(
-            input_root=input_root,
-            out=out,
-            index=index,
-            ticker=ticker,
-            pdf_stem=pdf_stem,
-            resume=resume,
-            force=force,
-            checkpoint_every=checkpoint_every,
-        )
     if checkpoint_every < 1:
         raise ValueError("checkpoint_every must be at least 1")
 
@@ -2362,14 +1717,6 @@ def main():
         metavar="N",
         help="Atomically write the index after every N sectioned files (default: 1).",
     )
-    parser.add_argument(
-        "--experimental-sectioning",
-        action="store_true",
-        help=(
-            "Use the unpromoted broad heading/table rules. The default uses the "
-            "frozen full-corpus sectioner until semantic retrieval QA passes."
-        ),
-    )
     args = parser.parse_args()
 
     run(
@@ -2381,7 +1728,6 @@ def main():
         resume=args.resume,
         force=args.force,
         checkpoint_every=args.checkpoint_every,
-        experimental_sectioning=args.experimental_sectioning,
     )
 
 

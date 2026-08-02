@@ -510,8 +510,11 @@ def run(repo_root: str, write_embeddings: bool = True,
         new["cik"] = companies_cik.get(ticker, "")
         new["source_url"] = source_url_by_stem.get(stem, "")
         new["source_retrieved_at_utc"] = source_retrieved_by_stem.get(stem, "")
-        new["section_title_original"] = section_title_by_instance.get(
-            (stem, row.get("section_instance_id", "")), ""
+        new["section_title_original"] = (
+            row.get("subsection_context")
+            or section_title_by_instance.get(
+                (stem, row.get("section_instance_id", "")), ""
+            )
         )
         for field, issue in (
             ("company_id", "company_id_unresolved"),
