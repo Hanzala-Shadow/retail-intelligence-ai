@@ -74,6 +74,8 @@ PAGES_CSV_COLUMNS = [
     "layout_risk",
     "visual_review_status",
     "repair_method",
+    "picture_region_count",
+    "empty_region_count",
     "band_region_count",
     "band_dropped_count",
     "unplaced_char_count",
@@ -177,6 +179,13 @@ def build_document(
             missing += 1
             raw = ""
 
+        # Counted before filtering: a picture with no words under it leaves no
+        # trace in the text, and a figure silently absent is worse than one
+        # recorded as unreadable. Kept OUT of the text on purpose -- a marker
+        # repeated on 15% of regions would be high-frequency noise in every
+        # embedding it landed in.
+        n_empty_regions = raw.count(EMPTY_REGION_NOTE)
+        items = cached["pages"].get(str(page_no), [])
         blocks, unplaced = split_page_blocks(raw)
         n_dropped = 0
         if repeated:
@@ -203,7 +212,6 @@ def build_document(
         # the previous page's final sentence.
         block = body + "\n\n"
 
-        items = cached["pages"].get(str(page_no), [])
         rows.append(
             {
                 "page": page_no,
@@ -218,6 +226,8 @@ def build_document(
                 "layout_risk": "false",
                 "visual_review_status": "not_required",
                 "repair_method": "none",
+                "picture_region_count": sum(1 for i in items if i.get("label") == "picture"),
+                "empty_region_count": n_empty_regions,
                 "band_region_count": n_band,
                 "band_dropped_count": n_dropped,
                 "unplaced_char_count": len(unplaced),
