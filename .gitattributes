@@ -1,0 +1,4 @@
+# The pinned BGE tokenizer must stay byte-identical: its SHA256s are recorded
+# and token counts depend on them. Line-ending conversion would silently
+# change vocab.txt and tokenizer.json on checkout.
+models/bge-base-en-v1.5-tokenizer/** -text
