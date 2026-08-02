@@ -90,6 +90,28 @@ ESG_CONTRACT_CONFORMANCE_MD = REPORTS_DIR / "esg_contract_conformance.md"
 ESG_DRIVE_YEAR_COVERAGE_DIR = REPORTS_DIR / "esg_drive_year_coverage"
 
 # ---------------------------------------------------------------------------
+# Tokenizer
+# ---------------------------------------------------------------------------
+
+# The BGE tokenizer esg_chunker.py uses to count tokens per chunk. Every token
+# count in the corpus, and the 512-token truncation limit the chunk sizes are
+# built around, depends on THIS tokenizer -- a different build can produce
+# different counts for the same text, which would silently make new chunks
+# incomparable with old ones.
+#
+# It is committed to the repo (944 KB) rather than downloaded at run time, and
+# models/.gitattributes marks it `-text` so line-ending conversion cannot alter
+# vocab.txt or tokenizer.json on checkout. The files are byte-identical to the
+# SHA256s recorded for BAAI/bge-base-en-v1.5 in
+# tmp/esg_task1_20260729/bge_tokenizer_identity.json.
+#
+# Before this default existed the only copy lived under tmp/, which is
+# gitignored scratch -- one cleanup away from breaking chunking entirely.
+# ESG_BGE_TOKENIZER_DIR in the environment still wins, for pinning a different
+# build deliberately.
+ESG_BGE_TOKENIZER_DIR = REPO_ROOT / "models" / "bge-base-en-v1.5-tokenizer"  # noqa: F405
+
+# ---------------------------------------------------------------------------
 # This pipeline's own raw root (the shared stage roots are created by
 # common/config.py).
 # ---------------------------------------------------------------------------

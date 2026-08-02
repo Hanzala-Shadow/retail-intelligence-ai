@@ -2920,8 +2920,17 @@ def main():
     )
     parser.add_argument(
         "--bge-tokenizer",
-        default=os.environ.get("ESG_BGE_TOKENIZER_DIR"),
-        help="Local BGE tokenizer directory. Required for esg_chunk_v3.",
+        # Resolution order, most specific first: the flag, then the
+        # environment, then the copy committed at config.ESG_BGE_TOKENIZER_DIR.
+        # The config default exists so a fresh clone can chunk without any
+        # setup step -- token counts depend on this exact tokenizer, and the
+        # only copy used to live in gitignored scratch under tmp/.
+        default=os.environ.get("ESG_BGE_TOKENIZER_DIR") or str(config.ESG_BGE_TOKENIZER_DIR),
+        help=(
+            "Local BGE tokenizer directory. Required for esg_chunk_v3. "
+            "Defaults to ESG_BGE_TOKENIZER_DIR, else the copy committed under "
+            "models/bge-base-en-v1.5-tokenizer."
+        ),
     )
     parser.add_argument("--ticker", default=None)
     parser.add_argument(
@@ -2960,6 +2969,11 @@ def main():
     args = parser.parse_args()
     if not args.bge_tokenizer:
         parser.error("--bge-tokenizer or ESG_BGE_TOKENIZER_DIR is required")
+    # Fail here rather than deep inside the tokenizer loader: a missing
+    # directory means every token count would be wrong or absent, and that is
+    # far cheaper to notice now than after a full chunking run.
+    if not Path(args.bge_tokenizer).is_dir():
+        parser.error(f"BGE tokenizer directory not found: {args.bge_tokenizer}")
 
     run(
         input_root=args.input,
