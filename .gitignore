@@ -125,6 +125,9 @@ data/04_vlm/
 # Parallel v2 trees: docling+PyMuPDF fusion run through the full pipeline.
 # Same rationale as the v1 dirs above -- generated output, regenerable from
 # outputs/docling_fullrun via esg/scripts/bridge_docling_to_pipeline.py.
-data/02_interim_v2/
-data/03_sections_v2/
-data/04_chunks_v2/
+# Glob rather than one line per version: each timed run writes a new _vN tree
+# and they are all regenerable from outputs/docling_*/ via
+# esg/scripts/bridge_docling_to_pipeline.py.
+data/02_interim_v*/
+data/03_sections_v*/
+data/04_chunks_v*/
