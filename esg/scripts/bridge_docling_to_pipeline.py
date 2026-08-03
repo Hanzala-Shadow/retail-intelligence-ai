@@ -88,6 +88,10 @@ PAGES_CSV_COLUMNS = [
     "empty_region_count",
     "band_region_count",
     "band_dropped_count",
+    # Characters removed from this page's unplaced tail as repeated furniture.
+    # Recorded per page so an unexpectedly large removal can be traced to the
+    # document and line responsible rather than inferred from a total.
+    "unplaced_dropped_count",
     "unplaced_char_count",
     "text_source",
     "table_candidate_count",
@@ -157,6 +161,23 @@ def repeated_band_keys(
             if kind != "band":
                 continue
             key = _furniture_key(text)
+            if key:
+                seen.setdefault(key, set()).add(page_no)
+    return {k for k, v in seen.items() if len(v) >= min_pages}
+
+
+def repeated_unplaced_keys(
+    pages: list[int], stem: str, fused_dir: Path, min_pages: int
+) -> set[str]:
+    """Unplaced lines whose text appears on at least ``min_pages`` pages."""
+    seen: dict[str, set[int]] = {}
+    for page_no in pages:
+        fused = fused_dir / f"{stem}_p{page_no}.txt"
+        if not fused.exists():
+            continue
+        _, unplaced = split_page_blocks(fused.read_text(encoding="utf-8"))
+        for line in unplaced.splitlines():
+            key = _furniture_key(line)
             if key:
                 seen.setdefault(key, set()).add(page_no)
     return {k for k, v in seen.items() if len(v) >= min_pages}
@@ -252,6 +273,7 @@ def build_document(
     keep_band: bool = True,
     keep_unplaced: bool = True,
     drop_repeated_band: int = 0,
+    drop_repeated_unplaced: int = 0,
     strip_md_prefix: bool = True,
 ) -> tuple[str, list[dict[str, Any]], int, list[dict[str, Any]]]:
     """Concatenate a document's fused pages, tracking character offsets."""
@@ -268,6 +290,11 @@ def build_document(
     repeated = (
         repeated_band_keys(pages, stem, fused_dir, drop_repeated_band)
         if drop_repeated_band
+        else set()
+    )
+    repeated_unplaced = (
+        repeated_unplaced_keys(pages, stem, fused_dir, drop_repeated_unplaced)
+        if drop_repeated_unplaced
         else set()
     )
 
@@ -311,11 +338,17 @@ def build_document(
             kept.append(text)
         n_band = sum(1 for kind, _, _ in blocks if kind == "band")
 
-        # Unplaced words go LAST, which is where page furniture naturally sits
-        # and where section_splitter's ribbon detector looks for it: that rule
-        # drops a repeated heading seen on two pages when both copies are in
-        # the bottom band. Dropping them here instead would also discard real
-        # body text -- MHK-MOHAWK 2024 p15 has 57 unplaced words out of 413.
+        # Unplaced words go last. Drop only lines repeated across enough pages;
+        # keep all other lines because this tail can contain real body text.
+        unplaced_dropped = 0
+        if unplaced and repeated_unplaced:
+            before = len(unplaced)
+            unplaced = "\n".join(
+                line
+                for line in unplaced.splitlines()
+                if _furniture_key(line) not in repeated_unplaced
+            ).strip()
+            unplaced_dropped = before - len(unplaced)
         if unplaced and keep_unplaced:
             kept.append(unplaced)
 
@@ -347,6 +380,7 @@ def build_document(
                 "empty_region_count": n_empty_regions,
                 "band_region_count": n_band,
                 "band_dropped_count": n_dropped,
+                "unplaced_dropped_count": unplaced_dropped,
                 "unplaced_char_count": len(unplaced),
                 "text_source": "docling_fusion",
                 "table_candidate_count": sum(1 for i in items if i.get("grid")),
@@ -580,6 +614,13 @@ def main(argv: list[str] | None = None) -> int:
                         help="drop header/footer-band blocks whose text repeats on N or more "
                              "pages (0 disables). Position alone is not enough -- band text "
                              "appearing once is usually real content.")
+    parser.add_argument("--furniture-review-share", type=float, default=0.10,
+                        metavar="SHARE",
+                        help="list documents losing at least this share to repeated "
+                             "furniture. Reported for review; never fails the run")
+    parser.add_argument("--drop-repeated-unplaced", type=int, default=3, metavar="N",
+                        help="drop unplaced lines whose text repeats on N or more pages "
+                             "(0 disables); non-repeated unplaced lines are kept")
     parser.add_argument("--keep-md-prefix", action="store_true",
                         help="keep the '## ' markdown prefix on heading text")
     parser.add_argument("--drop-band", action="store_true",
@@ -613,6 +654,7 @@ def main(argv: list[str] | None = None) -> int:
 
     written = 0
     total_missing = 0
+    furniture_removed: dict[str, tuple[int, int]] = {}
     built: dict[str, dict[str, Any]] = {}
     for cache_path in caches:
         cached = json.loads(cache_path.read_text(encoding="utf-8"))
@@ -628,6 +670,7 @@ def main(argv: list[str] | None = None) -> int:
             keep_band=not args.drop_band,
             keep_unplaced=not args.drop_unplaced,
             drop_repeated_band=args.drop_repeated_band,
+            drop_repeated_unplaced=args.drop_repeated_unplaced,
             strip_md_prefix=not args.keep_md_prefix,
         )
         if not rows:
@@ -658,11 +701,48 @@ def main(argv: list[str] | None = None) -> int:
         }
         written += 1
         total_missing += missing
+        dropped = sum(int(r.get("unplaced_dropped_count") or 0) for r in rows)
+        if dropped:
+            furniture_removed[stem] = (dropped, len(text) + dropped)
         note = f"  ({missing} page(s) had no fused text)" if missing else ""
         print(f"{ticker}/{stem}: {len(rows)} pages, {len(text)} chars{note}")
 
     print()
     print(f"{written} document(s) -> {out_dir}")
+
+    # Report, do not block. A high share is expected rather than suspicious:
+    # a short report carrying a long ribbon on most of its pages loses a large
+    # fraction legitimately -- The Children's Place 2023 is 29k characters with
+    # a 235-character doubled header repeated on 21 pages, which is 17% of the
+    # document and entirely furniture. Every document above this line was
+    # checked by hand on the first run and all 20 were nav ribbons or running
+    # report titles, none of them content. So the number is a prompt to look,
+    # not evidence of damage, and failing the run on it only stops work that
+    # should continue.
+    if furniture_removed:
+        total_dropped = sum(d for d, _ in furniture_removed.values())
+        total_before = sum(t for _, t in furniture_removed.values())
+        print(
+            f"repeated furniture removed: {total_dropped} chars "
+            f"({total_dropped / max(total_before, 1):.2%} of affected documents)"
+        )
+        outliers = sorted(
+            (
+                (dropped / max(before, 1), stem, dropped)
+                for stem, (dropped, before) in furniture_removed.items()
+            ),
+            reverse=True,
+        )
+        flagged = [o for o in outliers if o[0] >= args.furniture_review_share]
+        if flagged:
+            print(
+                f"  {len(flagged)} document(s) above "
+                f"{args.furniture_review_share:.0%} -- worth a look, not a failure:"
+            )
+            for share, stem, dropped in flagged[:10]:
+                print(f"    {share:6.1%}  -{dropped:6d} chars  {stem}")
+            if len(flagged) > 10:
+                print(f"    ... and {len(flagged) - 10} more")
 
     # Documents in the tree that this run did not produce. Usually harmless
     # leftovers from an earlier run; sometimes the same document under a stale
