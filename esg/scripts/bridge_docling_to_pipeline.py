@@ -385,6 +385,26 @@ def synthesise_parse_row(
     return row
 
 
+def ticker_map(source_index: Path) -> dict[str, str]:
+    """stem -> ticker, straight from the production parse index.
+
+    The file stem is not a reliable source for this. Deriving the ticker from
+    the text before the first hyphen assumes a TICKER-COMPANY-YEAR layout that
+    real filenames do not always follow: a company name can contain a hyphen,
+    and some files put the ticker last.
+    """
+    mapping: dict[str, str] = {}
+    if not source_index.exists():
+        return mapping
+    with source_index.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            stem = Path(row.get("pdf_file") or "").stem
+            ticker = (row.get("ticker") or "").strip()
+            if stem and ticker:
+                mapping[stem] = ticker
+    return mapping
+
+
 def write_parse_index(
     source_index: Path,
     out_index: Path,
@@ -456,7 +476,7 @@ def write_parse_index(
         for stem, info in built.items():
             if stem in reused:
                 continue
-            ticker = stem.split("-", 1)[0].strip() or "UNKNOWN"
+            ticker = info.get("ticker") or stem.split("-", 1)[0].strip() or "UNKNOWN"
             rows.append(synthesise_parse_row(fieldnames, stem, ticker, info, raw_dir))
             synthesised += 1
 
@@ -505,13 +525,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"no fused text under {fused_dir}; run the fuse stage first", file=sys.stderr)
         return 1
 
+    stems_to_ticker = ticker_map(args.parse_index_in)
+
     written = 0
     total_missing = 0
     built: dict[str, dict[str, Any]] = {}
     for cache_path in caches:
         cached = json.loads(cache_path.read_text(encoding="utf-8"))
         stem = cached["pdf_stem"]
-        ticker = stem.split("-", 1)[0].strip() or "UNKNOWN"
+        # The chunker joins on (ticker, pdf_stem), so a guessed ticker silently
+        # drops the document rather than failing. Prefer the index; the prefix
+        # is only a fallback for documents it has never seen.
+        ticker = stems_to_ticker.get(stem) or stem.split("-", 1)[0].strip() or "UNKNOWN"
 
         text, rows, missing, headings = build_document(
             cached,
@@ -541,6 +566,7 @@ def main(argv: list[str] | None = None) -> int:
             "csv": str((target / f"{stem}.pages.csv").as_posix()),
             "pages": len(rows),
             "chars": len(text),
+            "ticker": ticker,
             "parsed_at": datetime.now(timezone.utc).isoformat(),
             "quality": measure_text_quality(
                 text, len(rows), sum(r["unplaced_char_count"] for r in rows)
