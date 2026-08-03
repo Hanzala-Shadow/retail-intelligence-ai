@@ -511,12 +511,65 @@ def stage_convert_gold_pages(args: argparse.Namespace) -> int:
     return 0
 
 
+# Text density separates "this report is image-heavy by design" from "this PDF
+# has no text layer and every word is locked in a picture". Measured over the
+# 131-document cache: median 330 words/page, 10th percentile 212, and the
+# sparsest genuine document (BIRD-ALLBIRDS-2024, a 15-page report) sits at 75.5.
+# GPRO-2023 converted at under 45. So below 60 is a document PyMuPDF cannot read
+# either, and 60-100 is worth a look without being an error.
+SPARSE_OCR_WORDS_PER_PAGE = 60.0
+SPARSE_REVIEW_WORDS_PER_PAGE = 100.0
+
+
+def _text_density(by_page: dict[int, list[dict[str, Any]]], n_pages: int) -> float:
+    """Words per page across docling's text-bearing regions."""
+    if not n_pages:
+        return 0.0
+    words = sum(
+        len((item.get("text") or "").split())
+        for items in by_page.values()
+        for item in items
+    )
+    return words / n_pages
+
+
+# A document is cached only when BOTH halves are on disk. They are written as
+# two separate files, so a stop between them used to leave <stem>.json alone on
+# disk -- which the old existence check accepted, skipping that document on
+# every future run. It never errored and never appeared in any count; the
+# document simply vanished from the corpus.
+def _cache_paths(cache_dir: Path, stem: str) -> tuple[Path, Path]:
+    return cache_dir / f"{stem}.json", cache_dir / f"{stem}.pages.json"
+
+
+def _cache_is_complete(cache_dir: Path, stem: str) -> bool:
+    return all(p.exists() and p.stat().st_size > 0 for p in _cache_paths(cache_dir, stem))
+
+
+def _write_json_atomic(path: Path, payload: Any) -> None:
+    """Write via a temp file and rename, so a kill never leaves a partial file.
+
+    Existence alone is not enough to trust a cache entry: a process killed
+    mid-write leaves a truncated file that exists and parses as garbage.
+    Path.replace is atomic within a filesystem, so readers see either the old
+    file or the complete new one, never a prefix of it.
+    """
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(path)
+
+
 def stage_convert(args: argparse.Namespace) -> int:
     if args.gold_pages:
         return stage_convert_gold_pages(args)
 
     cache_dir = args.work_dir / "docling_json"
     cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Leftovers from a kill during a previous run's rename window.
+    for stale in cache_dir.glob("*.json.tmp"):
+        print(f"removing stale temp file {stale.name}", file=sys.stderr)
+        stale.unlink()
 
     pdfs = sorted(p for p in args.pdf_dir.rglob("*.pdf"))
     if args.limit:
@@ -552,10 +605,16 @@ def stage_convert(args: argparse.Namespace) -> int:
     run_started = time.time()
 
     for index, pdf in enumerate(pdfs, start=1):
-        out_path = cache_dir / f"{pdf.stem}.json"
-        if out_path.exists() and not args.force:
+        out_path, pages_path = _cache_paths(cache_dir, pdf.stem)
+        if _cache_is_complete(cache_dir, pdf.stem) and not args.force:
             print(f"[{index}/{len(pdfs)}] skip (cached) {pdf.name}")
             continue
+        # Half a cache entry is worse than none: drop it so this run rebuilds
+        # both halves rather than trusting whichever one survived.
+        for half in (out_path, pages_path):
+            if half.exists():
+                print(f"[{index}/{len(pdfs)}] incomplete cache, reconverting {pdf.name}")
+                half.unlink()
         if budget_seconds and (time.time() - run_started) >= budget_seconds:
             spent = (time.time() - run_started) / 60
             remaining = len(pdfs) - index + 1
@@ -577,7 +636,7 @@ def stage_convert(args: argparse.Namespace) -> int:
         n_pages = len(getattr(doc, "pages", {}) or {})
 
         payload = doc.export_to_dict()
-        out_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        _write_json_atomic(out_path, payload)
 
         # Page-grouped text is what the emit stage needs, and building it here
         # means emit never has to re-run the models. This MUST go through
@@ -585,19 +644,15 @@ def stage_convert(args: argparse.Namespace) -> int:
         # copy here silently missed the multi-provenance fix and broke this
         # whole-document path while the gold-page path kept working.
         by_page = _collect_items(doc)
-        pages_path = cache_dir / f"{pdf.stem}.pages.json"
-        pages_path.write_text(
-            json.dumps(
-                {
-                    "pdf_file": pdf.name,
-                    "pdf_stem": pdf.stem,
-                    "n_pages": n_pages,
-                    "seconds": round(elapsed, 2),
-                    "pages": {str(k): v for k, v in sorted(by_page.items())},
-                },
-                ensure_ascii=False,
-            ),
-            encoding="utf-8",
+        _write_json_atomic(
+            pages_path,
+            {
+                "pdf_file": pdf.name,
+                "pdf_stem": pdf.stem,
+                "n_pages": n_pages,
+                "seconds": round(elapsed, 2),
+                "pages": {str(k): v for k, v in sorted(by_page.items())},
+            },
         )
         timings.append((pdf.name, elapsed, n_pages))
         per_page = elapsed / n_pages if n_pages else float("nan")
@@ -606,6 +661,18 @@ def stage_convert(args: argparse.Namespace) -> int:
             f"{elapsed:.1f}s ({per_page:.2f}s/page)"
         )
 
+        # A picture-heavy report with no text layer converts quickly and looks
+        # successful -- GPRO-2023 produced 19 pages and almost no words. Say so
+        # at the point of conversion instead of leaving it to be caught by eye.
+        density = _text_density(by_page, n_pages)
+        if density < SPARSE_REVIEW_WORDS_PER_PAGE:
+            label = "NO TEXT LAYER" if density < SPARSE_OCR_WORDS_PER_PAGE else "sparse"
+            print(
+                f"    ^ {label}: {density:.0f} words/page "
+                f"(corpus median ~330) -- likely needs -WithOcr",
+                file=sys.stderr,
+            )
+
     if timings:
         total_pages = sum(n for _, _, n in timings)
         total_time = sum(t for _, t, _ in timings)
@@ -613,7 +680,49 @@ def stage_convert(args: argparse.Namespace) -> int:
             f"\nconverted {len(timings)} doc(s), {total_pages} pages, "
             f"{total_time:.1f}s total, {total_time / max(total_pages, 1):.2f}s/page mean"
         )
+
+    _report_sparse_cache(cache_dir)
     return 0
+
+
+def _report_sparse_cache(cache_dir: Path) -> None:
+    """List every cached document whose text density suggests it needs OCR.
+
+    Scans the whole cache rather than only this run's conversions: a document
+    converted three runs ago is just as empty, and until now the only way to
+    notice was to read the overlays.
+    """
+    found: list[tuple[float, str, int]] = []
+    for path in sorted(cache_dir.glob("*.pages.json")):
+        try:
+            cached = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"unreadable cache entry {path.name}: {exc}", file=sys.stderr)
+            continue
+        pages = cached.get("pages", {})
+        n_pages = cached.get("n_pages") or len(pages)
+        by_page = {int(k): v for k, v in pages.items()}
+        density = _text_density(by_page, n_pages)
+        if density < SPARSE_REVIEW_WORDS_PER_PAGE:
+            found.append((density, cached.get("pdf_stem", path.stem), n_pages))
+
+    if not found:
+        return
+
+    needs_ocr = [f for f in found if f[0] < SPARSE_OCR_WORDS_PER_PAGE]
+    print(f"\n{'=' * 64}")
+    print(f"  text density: {len(found)} document(s) below "
+          f"{SPARSE_REVIEW_WORDS_PER_PAGE:.0f} words/page")
+    print("=" * 64)
+    for density, stem, n_pages in sorted(found):
+        tag = "NEEDS OCR" if density < SPARSE_OCR_WORDS_PER_PAGE else "review   "
+        print(f"  {tag}  {density:6.1f} w/pg  {n_pages:4d}p  {stem}")
+    if needs_ocr:
+        print(
+            f"\n  {len(needs_ocr)} document(s) have effectively no text layer. "
+            "Re-convert just those with -WithOcr;\n"
+            "  leaving them as-is puts empty pages into the retrieval index."
+        )
 
 
 def _item_label_safe(item: Any) -> str:
