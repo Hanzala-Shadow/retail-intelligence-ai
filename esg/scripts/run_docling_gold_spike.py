@@ -525,16 +525,47 @@ def stage_convert(args: argparse.Namespace) -> int:
         print(f"no PDFs found under {args.pdf_dir}", file=sys.stderr)
         return 1
 
+    if args.shards > 1:
+        # Shard across processes. There is no GPU here, so running several
+        # converters at once is the only way to use the machine; each writes
+        # <stem>.json, so distinct documents never contend for a file.
+        #
+        # Largest first, dealt round-robin. Convert time is roughly linear in
+        # page count, and under a wall-clock budget an unlucky shard holding
+        # several 78-page reports would finish far fewer documents than its
+        # peers. File size stands in for page count so planning stays cheap --
+        # opening every PDF to plan the split would cost more than it saves.
+        pdfs.sort(key=lambda p: -p.stat().st_size)
+        pdfs = [p for i, p in enumerate(pdfs) if i % args.shards == args.shard]
+        print(f"shard {args.shard + 1}/{args.shards}: {len(pdfs)} document(s)")
+
     print(f"docling {_docling_version()}  |  {len(pdfs)} PDF(s)")
     converter = _build_converter(args)
     _conv_cache: dict[bool, Any] = {}
     timings: list[tuple[str, float, int]] = []
+
+    # Previously only the --gold-pages path read this, so a whole-document run
+    # ignored the budget and ran to completion however long it took. Checked at
+    # the document boundary: stopping mid-convert would write no cache entry
+    # and throw away the work already spent on that document.
+    budget_seconds = args.time_budget_min * 60 if args.time_budget_min else 0.0
+    run_started = time.time()
 
     for index, pdf in enumerate(pdfs, start=1):
         out_path = cache_dir / f"{pdf.stem}.json"
         if out_path.exists() and not args.force:
             print(f"[{index}/{len(pdfs)}] skip (cached) {pdf.name}")
             continue
+        if budget_seconds and (time.time() - run_started) >= budget_seconds:
+            spent = (time.time() - run_started) / 60
+            remaining = len(pdfs) - index + 1
+            print(
+                "\n"
+                + f"stopping: {args.time_budget_min:.0f} min budget reached after "
+                f"{spent:.1f} min, {remaining} document(s) not started. "
+                f"Re-run to resume; converted documents are cached."
+            )
+            break
         started = time.time()
         try:
             result = _converter_for(pdf, args, _conv_cache).convert(str(pdf))
@@ -1707,10 +1738,23 @@ def main(argv: list[str] | None = None) -> int:
         help="disable docling OCR of picture regions (faster; text-layer PDFs only)",
     )
     parser.add_argument(
+        "--shards",
+        type=int,
+        default=1,
+        help="split the document list across this many parallel processes",
+    )
+    parser.add_argument(
+        "--shard",
+        type=int,
+        default=0,
+        help="which shard this process handles (0-based)",
+    )
+    parser.add_argument(
         "--time-budget-min",
         type=float,
         default=0.0,
-        help="convert --gold-pages: stop cleanly after this many minutes (0 = no limit)",
+        help="convert: stop cleanly at a document boundary after this many "
+        "minutes (0 = no limit)",
     )
     args = parser.parse_args(argv)
 

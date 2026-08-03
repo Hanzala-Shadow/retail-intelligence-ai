@@ -31,8 +31,13 @@ param(
     [string] $RawDir       = "data/01_raw/sustainability",
     [string] $ParseIndexIn = "data/00_reference/esg_parse_index.csv",
     # Converting is the slow stage. The budget stops it at a document boundary
-    # rather than mid-document, so the cache stays coherent.
-    [int]    $TimeBudgetMin = 240,
+    # rather than mid-document, so the cache stays coherent. It applies per
+    # worker, and workers run concurrently, so this is wall-clock time.
+    [int]    $TimeBudgetMin = 165,
+    # Parallel convert processes. CPU-only box: 4 x 4 threads on 16 logical
+    # cores. Raising this past the physical core count buys nothing and costs
+    # memory -- each worker loads its own copy of the layout models.
+    [int]    $Workers = 4,
     [switch] $Force,
     # Skip straight to the downstream stages when the cache is already built.
     [switch] $SkipConvert
@@ -70,7 +75,7 @@ Write-Host "docling fusion pipeline" -ForegroundColor Cyan
 Write-Host "  documents   : $pdfCount"
 Write-Host "  input       : $PdfDir"
 Write-Host "  output root : $WorkRoot"
-Write-Host "  convert cap : $TimeBudgetMin min"
+Write-Host "  convert cap : $TimeBudgetMin min (wall clock, $Workers workers)"
 Write-Host ""
 
 function Invoke-Stage {
@@ -89,15 +94,58 @@ function Invoke-Stage {
 
 if (-not $SkipConvert) {
     # Stage 1. The models run here; everything after this is cheap.
-    $convertArgs = @(
-        $spike, "convert",
-        "--pdf-dir", $PdfDir,
-        "--work-dir", $work,
-        "--all-pages",
-        "--time-budget-min", $TimeBudgetMin
-    )
-    if ($Force) { $convertArgs += "--force" }
-    Invoke-Stage "1/5 convert  (docling layout + tables)" $pyDocling $convertArgs
+    #
+    # There is no CUDA on this machine, so docling runs on CPU and a single
+    # converter leaves most of the box idle. Workers take disjoint document
+    # lists and share one cache directory, which is safe because each writes
+    # <stem>.json. Threads are divided rather than added: four processes each
+    # grabbing all 16 threads would oversubscribe and thrash.
+    $threads = [math]::Max(1, [int]([Environment]::ProcessorCount / $Workers))
+    $env:OMP_NUM_THREADS = $threads
+    $env:MKL_NUM_THREADS = $threads
+    $env:TOKENIZERS_PARALLELISM = "false"
+
+    $logDir = Join-Path $WorkRoot "logs"
+    New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+    Write-Host ("=" * 64) -ForegroundColor DarkGray
+    Write-Host "  1/5 convert  ($Workers workers x $threads threads)" -ForegroundColor Yellow
+    Write-Host ("=" * 64) -ForegroundColor DarkGray
+    Write-Host "  budget $TimeBudgetMin min per worker; logs in $logDir"
+    $t0 = Get-Date
+
+    $procs = @()
+    for ($s = 0; $s -lt $Workers; $s++) {
+        $shardArgs = @(
+            $spike, "convert",
+            "--pdf-dir", $PdfDir,
+            "--work-dir", $work,
+            "--all-pages",
+            "--shards", $Workers,
+            "--shard", $s,
+            "--time-budget-min", $TimeBudgetMin
+        )
+        if ($Force) { $shardArgs += "--force" }
+        $n = $s + 1
+        $procs += Start-Process -FilePath $pyDocling -ArgumentList $shardArgs `
+            -NoNewWindow -PassThru `
+            -RedirectStandardOutput (Join-Path $logDir "convert_shard$n.log") `
+            -RedirectStandardError  (Join-Path $logDir "convert_shard$n.err")
+        Write-Host "    shard $n started (pid $($procs[-1].Id))"
+    }
+
+    # A worker that dies should not take the run down: the others keep
+    # converting and everything cached still flows downstream.
+    $procs | Wait-Process
+    foreach ($i in 0..($procs.Count - 1)) {
+        $code = $procs[$i].ExitCode
+        $tag  = if ($code -eq 0) { "ok" } else { "EXIT $code -- see logs" }
+        Write-Host "    shard $($i + 1): $tag"
+    }
+    $mins = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
+    $cached = @(Get-ChildItem -Path (Join-Path $work "docling_json") -Filter "*.pages.json" -ErrorAction SilentlyContinue).Count
+    Write-Host "  -> convert done in $mins min; $cached document(s) cached" -ForegroundColor Green
+    Write-Host ""
 
     # Stage 2. Fusion proper: docling decides regions and reading order,
     # PyMuPDF supplies the words that fill them.
