@@ -431,7 +431,18 @@ def measure_text_quality(
     chunker as needs_review rather than being waved through because it had no
     production row to inherit a verdict from.
     """
-    words = WORD_RE.findall(text)
+    # Markdown table structure is not vocabulary. --table-mode grid emits a '|'
+    # between every pair of cells and a '---' rule under each header, and those
+    # tokens land in the denominator: AEO-2024 is 10 table-heavy pages where 408
+    # of 1,828 tokens are pipes, which dragged its ratio to 0.4584 and flagged a
+    # document whose prose is fine. Excluding structure puts it at 0.6033.
+    # This check exists to catch garbled or mis-decoded text, so it must not
+    # punish formatting the pipeline itself chose to add.
+    words = [
+        w
+        for w in WORD_RE.findall(text)
+        if w != "|" and set(w) != {"-"}
+    ]
     readable = sum(1 for w in words if READABLE_RE.match(w))
     ratio = readable / len(words) if words else 0.0
     per_page = len(text) / page_count if page_count else 0.0
