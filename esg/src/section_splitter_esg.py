@@ -62,6 +62,11 @@ SECTION_INDEX_FIELDS = [
 PROVENANCE_VERSION = "contiguous_v3"
 
 MIN_SECTION_CHARS = 300
+
+# How far a topic may carry past its own heading, in pages, before unmatched
+# headings stop inheriting it. Chosen from a 150-chunk read: clean chunks came
+# from sections spanning a median of 2 pages, defective ones 4.
+MAX_INHERITED_PAGES = 3
 BODY_SENTENCE_RE = re.compile(
     r"\b(describes?|includes?|focus(?:es)?|supports?|helps?|manages?|reports?|"
     r"provides?|improves?|reduces?|accounted|complaining|read|learn|refresh(?:ed)?|"
@@ -178,6 +183,10 @@ class HeadingCandidate:
     title: str
     toc_like: bool
     heading_confidence: str = "medium"
+    # False for a docling heading that matched no topic regex. It still ends
+    # the previous section; its code is inherited later, or dropped to 'other'
+    # once it is too far from the heading that set the topic.
+    topic_matched: bool = True
 
 
 @dataclass(frozen=True)
@@ -770,13 +779,55 @@ def _front_matter_candidates_from_compact_toc(
     return candidates
 
 
+def _usable_unmatched_heading(title: str) -> bool:
+    """Whether a heading the taxonomy cannot name may still start a section.
+
+    docling labels statistic callouts section_header too -- '46%', '92.5 tons
+    of beauty packaging recovered through BEAUTYCYCLE' -- and letting those
+    open a section gives the chunk a caption for a title. A heading that
+    matched a topic is exempt: '2024 GHG Emissions' is a real heading that
+    happens to start with a year.
+    """
+    stripped = title.strip()
+    if not stripped:
+        return False
+    # A callout leads with its number; a heading rarely does.
+    if re.match(r"^[\d$%]", stripped):
+        return False
+    # A fragment continuing the line above ('of Board of Directors identify...')
+    # starts lowercase. Real headings are capitalised or set in caps.
+    if stripped[0].islower():
+        return False
+    return len(re.findall(r"[A-Za-z]{2,}", stripped)) >= 2
+
+
+def _nearest_content_line(lines: list[str], index: int, step: int) -> str:
+    """Nearest neighbouring line that is neither blank nor page furniture.
+
+    Adjacency heuristics are about document structure, so a navigation ribbon
+    or running footer between two real lines must not stand in for the line it
+    happens to sit next to.
+    """
+    cursor = index + step
+    while 0 <= cursor < len(lines):
+        line = lines[cursor]
+        if line.strip() and not _is_navigation_or_report_chrome(line):
+            return line
+        cursor += step
+    return ""
+
+
 def _looks_like_table_or_index_candidate(
     candidate: HeadingCandidate,
     lines: list[str],
+    trust_layout: bool = False,
 ) -> bool:
     """Reject topic words used as table cells or disclosure-index row labels."""
-    previous = _nearest_nonempty_line(lines, candidate.line_index, -1)
-    following = _nearest_nonempty_line(lines, candidate.line_index, 1)
+    # Furniture is not evidence. A footer ribbon ending in its page number sits
+    # directly above many headings, and reading it as the previous line makes a
+    # heading look like a numeric table row.
+    previous = _nearest_content_line(lines, candidate.line_index, -1)
+    following = _nearest_content_line(lines, candidate.line_index, 1)
     surrounding = f"{previous} {following}"
     title_words = re.findall(r"[A-Za-z][A-Za-z-]*", candidate.title)
 
@@ -788,6 +839,13 @@ def _looks_like_table_or_index_candidate(
     )
     if len(title_words) <= 6 and index_signal:
         return True
+
+    # Everything below infers layout from neighbouring text. When docling has
+    # already labelled this line a section_header that inference is redundant,
+    # and in a report that quotes a statistic per paragraph it is actively
+    # wrong: it rejects real headings for sitting between numbers.
+    if trust_layout:
+        return False
 
     previous_numbers = re.findall(r"\d+(?:[.,]\d+)?%?", previous)
     following_numbers = re.findall(r"\d+(?:[.,]\d+)?%?", following)
@@ -1261,6 +1319,23 @@ def collect_heading_candidates(
                     toc_like=has_page_reference(line),
                 )
             )
+        elif heading_offsets is not None:
+            # docling says this line is a heading even though the taxonomy has
+            # no word for it. Dropping it merged its body into the previous
+            # topic, which is where most misfiled chunks came from. Keep it as
+            # a boundary; the code is resolved after filtering.
+            title = normalize_heading_text(line)
+            if title and _usable_unmatched_heading(title):
+                raw_candidates.append(
+                    HeadingCandidate(
+                        line_index=i,
+                        char_offset=offset,
+                        section_code="",
+                        title=title,
+                        toc_like=has_page_reference(line),
+                        topic_matched=False,
+                    )
+                )
         offset += len(line_with_ending)
 
     toc_pages = _compact_toc_pages(text, page_spans or [])
@@ -1324,7 +1399,9 @@ def collect_heading_candidates(
             and not _has_substantial_narrative_following(candidate, lines)
         ):
             continue
-        if _looks_like_table_or_index_candidate(candidate, lines):
+        if _looks_like_table_or_index_candidate(
+            candidate, lines, trust_layout=heading_offsets is not None
+        ):
             continue
         if toc_heavy and candidate.char_offset < total_chars * 0.10 and candidate.toc_like:
             continue
@@ -1341,7 +1418,56 @@ def collect_heading_candidates(
             )
         )
 
-    return filtered
+    return _resolve_inherited_codes(filtered, page_spans or [])
+
+
+def _page_index_lookup(page_spans: list) -> list[int]:
+    """Character offsets at which each page starts, ascending."""
+    starts = []
+    for span in page_spans:
+        raw = span.get("char_start") if isinstance(span, dict) else getattr(span, "char_start", None)
+        # parse_int rather than int(): these come straight off a CSV, so the
+        # values are strings and a malformed row must be skipped, not raise.
+        start = parse_int(raw) if not isinstance(raw, int) else raw
+        if start is not None:
+            starts.append(start)
+    return sorted(starts)
+
+
+def _resolve_inherited_codes(
+    candidates: list[HeadingCandidate], page_spans: list
+) -> list[HeadingCandidate]:
+    """Give every unmatched heading a code: inherited nearby, 'other' beyond.
+
+    A heading the taxonomy cannot name is usually a subheading of the topic it
+    sits under, so inheriting keeps it routed correctly. But inheritance has to
+    stop somewhere -- a topic heading on page 25 says nothing about page 34,
+    and that is precisely how a packaging section came to hold inclusion copy.
+    """
+    import bisect
+
+    starts = _page_index_lookup(page_spans)
+
+    def page_of(offset: int) -> int:
+        return bisect.bisect_right(starts, offset) if starts else 0
+
+    resolved: list[HeadingCandidate] = []
+    active_code = ""
+    active_page = 0
+
+    for candidate in candidates:
+        if candidate.topic_matched:
+            active_code = candidate.section_code
+            active_page = page_of(candidate.char_offset)
+            resolved.append(candidate)
+            continue
+
+        page = page_of(candidate.char_offset)
+        too_far = starts and (page - active_page) > MAX_INHERITED_PAGES
+        code = "other" if (not active_code or too_far) else active_code
+        resolved.append(replace(candidate, section_code=code))
+
+    return resolved
 
 
 def confidence_for(
