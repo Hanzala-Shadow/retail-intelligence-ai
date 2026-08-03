@@ -10,9 +10,16 @@
   transformers, which the production pipeline does not want, so the convert and
   fuse stages run in venv-docling and everything downstream runs in venv.
 
-  The convert stage caches per document. Re-running after an interruption skips
-  what already finished, so stopping this script is safe and resuming is just
+  The convert stage caches per document, and a document counts as cached only
+  when both halves of its cache entry are present and non-empty. Cache files are
+  written atomically, so a stop mid-write leaves nothing to trust by mistake.
+  Re-running after an interruption skips what already finished and reconverts
+  anything half-written, so stopping this script is safe and resuming is just
   running it again. Pass -Force to reconvert from scratch.
+
+  Convert also reports documents whose text density is too low to be real --
+  a picture-heavy PDF with no text layer converts quickly and looks successful.
+  Anything listed as NEEDS OCR should be reconverted with -WithOcr.
 
   Nothing here writes to the production corpus. All output lands under
   -WorkRoot.
@@ -41,6 +48,10 @@ param(
     # the same CPU and gain nothing. Four workers exhausted memory outright
     # (std::bad_alloc) because each loads its own copy of the models.
     [int]    $Workers = 1,
+    # Chunk planning is CPU-parallel and keeps all file/index writes in the
+    # parent process. Keep this separate from the Docling conversion workers.
+    [ValidateRange(1, 128)]
+    [int]    $ChunkWorkers = 8,
     # Docling's OCR costs ~80% of convert time and changes nothing here, because
     # fusion takes its words from PyMuPDF and discards docling's text. Measured
     # on the same document: 9.91 -> 2.04 s/page, and the fused output differed
@@ -85,6 +96,7 @@ Write-Host "  documents   : $pdfCount"
 Write-Host "  input       : $PdfDir"
 Write-Host "  output root : $WorkRoot"
 Write-Host "  convert cap : $TimeBudgetMin min (wall clock, $Workers workers)"
+Write-Host "  chunking    : $ChunkWorkers workers"
 Write-Host ""
 
 function Invoke-Stage {
@@ -215,7 +227,8 @@ Invoke-Stage "5/5 chunks   (+ retrieval gating)" $pyMain @(
     "--out", $chunks,
     "--index", $chunksIdx,
     "--sections-index", $sectionsIdx,
-    "--parse-index", $parseIndex
+    "--parse-index", $parseIndex,
+    "--workers", $ChunkWorkers
 )
 
 $elapsed = [math]::Round(((Get-Date) - $started).TotalMinutes, 1)
