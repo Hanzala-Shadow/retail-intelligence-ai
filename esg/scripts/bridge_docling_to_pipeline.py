@@ -290,8 +290,11 @@ def build_document(
 # rows it flags low_readable_word_ratio sit at 0.41 and 0.42, its p10 is 0.71,
 # and its lowest chars_per_page is 459.
 # A document whose words mostly landed in no region has no usable reading
-# order, whatever its text looks like. FLEXSTEEL-2024 reached 98% because
-# an oversized page made docling label every region a picture.
+# order, whatever its text looks like. Seen at 98% on a cache whose convert
+# produced picture regions and nothing else, so every word fell through to the
+# unplaced path while the run still reported success. The same PDF converts
+# cleanly at 8% through the normal path -- which is the point: the failure is
+# not predictable from the document, only observable in the output.
 MAX_UNPLACED_SHARE = 0.25
 MIN_READABLE_WORD_RATIO = 0.50
 MIN_CHARS_PER_PAGE = 300
