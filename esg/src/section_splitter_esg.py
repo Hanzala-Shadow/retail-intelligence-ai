@@ -155,18 +155,18 @@ HEADING_PATTERNS: list[tuple[str, str]] = [
     ("appendix", r"\b(appendix|appendices|annex|assurance|limited\s+assurance|verification\s+statement|memberships?\s+and\s+associations?|complete\s+material\s+topic\s+list|(?:gri|sasb|tcfd|ungprf|sdgs?|esg|sustainability|disclosure|content|report(?:ing)?|context)\s+(?:content\s+)?index|(?:content|disclosure|report(?:ing)?|tcfd|sasb|gri|sdgs?|ungprf)\s+index|indices)\b"),
     ("about_this_report", r"^about$|\b(about\s+this\s+report|about\s+the\s+report|introduction|company\s+overview|about\s+[a-z0-9&.,'\s]+\s+brands?|sustainable\s+value\s+creation|value\s+creation\s+model|our\s+journey|esg\s+through\s+the\s+years|reporting\s+scope|reporting\s+framework|framework\s+alignment|gri|sasb|tcfd|materiality\s+(?:assessment|analysis|matrix|approach)?|double\s+materiality|material\s+esg\s+topics?|material\s+topics?)\b"),
     ("emissions", r"\b(science[-\s]based\s+targets?|carbon\s+neutral\w*|greenhouse\s+gas|ghg|scope\s+1|scope\s+2|scope\s+3|emissions?|emissions?\s+reduction|carbon\s+footprints?|carbon\s+footprint\s+transparency|annual\s+ghg\s+inventory)\b"),
-    ("climate", r"\b(climate|climate\s+change|climate\s+risk|climate\s+stability|decarbonization|net\s+zero|comfort\s+without\s+carbon|carbon\s+reduction)\b"),
+    ("climate", r"\b(climate|climate\s+change|climate\s+risk|climate\s+stability|decarbonization|net\s+zero|comfort\s+without\s+carbon|carbon\s+reduction|refrigerants?|refrigerant\s+\w+)\b"),
     ("energy", r"\b(energy|renewable\s+energy|renewables?|electricity|powered\s+by\s+renewables?)\b"),
     ("waste", r"\b(landfill\s+diversion|responsible\s+disposal|single[-\s]use|take[-\s]?back|recycled\s+content|extending\s+product\s+life|product\s+life\s+extension|trade-?in|resale|reuse|repairability|waste|recycling|circularity|circular\s+economy|circular\s+design|end-of-life|packaging|bags\s+and\s+boxes|warding\s+off\s+waste)\b"),
     ("water", r"\b(effluents?|water|wastewater|water\s+stewardship|water\s+leadership|water\s+goals|woman\s+\+\s+water|women\s+\+\s+water)\b"),
-    ("environmental", r"\b(animal\s+welfare|deforestation|safer\s+chemicals?|sustainable\s+operations|environmental|environment|planet|sustainability\s+strategy|sustainable\s+(raw\s+)?materials?|responsible\s+materials?|preferred\s+materials?|recycled\s+materials?|raw\s+materials?|materials?\s+(?:management|targets?|choices?|innovation|traceability|sourcing)|sustainable\s+cotton|sustainable\s+polyester|sustainable\s+ingredients?|chemicals?\s+management|chemical\s+safety|resource\s+management|resource\s+efficiency|material\s+footprint|bio-circular|product\s+carbon|product\s+life\s+cycle|biodiversity|natural\s+fibers?|synthetics|cellulosics|advanced\s+resource\s+recovery|circular\s+business\s+models?)\b|^materials?$"),
+    ("environmental", r"\b(animal\s+welfare|deforestation|safer\s+chemicals?|sustainable\s+operations|environmental|environment|planet|sustainability\s+strategy|sustainable\s+(raw\s+)?materials?|responsible\s+materials?|preferred\s+materials?|recycled\s+materials?|raw\s+materials?|materials?\s+(?:management|targets?|choices?|innovation|traceability|sourcing)|sustainable\s+cotton|sustainable\s+polyester|sustainable\s+ingredients?|chemicals?\s+management|chemical\s+safety|resource\s+management|resource\s+efficiency|material\s+footprint|bio-circular|product\s+carbon|product\s+life\s+cycle|biodiversity|natural\s+fibers?|synthetics|cellulosics|advanced\s+resource\s+recovery|circular\s+business\s+models?|pfas|per-?\s+and\s+polyfluoroalkyl\w*|sustainable\s+products?|product\s+sustainability)\b|^materials?$"),
     ("diversity_equity_inclusion", r"\b(accessibility|diversity|equity|inclusion|inclusivity|inclusive|dei|idea:|idea\s+alliance|belonging|representation|racial\s+justice|inclusive\s+behaviors?|empowering\s+women|women['’]s\s+equity|equality\s+and\s+belonging)\b"),
     ("supply_chain_ethics", r"\b(forced\s+labou?r|child\s+labou?r|modern\s+slavery|conflict\s+minerals?|traceability|supply\s+chain|responsible\s+sourcing|sourcing|human\s+rights|supplier|vendor|factory|labor\s+rights|purchasing\s+practices|betterwork|workers?\s+voice|women\s+workers|fair\s+compensation|due\s+diligence|supply\s+chain\s+standards?|supplier\s+performance|communicating\s+with\s+workers|safe\s+working\s+conditions|assessment\s+and\s+remediation|capability\s+building|digital\s+wage\s+payments|gender-based\s+violence|gbv|textile\s+manufacturing|tier\s+[12]\s+suppliers|product\s+and\s+finishing)\b"),
-    ("human_capital", r"\b(career\s+development|succession\s+planning|learning\s+and\s+development|training\s+and\s+development|human\s+capital|employees?|associates?|workforce|our\s+people|people|talent|workplace|culture|our\s+values|total\s+rewards?|compensation|benefits?|wellbeing|well-being|mental\s+health|physical\s+health|health\s+and\s+safety|safe\s+and\s+inclusive\s+workplace|new\s+hires?|associate\s+networks?|people\s+data|real\s+opportunities|opportunity\s+hiring|enabling\s+opportunity|supervisory\s+skills|skills\s+training|personalized\s+growth|mentorship)\b"),
-    ("community", r"\b(volunteer\w*|scholarships?|community|communities|philanthropy|volunteer|giving\s+back|giving|social\s+impact|nonprofit|relief\s+efforts|disaster\s+relief|crocs\s+cares|impact\s+partnerships?|partnerships?\s+that\s+make\s+a\s+difference|supporting\s+people\s+and\s+strengthening\s+our\s+communities|refugees|opportunity\s+village|honoring\s+native\s+origins|this\s+way\s+onward)\b"),
+    ("human_capital", r"\b(career\s+development|succession\s+planning|learning\s+and\s+development|training\s+and\s+development|human\s+capital|employees?|associates?|workforce|our\s+people|talent|workplace|culture|our\s+values|total\s+rewards?|compensation|benefits?|wellbeing|well-being|mental\s+health|physical\s+health|health\s+and\s+safety|safe\s+and\s+inclusive\s+workplace|new\s+hires?|associate\s+networks?|people\s+data|real\s+opportunities|opportunity\s+hiring|enabling\s+opportunity|supervisory\s+skills|skills\s+training|personalized\s+growth|mentorship)\b|^people$"),
+    ("community", r"\b(volunteer\w*|scholarships?|community|communities|philanthropy|volunteer|giving\s+back|giving|social\s+impact|nonprofit|relief\s+efforts|disaster\s+relief|crocs\s+cares|impact\s+partnerships?|partnerships?\s+that\s+make\s+a\s+difference|supporting\s+people\s+and\s+strengthening\s+our\s+communities|refugees|opportunity\s+village|honoring\s+native\s+origins|this\s+way\s+onward|hunger\s+relief|food\s+(?:bank|donations?|insecurity|rescue)|feeding\s+america)\b"),
     ("social", r"^social$|^society$|\b(corporate\s+social\s+responsibility|social\s+impact|social\s+sustainability|social\s+compliance|social\s+responsibility)\b"),
-    ("ethics_compliance", r"\b(anti-?briber\w*|whistleblow\w*|anti-?competitive|non-?compliance|zero[-\s]tolerance|ethics|compliance|code\s+of\s+conduct|anti-corruption|privacy|data\s+privacy|data\s+security|cyber\s*security|cybersecurity|consumer\s+trust|product\s+and\s+consumer\s+safety|product\s+safety)\b"),
-    ("governance", r"\b(board\s+structure|political\s+contributions?|governance|corporate\s+governance|board\s+of\s+directors|board\s+(?:composition|oversight|committees?)|oversight|esg\s+oversight|risk\s+management|managing\s+esg\s+risk|responsible\s+business|business\s+practices|policies\s+and\s+guidelines|public\s+policy|stakeholder\s+engagement|external\s+commitments|general\s+disclosures)\b"),
+    ("ethics_compliance", r"\b(anti-?briber\w*|whistleblow\w*|anti-?competitive|non-?compliance|zero[-\s]tolerance|ethics|ethical|integrity|compliance|code\s+of\s+conduct|anti-corruption|privacy|data\s+privacy|data\s+security|cyber\s*security|cybersecurity|consumer\s+trust|product\s+and\s+consumer\s+safety|product\s+safety)\b"),
+    ("governance", r"\b(board\s+structure|political\s+contributions?|governance|corporate\s+governance|board\s+of\s+directors|board\s+(?:composition|oversight|committees?)|oversight|esg\s+oversight|risk\s+management|managing\s+esg\s+risk|responsible\s+business|business\s+practices|policies\s+and\s+guidelines|public\s+policy|stakeholder\s+engagement|external\s+commitments|general\s+disclosures|committees?|lead\s+independent\s+director|shareholder\s+(?:outreach|engagement|rights)|policies|policies\s+and\s+(?:procedures|standards|practices))\b"),
 ]
 
 
@@ -484,8 +484,69 @@ def code_allowed_for_heading(code: str, normalized: str) -> bool:
             return False
         if re.search(r"\bmaterial\s+(cash|breach|incident|handler|handling|adverse|weakness)\b", normalized):
             return False
+        # 'Environment' also names a legal, commercial, or workplace setting.
+        # Murphy USA's 'Management of the Legal & Regulatory Environment' is a
+        # risk/governance heading; labelling it environmental put a section of
+        # forward-looking-statement boilerplate under an ESG topic. Only the
+        # bare noun is ambiguous -- 'environmental' always means the ESG sense --
+        # and a nearby nature word settles it, so both are checked first.
+        # The qualifier has to sit immediately before the noun. Testing anywhere
+        # in the line rejected 'Environment, Health & Safety Compliance', which
+        # is genuinely environmental -- 'compliance' merely trails it.
+        if re.search(
+            r"\b(legal|regulatory|regulation|business|operating|economic|macroeconomic"
+            r"|competitive|market|retail|store|commercial|political|inflationary"
+            r"|work|working|workplace|office|control|risk)\b(?:\s+\w+){0,3}\s+environment\b",
+            normalized,
+        ) and not re.search(
+            r"\benvironmental\b|\b(planet|climate|emissions?|carbon|water|waste|energy"
+            r"|biodiversity|natural|ecolog\w*|sustainab\w*)\b",
+            normalized,
+        ):
+            return False
 
     if code == "human_capital":
+        # human_capital was the worst-performing code in a 200-section read
+        # (58% of its sections not cleanly on topic, against 0% for emissions
+        # and appendix). Its vocabulary is the broadest in the table, and
+        # because it is tested before community, social, ethics_compliance and
+        # governance it wins headings that belong to those. Each guard below
+        # rejects a context observed failing in that sample; rejecting lets the
+        # loop fall through to the code that should have had it.
+        #
+        # An employee doing the verb does not make it a human capital topic:
+        # 'EMPLOYEE VOLUNTEERISM' and 'TAKING CARE OF OUR EMPLOYEES' (whose body
+        # is scholarships and community service) are community.
+        if re.search(
+            r"\b(volunteer\w*|volunteerism|philanthrop\w*|scholarships?|donations?"
+            r"|giving\s+back|community\s+service|nonprofits?|charit\w*)\b",
+            normalized,
+        ):
+            return False
+        # 'a culture of integrity' is ethics_compliance; 'culture' alone is the
+        # weakest token in the pattern and integrity/ethics settles it.
+        if re.search(
+            r"\b(integrity|ethics|ethical|code\s+of\s+conduct|anti-?corruption"
+            r"|anti-?briber\w*|whistleblow\w*|compliance)\b",
+            normalized,
+        ):
+            return False
+        # A board committee is governance even when its remit is compensation
+        # and human capital ('Compensation & Human Capital Committee'). Scoped
+        # to board-level committees so an 'Employee Advisory Committee' still
+        # reads as human capital.
+        if re.search(r"\bboard\b", normalized) or (
+            re.search(r"\bcommittees?\b", normalized)
+            and re.search(
+                r"\b(compensation|audit|nominating|governance|personnel"
+                r"|rewards|human\s+capital|talent|culture)\b",
+                normalized,
+            )
+        ):
+            return False
+        # 'By People, for People' is Verizon's responsible-AI section.
+        if re.search(r"\b(artificial\s+intelligence|\bai\b|algorithm\w*)\b", normalized):
+            return False
         if re.search(r"\bpeople\s+and\s+wildlife\b", normalized):
             return False
         if re.search(r"\bconnect\s+people\s+and\b", normalized):
