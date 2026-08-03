@@ -66,6 +66,9 @@ CHUNKER_VERSION = "esg_chunk_v3"
 # processing stage changes, so a vector index can be tied to the exact
 # corpus that produced it. Override with ESG_DATASET_ID.
 DEFAULT_DATASET_ID = "esg_docling_fusion_v1"
+# BGE's input window, including [CLS] and [SEP]. Anything longer is
+# truncated by the model without warning.
+BGE_MAX_INPUT_TOKENS = 512
 VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
@@ -1631,6 +1634,7 @@ def build_chunk_output(
     physical_section_title: str = "",
     subsection_context: str = "",
     subsection_contexts: tuple[str, ...] = (),
+    embedding_metadata: dict | None = None,
 ) -> ChunkOutput:
     citation = validate_chunk_citation(
         parsed_text=parsed_text,
@@ -1660,17 +1664,35 @@ def build_chunk_output(
         and page_end not in (None, "")
     )
 
-    company_name, report_year = company_and_year_from_stem(pdf_stem)
-    embedding_text = build_embedding_text(
-        chunk_text,
-        ticker=ticker,
-        company_name=company_name,
-        report_year=report_year,
-        section_title=physical_section_title or "",
-        subsection=subsection_context or "",
-        chunk_type=chunk_type or "",
-    )
+    # The caller already assembled everything final_embedding_text needs:
+    # company name from the manifest, report year via extract_report_year with
+    # its multi-year span handling, canonical ticker. Rebuilding it from
+    # doc_meta here produced 'Company: unknown / Reporting year: unknown' on
+    # every chunk, because doc_meta carries neither.
+    meta = dict(embedding_metadata or doc_meta)
+    meta.setdefault("ticker", ticker)
+    meta["section_code"] = section_code
+    if subsection_context:
+        meta["section_title_original"] = subsection_context
+    embedding_text = final_embedding_text(meta, chunk_text, table_context)
     dataset_id = os.environ.get("ESG_DATASET_ID", DEFAULT_DATASET_ID)
+
+    # Anything over the window is silently truncated at embedding time, and a
+    # truncated vector looks fine until answers start missing the end of a
+    # chunk. Fail here instead. Measured headroom is thin: median 466 tokens,
+    # max 502 against a 512 limit.
+    tokenizer_for_guard = _WORKER_BGE_TOKENIZER
+    if tokenizer_for_guard is not None:
+        embed_tokens = len(
+            tokenizer_for_guard.encode(embedding_text, add_special_tokens=True, truncation=False)
+        )
+        if embed_tokens > BGE_MAX_INPUT_TOKENS:
+            raise ValueError(
+                f"embedding_text is {embed_tokens} tokens, over the "
+                f"{BGE_MAX_INPUT_TOKENS}-token window "
+                f"({ticker} {pdf_stem} {section_instance_id} chunk {chunk_index}). "
+                "Lower MAX_CHUNK_TOKENS or shorten the embedding header."
+            )
 
     doc_type = doc_meta.get("doc_type") or DOC_TYPE
     quality_status = doc_meta.get("doc_quality_status") or "needs_review"
@@ -1742,57 +1764,6 @@ def build_chunk_output(
         "citation_validation_version": CITATION_VALIDATION_VERSION,
     }
     return ChunkOutput(path=chunk_file, text=chunk_text, row=row)
-
-
-def build_embedding_text(
-    chunk_text: str,
-    *,
-    ticker: str,
-    company_name: str,
-    report_year: str,
-    section_title: str,
-    subsection: str,
-    chunk_type: str,
-) -> str:
-    """Context header plus the chunk, for the embedding model only.
-
-    chunk_text stays untouched for citation. This adds roughly 15 tokens
-    against a median chunk of 475, and it is what lets a retrieved passage be
-    attributed to a company and year when its own sentences do not say so.
-
-    Blank fields are omitted rather than emitted empty, so a chunk missing a
-    year does not carry a dangling 'Year:' line into every embedding.
-    """
-    lines = []
-    if company_name:
-        lines.append(f"Company: {company_name}")
-    if ticker:
-        lines.append(f"Ticker: {ticker}")
-    lines.append("Document: Sustainability report")
-    if report_year:
-        lines.append(f"Report year: {report_year}")
-    if section_title:
-        lines.append(f"Section: {section_title}")
-    if subsection and subsection != section_title:
-        lines.append(f"Subsection: {subsection}")
-    if chunk_type:
-        lines.append(f"Content type: {chunk_type}")
-    return "\n".join(lines) + "\n\n" + chunk_text
-
-
-def company_and_year_from_stem(pdf_stem: str) -> tuple[str, str]:
-    """Pull company name and report year out of a stem.
-
-    Stems look like "KSS-KOHL'S-2024" or "BBW-BUILD-A-BEAR WORKSHOP INC-2024":
-    ticker, name, year separated by hyphens. The year is the trailing 4-digit
-    group; the name is everything between it and the ticker. Returns empty
-    strings rather than guessing when the shape does not match, so a bad stem
-    produces a header without those lines instead of a wrong one.
-    """
-    match = re.match(r"^[A-Za-z0-9.]+-(.+)-(\d{4})$", pdf_stem.strip())
-    if not match:
-        return "", ""
-    return match.group(1).strip(), match.group(2)
 
 
 def build_section_plan(
@@ -1932,6 +1903,7 @@ def build_section_plan(
                 physical_section_title=physical_section_title,
                 subsection_context=subsection_context,
                 subsection_contexts=subsection_contexts,
+                embedding_metadata=embedding_metadata,
             )
         ]
         return SectionPlan(
@@ -2019,6 +1991,7 @@ def build_section_plan(
                     physical_section_title=physical_section_title,
                     subsection_context=subsection_context,
                     subsection_contexts=subsection_contexts,
+                    embedding_metadata=embedding_metadata,
                 )
             )
         return SectionPlan(
@@ -2093,6 +2066,7 @@ def build_section_plan(
                     physical_section_title=physical_section_title,
                     subsection_context=chunk.subsection_context,
                     subsection_contexts=chunk.subsection_contexts,
+                    embedding_metadata=embedding_metadata,
                 )
             )
         return SectionPlan(
@@ -2175,6 +2149,7 @@ def build_section_plan(
                 physical_section_title=physical_section_title,
                 subsection_context=subsection_context,
                 subsection_contexts=subsection_contexts,
+                embedding_metadata=embedding_metadata,
             )
         )
 
