@@ -76,6 +76,9 @@ PAGES_CSV_COLUMNS = [
     "extracted_char_count",
     "emitted",
     "page_type",
+    # What the page IS, as opposed to whether it parsed: content, toc, divider,
+    # cover or blank. The chunker drops chunks whose pages are all furniture.
+    "page_role",
     "parse_status",
     "reading_order_status",
     "layout_risk",
@@ -167,6 +170,82 @@ HEADINGS_CSV_COLUMNS = ["char_start", "char_end", "page", "label", "level", "tex
 MD_HEADING_PREFIX = re.compile(r"^#{1,6}\s+")
 
 
+# A contents entry: '04 Message from our CEO' or 'Introduction 04'.
+TOC_LINE_RE = re.compile(r"^\s*(?:\d{1,3}\s+\S.*|\S.*\s+\d{1,3})\s*$")
+WORD_RE_ROLE = re.compile(r"[A-Za-z]{2,}")
+NUM_TOKEN_RE = re.compile(r"\d+(?:[.,]\d+)?%?")
+
+
+def _is_toc_line(line: str) -> bool:
+    """One title beside one page number, and nothing else on the line.
+
+    The single-number requirement is what separates a contents entry from a
+    table row. 'Bangladesh 115 122 74 74 234 234' also ends in a number.
+    """
+    if not TOC_LINE_RE.match(line) or not WORD_RE_ROLE.search(line):
+        return False
+    numbers = NUM_TOKEN_RE.findall(line)
+    return len(numbers) == 1 and numbers[0].isdigit() and int(numbers[0]) <= 400
+
+
+def classify_page_role(text: str, page_no: int, picture_count: int) -> str:
+    """content / toc / divider / cover / blank for one page of fused text."""
+    stripped = text.strip()
+    if not stripped:
+        return "blank"
+    lines = [line.strip() for line in stripped.splitlines() if line.strip()]
+    words = WORD_RE_ROLE.findall(stripped)
+
+    # Several complete sentences mean there is prose worth keeping, whatever
+    # else shares the page.
+    prose_lines = sum(
+        1 for line in lines if len(WORD_RE_ROLE.findall(line)) >= 15 and line.rstrip().endswith(".")
+    )
+    if prose_lines >= 5:
+        return "content"
+
+    # Rows carrying several numbers each are a data table, not a contents list.
+    is_data_table = sum(1 for line in lines if len(NUM_TOKEN_RE.findall(line)) >= 3) >= 3
+
+    if not is_data_table:
+        toc_lines = sum(1 for line in lines if _is_toc_line(line))
+        if len(lines) >= 6 and toc_lines >= 6 and toc_lines / len(lines) >= 0.55:
+            return "toc"
+        if (
+            re.search(r"\b(table of contents|contents)\b", stripped[:400], re.IGNORECASE)
+            and toc_lines >= 4
+            and toc_lines / len(lines) >= 0.40
+        ):
+            return "toc"
+
+        # A contents page need not print page numbers. URBN lists only section
+        # names, Valvoline sets each twice; both read as prose-free lists of
+        # titles. The explicit 'contents' heading is required here, because
+        # without the page numbers there is nothing else to distinguish such a
+        # page from a legitimate page of short headings.
+        if (
+            prose_lines == 0
+            and len(lines) >= 6
+            and re.search(r"\bcontents\b", stripped[:600], re.IGNORECASE)
+            and sum(1 for line in lines if len(WORD_RE_ROLE.findall(line)) <= 10)
+            / len(lines)
+            >= 0.80
+        ):
+            return "toc"
+
+    # A part-title page carries a handful of words, and the design frequently
+    # sets them twice, so an immediately repeated word is a strong hint.
+    if len(words) <= 60:
+        lowered = [w.lower() for w in words]
+        repeats = sum(1 for a, b in zip(lowered, lowered[1:]) if a == b)
+        if page_no == 1 and len(words) <= 40:
+            return "cover"
+        if repeats >= 3 or (picture_count >= 1 and len(words) <= 25):
+            return "divider"
+
+    return "content"
+
+
 def build_document(
     cached: dict[str, Any],
     fused_dir: Path,
@@ -254,6 +333,11 @@ def build_document(
                 "extracted_char_count": len(body),
                 "emitted": "true" if body else "false",
                 "page_type": "text" if body else "empty",
+                "page_role": classify_page_role(
+                    body,
+                    page_no,
+                    sum(1 for i in items if i.get("label") == "picture"),
+                ),
                 "parse_status": "ok" if body else "no_text",
                 "reading_order_status": "docling_regions",
                 "layout_risk": "false",

@@ -69,6 +69,12 @@ DEFAULT_DATASET_ID = "esg_docling_fusion_v1"
 # BGE's input window, including [CLS] and [SEP]. Anything longer is
 # truncated by the model without warning.
 BGE_MAX_INPUT_TOKENS = 512
+
+# How much of a chunk may sit on contents, divider or cover pages before it is
+# no longer worth retrieving. Weighted by characters: a chunk straddling a
+# contents page and a content page keeps its prose, one that is mostly the
+# listing does not.
+MAX_FURNITURE_CHAR_SHARE = 0.70
 VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
@@ -130,6 +136,9 @@ CHUNKS_INDEX_FIELDS = [
     "duplicate_of_source_id",
     "doc_quality_status",
     "rag_action",
+    # Roles of the pages this chunk covers, so a furniture exclusion can be
+    # audited rather than inferred.
+    "page_role",
     "quality_flags",
     "pdf_stem",
     "section_code",
@@ -806,6 +815,46 @@ def read_page_map_cached(
         rows = list(csv.DictReader(f))
     cache[resolved] = rows
     return rows
+
+
+def page_roles_for_span(
+    page_spans: list[dict], start: int | None, end: int | None
+) -> tuple[list[str], float]:
+    """Roles a span touches, and the share of its characters on furniture pages.
+
+    Weighted by characters rather than counted by page. A section that begins
+    on a contents page and runs onto the next one produces a chunk touching
+    both, so 'every page is furniture' never fires and the chunk survives with
+    a contents listing as most of its text -- URBN and Valvoline both did. What
+    matters is how much of THIS chunk is furniture, not how many pages it
+    happens to overlap.
+
+    Returns ([], 0.0) when the span resolves to no page. Absent evidence is not
+    evidence of furniture.
+    """
+    if start is None or end is None or not page_spans:
+        return [], 0.0
+
+    roles: list[tuple[int, str]] = []
+    furniture_chars = 0
+    total_chars = 0
+    for row in page_spans:
+        page_start = parse_int(row.get("char_start"))
+        page_end = parse_int(row.get("char_end"))
+        page_number = parse_int(row.get("page"))
+        if page_start is None or page_end is None or page_number is None:
+            continue
+        overlap = min(end, page_end) - max(start, page_start)
+        if overlap <= 0:
+            continue
+        role = (row.get("page_role") or "").strip() or "content"
+        roles.append((page_number, role))
+        total_chars += overlap
+        if role != "content":
+            furniture_chars += overlap
+
+    share = furniture_chars / total_chars if total_chars else 0.0
+    return [role for _, role in sorted(roles)], share
 
 
 def pages_for_span(page_spans: list[dict], start: int | None, end: int | None) -> tuple[str, str]:
@@ -1793,6 +1842,19 @@ def build_chunk_output(
     doc_type = doc_meta.get("doc_type") or DOC_TYPE
     quality_status = doc_meta.get("doc_quality_status") or "needs_review"
     rag_action = doc_meta.get("rag_action") or rag_action_for_status(quality_status)
+
+    # A chunk built entirely from contents listings, part-title dividers or a
+    # cover has no subject matter to retrieve. Unlike a wrong topic code this
+    # corrupts the embedding itself: the vector ends up describing the report's
+    # structure rather than anything discussed in it. Casey's table of contents
+    # was indexed as 'environmental', URBN's contents page as 'human_capital'.
+    # Chunks mixing furniture with a content page are kept -- they carry prose.
+    span_roles, furniture_share = page_roles_for_span(
+        page_spans, source_start, source_end
+    )
+    page_role_value = "|".join(sorted(set(span_roles)))
+    if span_roles and furniture_share >= MAX_FURNITURE_CHAR_SHARE:
+        rag_action = "exclude_from_esg_index"
     source_id = doc_meta.get("source_id") or _default_source_id(ticker, pdf_stem)
     source_version_id = doc_meta.get("source_version_id") or f"{source_id}__unknown"
     chunk_id = f"{source_id}__{section_instance_id}__chunk_{chunk_index:04d}"
@@ -1825,6 +1887,7 @@ def build_chunk_output(
         "duplicate_of_source_id": doc_meta.get("duplicate_of_source_id") or "",
         "doc_quality_status": quality_status,
         "rag_action": rag_action,
+        "page_role": page_role_value,
         "quality_flags": doc_meta.get("quality_flags") or "",
         "pdf_stem": pdf_stem,
         "section_code": section_code,
