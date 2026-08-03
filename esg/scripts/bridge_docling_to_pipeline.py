@@ -286,9 +286,94 @@ def build_document(
     return "".join(chunks), rows, missing, headings
 
 
+# Thresholds read off the production parse index rather than invented: the two
+# rows it flags low_readable_word_ratio sit at 0.41 and 0.42, its p10 is 0.71,
+# and its lowest chars_per_page is 459.
+MIN_READABLE_WORD_RATIO = 0.50
+MIN_CHARS_PER_PAGE = 300
+
+WORD_RE = re.compile(r"[^\s]+")
+READABLE_RE = re.compile(r"^[A-Za-z][A-Za-z'\u2019-]{1,}$")
+CID_RE = re.compile(r"\(cid:\d+\)")
+
+
+def measure_text_quality(text: str, page_count: int) -> dict[str, Any]:
+    """Quality signals for a synthesised parse-index row.
+
+    Measured, not assumed. A document that parses badly should reach the
+    chunker as needs_review rather than being waved through because it had no
+    production row to inherit a verdict from.
+    """
+    words = WORD_RE.findall(text)
+    readable = sum(1 for w in words if READABLE_RE.match(w))
+    ratio = readable / len(words) if words else 0.0
+    per_page = len(text) / page_count if page_count else 0.0
+    garbled = len(CID_RE.findall(text))
+
+    flags = []
+    if ratio < MIN_READABLE_WORD_RATIO:
+        flags.append("low_readable_word_ratio")
+    if per_page < MIN_CHARS_PER_PAGE:
+        flags.append("low_text_per_page")
+    if garbled:
+        flags.append("garbled_text")
+
+    return {
+        "readable_word_count": readable,
+        "readable_word_ratio": round(ratio, 4),
+        "chars_per_page": round(per_page, 1),
+        "garbled_char_count": garbled,
+        "quality_flags": "|".join(flags),
+    }
+
+
+def synthesise_parse_row(
+    fieldnames: list[str], stem: str, ticker: str, info: dict[str, Any], raw_dir: Path
+) -> dict[str, Any]:
+    """A parse-index row for a document production never parsed."""
+    import hashlib
+
+    row = {name: "" for name in fieldnames}
+    matches = list(raw_dir.rglob(f"{stem}.pdf"))
+    pdf = matches[0] if matches else None
+
+    row.update(
+        {
+            "ticker": ticker,
+            "pdf_file": f"{stem}.pdf",
+            "source_pdf": str(pdf.as_posix()) if pdf else "",
+            "parse_source_kind": "raw",
+            "parse_source_pdf": str(pdf.as_posix()) if pdf else "",
+            "parsed_text_file": info["txt"],
+            "page_map_file": info["csv"],
+            "status": "parsed",
+            "parser_used": "docling_fusion",
+            "parser_policy": "docling_regions_pymupdf_words_v1",
+            "parser_reason": "synthesised: no production parse-index row",
+            "page_count": info["pages"],
+            "char_count": info["chars"],
+            "parsed_at": info["parsed_at"],
+            "possible_wrong_doc_type": "false",
+            "ocr_approval_status": "not_applicable",
+        }
+    )
+    if pdf and pdf.exists():
+        data = pdf.read_bytes()
+        stat = pdf.stat()
+        row["source_sha256"] = hashlib.sha256(data).hexdigest()
+        row["parse_source_sha256"] = row["source_sha256"]
+        row["source_size_bytes"] = stat.st_size
+        row["parse_source_size_bytes"] = stat.st_size
+    row.update({k: v for k, v in info.get("quality", {}).items() if k in row})
+    return row
+
+
 def write_parse_index(
-    source_index: Path, out_index: Path, built: dict[str, dict[str, Any]]
-) -> int:
+    source_index: Path,
+    out_index: Path,
+    built: dict[str, dict[str, Any]],
+    raw_dir: Path | None = None,
+) -> tuple[int, int]:
     """Derive a v2 parse index from the production one.
 
     Identity columns -- logical_source_id, source_version_id, file_alias_id,
@@ -338,12 +423,25 @@ def write_parse_index(
             if stale in row:
                 row[stale] = ""
 
+    # Documents production has never parsed get a synthesised row instead of
+    # being dropped. Without this the v2 corpus silently loses every document
+    # outside the production index -- 484 of 686 on disk.
+    reused = {Path(r["pdf_file"]).stem for r in rows}
+    synthesised = 0
+    if raw_dir is not None:
+        for stem, info in built.items():
+            if stem in reused:
+                continue
+            ticker = stem.split("-", 1)[0].strip() or "UNKNOWN"
+            rows.append(synthesise_parse_row(fieldnames, stem, ticker, info, raw_dir))
+            synthesised += 1
+
     out_index.parent.mkdir(parents=True, exist_ok=True)
     with out_index.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-    return len(rows)
+    return len(rows), synthesised
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -362,6 +460,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--drop-unplaced", action="store_true",
                         help="drop words that landed in no region (~3%% of a page; mostly nav "
                              "ribbons, but sometimes real body text)")
+    parser.add_argument("--raw-dir", type=Path,
+                        default=Path("data/01_raw/sustainability"),
+                        help="source PDFs, for synthesising rows")
     parser.add_argument("--parse-index-in", type=Path,
                         default=Path("data/00_reference/esg_parse_index.csv"))
     parser.add_argument("--parse-index-out", type=Path, default=None,
@@ -417,6 +518,7 @@ def main(argv: list[str] | None = None) -> int:
             "pages": len(rows),
             "chars": len(text),
             "parsed_at": datetime.now(timezone.utc).isoformat(),
+            "quality": measure_text_quality(text, len(rows)),
         }
         written += 1
         total_missing += missing
@@ -427,8 +529,10 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{written} document(s) -> {out_dir}")
 
     if args.parse_index_out:
-        n = write_parse_index(args.parse_index_in, args.parse_index_out, built)
-        print(f"parse index: {n} row(s) -> {args.parse_index_out}")
+        n, synth = write_parse_index(
+            args.parse_index_in, args.parse_index_out, built, args.raw_dir
+        )
+        print(f"parse index: {n} row(s) -> {args.parse_index_out} ({synth} synthesised)")
         if n < written:
             print(
                 f"WARNING: {written - n} document(s) had no row in the production "
