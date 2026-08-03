@@ -642,6 +642,10 @@ def doc_quality_status(parse_row: dict) -> str:
         "garbled_text",
         "low_readable_word_ratio",
         "low_text_per_page",
+        # Set by the bridge when most of a document's words landed in no
+        # region. The text is present but has no reading order, so it must not
+        # enter retrieval unreviewed.
+        "high_unplaced_text",
     }:
         return "needs_review"
     return "ok"

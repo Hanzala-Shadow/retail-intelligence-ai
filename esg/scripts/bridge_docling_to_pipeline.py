@@ -289,6 +289,10 @@ def build_document(
 # Thresholds read off the production parse index rather than invented: the two
 # rows it flags low_readable_word_ratio sit at 0.41 and 0.42, its p10 is 0.71,
 # and its lowest chars_per_page is 459.
+# A document whose words mostly landed in no region has no usable reading
+# order, whatever its text looks like. FLEXSTEEL-2024 reached 98% because
+# an oversized page made docling label every region a picture.
+MAX_UNPLACED_SHARE = 0.25
 MIN_READABLE_WORD_RATIO = 0.50
 MIN_CHARS_PER_PAGE = 300
 
@@ -297,7 +301,9 @@ READABLE_RE = re.compile(r"^[A-Za-z][A-Za-z'\u2019-]{1,}$")
 CID_RE = re.compile(r"\(cid:\d+\)")
 
 
-def measure_text_quality(text: str, page_count: int) -> dict[str, Any]:
+def measure_text_quality(
+    text: str, page_count: int, unplaced_chars: int = 0
+) -> dict[str, Any]:
     """Quality signals for a synthesised parse-index row.
 
     Measured, not assumed. A document that parses badly should reach the
@@ -310,7 +316,14 @@ def measure_text_quality(text: str, page_count: int) -> dict[str, Any]:
     per_page = len(text) / page_count if page_count else 0.0
     garbled = len(CID_RE.findall(text))
 
+    # The unplaced words are already inside `text` -- the bridge keeps them
+    # rather than dropping real content -- so the denominator is the document
+    # itself, not document plus unplaced.
+    unplaced_share = unplaced_chars / len(text) if text else 0.0
+
     flags = []
+    if unplaced_share >= MAX_UNPLACED_SHARE:
+        flags.append("high_unplaced_text")
     if ratio < MIN_READABLE_WORD_RATIO:
         flags.append("low_readable_word_ratio")
     if per_page < MIN_CHARS_PER_PAGE:
@@ -323,6 +336,7 @@ def measure_text_quality(text: str, page_count: int) -> dict[str, Any]:
         "readable_word_ratio": round(ratio, 4),
         "chars_per_page": round(per_page, 1),
         "garbled_char_count": garbled,
+        "unplaced_share": round(unplaced_share, 4),
         "quality_flags": "|".join(flags),
     }
 
@@ -403,6 +417,14 @@ def write_parse_index(
         row["page_count"] = info["pages"]
         row["char_count"] = info["chars"]
         row["parsed_at"] = info["parsed_at"]
+        # Quality is measured on THIS text, not inherited. The production row
+        # describes a pdfplumber parse of the same PDF; these columns must
+        # describe the fusion output, or a document that fused badly would be
+        # waved through on the strength of an unrelated parse.
+        for key, value in info.get("quality", {}).items():
+            if key in row:
+                row[key] = value
+
         # Deliberately cleared: these were measured on the pdfplumber output
         # and say nothing about this one. Leaving them would let downstream
         # gates act on stale evidence.
@@ -417,7 +439,6 @@ def write_parse_index(
             "reading_order_unresolved_pages",
             "text_layer_fallback_pages",
             "page_text_change_reasons",
-            "quality_flags",
             "content_hash",
         ):
             if stale in row:
@@ -518,7 +539,9 @@ def main(argv: list[str] | None = None) -> int:
             "pages": len(rows),
             "chars": len(text),
             "parsed_at": datetime.now(timezone.utc).isoformat(),
-            "quality": measure_text_quality(text, len(rows)),
+            "quality": measure_text_quality(
+                text, len(rows), sum(r["unplaced_char_count"] for r in rows)
+            ),
         }
         written += 1
         total_missing += missing
