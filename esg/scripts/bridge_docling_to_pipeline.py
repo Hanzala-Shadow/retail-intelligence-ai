@@ -580,6 +580,28 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print(f"{written} document(s) -> {out_dir}")
 
+    # Documents in the tree that this run did not produce. Usually harmless
+    # leftovers from an earlier run; sometimes the same document under a stale
+    # ticker, which downstream stages will happily process twice.
+    stale = sorted(
+        path
+        for path in out_dir.rglob("*.txt")
+        if not path.name.endswith(".pages.csv") and path.stem not in built
+    )
+    if stale:
+        print(
+            f"\nWARNING: {len(stale)} document(s) in {out_dir} were not written "
+            f"by this run:"
+        )
+        for path in stale[:10]:
+            print(f"  {path.relative_to(out_dir)}")
+        if len(stale) > 10:
+            print(f"  ... and {len(stale) - 10} more")
+        print(
+            "  If a ticker changed, the same document may now exist twice and "
+            "will be chunked twice. Remove the stale copy before continuing."
+        )
+
     if args.parse_index_out:
         n, synth = write_parse_index(
             args.parse_index_in, args.parse_index_out, built, args.raw_dir
