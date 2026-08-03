@@ -1109,6 +1109,226 @@ def _words_to_lines(words: list[tuple], tol: float = 3.0, label: str = "") -> st
     return _join_lines(rows)
 
 
+def _grid_bands(grid: dict[str, Any]) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+    """Derive row and column bands from the cells that span exactly one slot.
+
+    Spanning cells are excluded on purpose. A cell docling believes covers two
+    rows carries one tall box; using it would reproduce the span. Bands taken
+    only from single-slot cells describe where the rows and columns actually
+    sit, so a row that is genuinely empty gets an empty band rather than
+    inheriting its neighbour's text.
+    """
+    rows: dict[int, list[float]] = defaultdict(list)
+    cols: dict[int, list[float]] = defaultdict(list)
+    for cell in grid["cells"]:
+        b = cell.get("bbox")
+        if not b:
+            continue
+        if cell["r1"] - cell["r0"] == 1:
+            rows[cell["r0"]].append((b[1], b[3]))
+        if cell["c1"] - cell["c0"] == 1:
+            cols[cell["c0"]].append((b[0], b[2]))
+
+    def bands(known: dict[int, list[float]], n: int) -> list[tuple[float, float]]:
+        out: list[tuple[float, float]] = []
+        for i in range(n):
+            vals = known.get(i)
+            if vals:
+                # Median, not min/max. One outlier cell whose box is wider than
+                # its column drags a min/max band across its neighbour -- on
+                # LOVE p46 that put a column cut in the middle of column 4.
+                out.append(
+                    (
+                        statistics.median([v[0] for v in vals]),
+                        statistics.median([v[1] for v in vals]),
+                    )
+                )
+            else:
+                out.append((float("nan"), float("nan")))
+        # Fill any band with no single-slot cell from its neighbours.
+        for i in range(n):
+            if out[i][0] == out[i][0]:
+                continue
+            prev = next((out[j] for j in range(i - 1, -1, -1) if out[j][0] == out[j][0]), None)
+            nxt = next((out[j] for j in range(i + 1, n) if out[j][0] == out[j][0]), None)
+            if prev and nxt:
+                out[i] = (prev[1], nxt[0])
+            elif prev:
+                out[i] = (prev[1], prev[1])
+            elif nxt:
+                out[i] = (nxt[0], nxt[0])
+            else:
+                out[i] = (0.0, 0.0)
+        return out
+
+    return bands(rows, grid["num_rows"]), bands(cols, grid["num_cols"])
+
+
+def _monotonic(cuts: list[float], eps: float = 0.01) -> list[float]:
+    """Force cut points to strictly increase.
+
+    Bands are derived per row/column independently, so nothing guarantees they
+    come out in order. On DECK p169 two adjacent columns shared a left edge and
+    produced identical cuts, giving one column a zero-width slot that could
+    never receive a word.
+    """
+    out: list[float] = []
+    for c in cuts:
+        if out and c <= out[-1]:
+            c = out[-1] + eps
+        out.append(c)
+    return out
+
+
+def _col_cuts(bands: list[tuple[float, float]]) -> list[float]:
+    """Column boundaries.
+
+    Columns do NOT need the row rule. A row must own its overflow because a
+    tall cell's text hangs below its own band; text inside a column wraps
+    instead of spilling sideways, so the natural boundary is the gutter.
+
+    Bands frequently overlap here -- a cell whose box is wider than its column
+    drags the band into its neighbour -- so when the gutter is negative, split
+    the two LEFT edges instead, which stay ordered even when the widths do not.
+    """
+    cuts: list[float] = []
+    for i in range(len(bands) - 1):
+        right, nxt_left = bands[i][1], bands[i + 1][0]
+        if nxt_left > right:
+            # 90% of the way across the gutter, mirroring the row rule: a
+            # column keeps text that trails past its own band, and only text
+            # essentially touching the next column goes to the next column.
+            cuts.append(right + COL_CUT_SHARE * (nxt_left - right))
+        else:
+            # Bands overlap; the gutter is meaningless. Split the two LEFT
+            # edges instead -- those stay ordered even when widths do not.
+            cuts.append(
+                bands[i][0] + COL_CUT_SHARE * (bands[i + 1][0] - bands[i][0])
+            )
+    return _monotonic(cuts)
+
+
+def _grid_is_coherent(grid: dict[str, Any]) -> bool:
+    """Does this grid describe a real column layout?
+
+    TableFormer sometimes returns a cell-to-column assignment that does not
+    correspond to any consistent x position -- on PVH p55 cells assigned to
+    column 2 start at both x=84 and x=784, left of column 0. No cut rule can
+    recover a grid from that, so the honest move is to decline and let the
+    region render as ordered words instead of inventing a structure.
+
+    Test: the median left edge per column must increase left to right. That
+    tolerates ragged cells while catching a genuinely scrambled assignment.
+    """
+    import statistics as _st
+
+    lefts: dict[int, list[float]] = defaultdict(list)
+    for cell in grid["cells"]:
+        b = cell.get("bbox")
+        if b and cell["c1"] - cell["c0"] == 1:
+            lefts[cell["c0"]].append(b[0])
+    med = [_st.median(lefts[i]) for i in sorted(lefts) if lefts[i]]
+    if len(med) < 2:
+        return True
+    return all(b > a for a, b in zip(med, med[1:]))
+
+
+def _table_from_grid(grid: dict[str, Any], words: list[tuple], assign: str = "cell") -> str:
+    """Rebuild a table. ``assign`` selects how words are placed in cells.
+
+    Four strategies, kept switchable because each fails differently and the
+    failures are only visible on different pages:
+
+    ``cell``   docling's own cell boxes, smallest containing cell wins, grid
+               cuts as fallback for words outside every cell. Handles rows
+               whose height differs per column, which a single grid cannot.
+    ``strict`` grid slots only; a word matching no row band AND col band is
+               DROPPED. Gave the cleanest empty rows but silently lost 13-14%
+               of the words on LOVE p46 and DECK p169.
+    ``snap``   grid slots, unmatched words go to the nearest band. Stops the
+               loss but pushes a tall cell's overflow into the following row.
+    ``cuts``   grid slots from tiling cut points, so every point belongs to
+               exactly one slot. No loss, no snapping.
+    """
+    if not _grid_is_coherent(grid):
+        return ""
+
+    row_bands, col_bands = _grid_bands(grid)
+    n_rows, n_cols = grid["num_rows"], grid["num_cols"]
+    if n_rows < 1 or n_cols < 1:
+        return ""
+
+    row_cuts = _monotonic([row_bands[i + 1][0] - 0.5 for i in range(len(row_bands) - 1)])
+    col_cuts = _col_cuts(col_bands)
+
+    def by_cuts(cut_points: list[float], v: float) -> int:
+        i = 0
+        while i < len(cut_points) and v > cut_points[i]:
+            i += 1
+        return i
+
+    def in_band(bands: list[tuple[float, float]], v: float) -> int | None:
+        for i, (a, b) in enumerate(bands):
+            if a - 1 <= v <= b + 1:
+                return i
+        return None
+
+    def nearest_band(bands: list[tuple[float, float]], v: float) -> int:
+        hit = in_band(bands, v)
+        if hit is not None:
+            return hit
+        return min(range(len(bands)), key=lambda i: min(abs(v - bands[i][0]), abs(v - bands[i][1])))
+
+    boxed = [c for c in grid["cells"] if c.get("bbox")]
+    buckets: dict[tuple[int, int], list[tuple]] = defaultdict(list)
+    dropped = 0
+
+    for word in words:
+        cx, cy = (word[0] + word[2]) / 2, (word[1] + word[3]) / 2
+
+        if assign == "cell":
+            best, best_area = None, float("inf")
+            for cell in boxed:
+                b = cell["bbox"]
+                if b[0] <= cx <= b[2] and b[1] <= cy <= b[3]:
+                    area = (b[2] - b[0]) * (b[3] - b[1])
+                    if area < best_area:
+                        best, best_area = cell, area
+            if best is not None:
+                buckets[(best["r0"], best["c0"])].append(word)
+                continue
+            r, c = by_cuts(row_cuts, cy), by_cuts(col_cuts, cx)
+        elif assign == "strict":
+            ri, ci = in_band(row_bands, cy), in_band(col_bands, cx)
+            if ri is None or ci is None:
+                dropped += 1
+                continue
+            r, c = ri, ci
+        elif assign == "snap":
+            r, c = nearest_band(row_bands, cy), nearest_band(col_bands, cx)
+        else:  # cuts
+            r, c = by_cuts(row_cuts, cy), by_cuts(col_cuts, cx)
+
+        buckets[(min(r, n_rows - 1), min(c, n_cols - 1))].append(word)
+
+    def cell_text(bucket: list[tuple]) -> str:
+        if not bucket:
+            return ""
+        return " ".join(
+            w[4] for w in sorted(bucket, key=lambda w: ((w[1] + w[3]) / 2, w[0]))
+        ).replace("|", r"\|")
+
+    header_rows = {c["r0"] for c in grid["cells"] if c.get("header")}
+    lines = []
+    for r in range(n_rows):
+        lines.append(
+            "| " + " | ".join(cell_text(buckets.get((r, c), [])) for c in range(n_cols)) + " |"
+        )
+        if r in header_rows and r + 1 not in header_rows:
+            lines.append("|" + "|".join([" --- "] * n_cols) + "|")
+    return chr(10).join(lines)
+
+
 def fuse_page(pdf_path: Path, page_no: int, regions: list[dict[str, Any]], snap_limit: float = 12.0, table_mode: str = "words", table_assign: str = "cell") -> dict[str, Any]:
     """Docling decides the regions and their order; PyMuPDF supplies the text."""
     import fitz

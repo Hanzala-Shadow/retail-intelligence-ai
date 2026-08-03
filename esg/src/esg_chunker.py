@@ -62,6 +62,10 @@ CITATION_VALIDATION_VERSION = "semantic_v1"
 # short-section and navigation-trace classifiers, and the source-alignment
 # logic. Bump when any of those change.
 CHUNKER_VERSION = "esg_chunk_v3"
+# Frozen release identity. Change it whenever source selection or any
+# processing stage changes, so a vector index can be tied to the exact
+# corpus that produced it. Override with ESG_DATASET_ID.
+DEFAULT_DATASET_ID = "esg_docling_fusion_v1"
 VERIFIED_CITATION_STATUSES = {
     "verified_exact",
     "verified_whitespace_normalized",
@@ -146,6 +150,9 @@ CHUNKS_INDEX_FIELDS = [
     "parsed_text_sha256",
     "section_text_sha256",
     "chunk_text_sha256",
+    "embedding_text",
+    "embedding_text_sha256",
+    "dataset_id",
     "source_start_char",
     "source_end_char",
     "page_start",
@@ -1642,7 +1649,28 @@ def build_chunk_output(
     page_start = citation["page_start"]
     page_end = citation["page_end"]
     citation_status = str(citation["status"])
-    citation_ready = citation_status in VERIFIED_CITATION_STATUSES
+    # A chunk with no page range cannot support a citation, whatever the text
+    # match says. This happens when a document has no row in the parse index,
+    # so no page map reaches the chunker: TGT-2019 produced 185 chunks marked
+    # citation_ready=true with page_start empty. Claiming citability you cannot
+    # honour is worse than the missing data itself.
+    citation_ready = (
+        citation_status in VERIFIED_CITATION_STATUSES
+        and page_start not in (None, "")
+        and page_end not in (None, "")
+    )
+
+    company_name, report_year = company_and_year_from_stem(pdf_stem)
+    embedding_text = build_embedding_text(
+        chunk_text,
+        ticker=ticker,
+        company_name=company_name,
+        report_year=report_year,
+        section_title=physical_section_title or "",
+        subsection=subsection_context or "",
+        chunk_type=chunk_type or "",
+    )
+    dataset_id = os.environ.get("ESG_DATASET_ID", DEFAULT_DATASET_ID)
 
     doc_type = doc_meta.get("doc_type") or DOC_TYPE
     quality_status = doc_meta.get("doc_quality_status") or "needs_review"
@@ -1699,6 +1727,12 @@ def build_chunk_output(
         # hashes above cover its ancestors, not the chunk itself, which the ESG
         # Chunk Management Contract requires recalculated after any text change.
         "chunk_text_sha256": hashlib.sha256(chunk_text.encode("utf-8")).hexdigest(),
+        # The exact string handed to the embedding model, and its own identity.
+        # Kept separate from chunk_text so a change to the context header does
+        # not alter citations, and so a stale vector is detectable by hash.
+        "embedding_text": embedding_text,
+        "embedding_text_sha256": hashlib.sha256(embedding_text.encode("utf-8")).hexdigest(),
+        "dataset_id": dataset_id,
         "source_start_char": source_start if source_start is not None else "",
         "source_end_char": source_end if source_end is not None else "",
         "page_start": page_start,
@@ -1708,6 +1742,57 @@ def build_chunk_output(
         "citation_validation_version": CITATION_VALIDATION_VERSION,
     }
     return ChunkOutput(path=chunk_file, text=chunk_text, row=row)
+
+
+def build_embedding_text(
+    chunk_text: str,
+    *,
+    ticker: str,
+    company_name: str,
+    report_year: str,
+    section_title: str,
+    subsection: str,
+    chunk_type: str,
+) -> str:
+    """Context header plus the chunk, for the embedding model only.
+
+    chunk_text stays untouched for citation. This adds roughly 15 tokens
+    against a median chunk of 475, and it is what lets a retrieved passage be
+    attributed to a company and year when its own sentences do not say so.
+
+    Blank fields are omitted rather than emitted empty, so a chunk missing a
+    year does not carry a dangling 'Year:' line into every embedding.
+    """
+    lines = []
+    if company_name:
+        lines.append(f"Company: {company_name}")
+    if ticker:
+        lines.append(f"Ticker: {ticker}")
+    lines.append("Document: Sustainability report")
+    if report_year:
+        lines.append(f"Report year: {report_year}")
+    if section_title:
+        lines.append(f"Section: {section_title}")
+    if subsection and subsection != section_title:
+        lines.append(f"Subsection: {subsection}")
+    if chunk_type:
+        lines.append(f"Content type: {chunk_type}")
+    return "\n".join(lines) + "\n\n" + chunk_text
+
+
+def company_and_year_from_stem(pdf_stem: str) -> tuple[str, str]:
+    """Pull company name and report year out of a stem.
+
+    Stems look like "KSS-KOHL'S-2024" or "BBW-BUILD-A-BEAR WORKSHOP INC-2024":
+    ticker, name, year separated by hyphens. The year is the trailing 4-digit
+    group; the name is everything between it and the ticker. Returns empty
+    strings rather than guessing when the shape does not match, so a bad stem
+    produces a header without those lines instead of a wrong one.
+    """
+    match = re.match(r"^[A-Za-z0-9.]+-(.+)-(\d{4})$", pdf_stem.strip())
+    if not match:
+        return "", ""
+    return match.group(1).strip(), match.group(2)
 
 
 def build_section_plan(
