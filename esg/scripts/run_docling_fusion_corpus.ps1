@@ -34,10 +34,19 @@ param(
     # rather than mid-document, so the cache stays coherent. It applies per
     # worker, and workers run concurrently, so this is wall-clock time.
     [int]    $TimeBudgetMin = 165,
-    # Parallel convert processes. CPU-only box: 4 x 4 threads on 16 logical
-    # cores. Raising this past the physical core count buys nothing and costs
-    # memory -- each worker loads its own copy of the layout models.
-    [int]    $Workers = 4,
+    # Keep this at 1. Measured on MUSA-MURPHY-2024, 36 pages, same document:
+    #   1 process  9.91 s/page  -> 0.101 pages/s
+    #   2 workers 20.26 s/page  -> 0.099 pages/s
+    # Docling already saturates the cores internally, so extra processes split
+    # the same CPU and gain nothing. Four workers exhausted memory outright
+    # (std::bad_alloc) because each loads its own copy of the models.
+    [int]    $Workers = 1,
+    # Docling's OCR costs ~80% of convert time and changes nothing here, because
+    # fusion takes its words from PyMuPDF and discards docling's text. Measured
+    # on the same document: 9.91 -> 2.04 s/page, and the fused output differed
+    # by two blank lines. A scanned page with no text layer yields nothing
+    # either way; that is what the quality guards are for.
+    [switch] $WithOcr,
     [switch] $Force,
     # Skip straight to the downstream stages when the cache is already built.
     [switch] $SkipConvert
@@ -100,16 +109,23 @@ if (-not $SkipConvert) {
     # lists and share one cache directory, which is safe because each writes
     # <stem>.json. Threads are divided rather than added: four processes each
     # grabbing all 16 threads would oversubscribe and thrash.
-    $threads = [math]::Max(1, [int]([Environment]::ProcessorCount / $Workers))
-    $env:OMP_NUM_THREADS = $threads
-    $env:MKL_NUM_THREADS = $threads
+    # Single worker is the measured configuration, and it was measured with
+    # torch's own thread defaults. Overriding them here would be a change no
+    # timing covers, so only divide threads when actually sharding.
+    $threads = [Environment]::ProcessorCount
+    if ($Workers -gt 1) {
+        $threads = [math]::Max(1, [int]([Environment]::ProcessorCount / $Workers))
+        $env:OMP_NUM_THREADS = $threads
+        $env:MKL_NUM_THREADS = $threads
+    }
     $env:TOKENIZERS_PARALLELISM = "false"
 
     $logDir = Join-Path $WorkRoot "logs"
     New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
     Write-Host ("=" * 64) -ForegroundColor DarkGray
-    Write-Host "  1/5 convert  ($Workers workers x $threads threads)" -ForegroundColor Yellow
+    $ocrTag = if ($WithOcr) { "OCR on" } else { "OCR off" }
+    Write-Host "  1/5 convert  ($Workers worker(s) x $threads threads, $ocrTag)" -ForegroundColor Yellow
     Write-Host ("=" * 64) -ForegroundColor DarkGray
     Write-Host "  budget $TimeBudgetMin min per worker; logs in $logDir"
     $t0 = Get-Date
@@ -125,6 +141,7 @@ if (-not $SkipConvert) {
             "--shard", $s,
             "--time-budget-min", $TimeBudgetMin
         )
+        if (-not $WithOcr) { $shardArgs += "--no-ocr" }
         if ($Force) { $shardArgs += "--force" }
         $n = $s + 1
         $procs += Start-Process -FilePath $pyDocling -ArgumentList $shardArgs `
