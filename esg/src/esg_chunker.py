@@ -726,6 +726,13 @@ def load_doc_metadata(
                 rag_action = "exclude_from_esg_index"
             else:
                 rag_action = rag_action_for_status(quality_status)
+            # Inclusion must follow the action. It previously defaulted to true
+            # regardless, so a document whose quality status was needs_review
+            # carried rag_action=manual_review_before_indexing AND
+            # include_in_esg_index=true -- TGT-2019 produced 203 such chunks.
+            # Only rows cleared for indexing may enter the retrieval corpus.
+            if rag_action != "index_as_esg":
+                include_in_esg_index = False
             pdf_sha256 = (row.get("source_sha256") or "").strip()
             version_suffix = pdf_sha256[:12] if pdf_sha256 else "unknown"
             metadata[(ticker, pdf_stem)] = {
@@ -1604,6 +1611,83 @@ def validate_chunk_citation(
     return result
 
 
+# Tier thresholds. Loose on purpose: they exist to separate obviously-weak
+# evidence from ordinary prose, not to make fine distinctions, and should be
+# tuned against a retrieval benchmark rather than by argument.
+TIER_FIGURE_PAGE_SHARE = 0.60      # pages where empty regions dominate
+TIER_UNPLACED_SHARE = 0.15         # words that landed in no region
+TIER_NOISE_MIN_TOKENS = 60
+
+
+def _page_rows_for_span(
+    page_spans: list[dict], start: int | None, end: int | None
+) -> list[dict]:
+    """Page-map rows overlapping a chunk's character span."""
+    if start is None or end is None:
+        return []
+    out = []
+    for row in page_spans:
+        ps = parse_int(row.get("char_start"))
+        pe = parse_int(row.get("char_end"))
+        if ps is None or pe is None:
+            continue
+        if pe > start and ps < end:
+            out.append(row)
+    return out
+
+
+def classify_retrieval_tier(
+    chunk_text: str,
+    token_count: int,
+    chunk_type: str,
+    table_context: str,
+    page_rows: list[dict],
+) -> str:
+    """Deterministic quality tier for one chunk.
+
+    Order matters: noise is checked first so a tiny fragment on a table page
+    is not promoted to layout_sensitive, which would overstate its evidence
+    value.
+    """
+    has_table_rows = any(
+        line.strip().startswith("|") and line.strip().endswith("|")
+        for line in chunk_text.splitlines()
+    )
+
+    figure_pages = 0
+    unplaced = 0
+    chars = 0
+    tables_on_page = 0
+    for row in page_rows:
+        pics = parse_int(row.get("picture_region_count")) or 0
+        empty = parse_int(row.get("empty_region_count")) or 0
+        extracted = parse_int(row.get("extracted_char_count")) or 0
+        unplaced += parse_int(row.get("unplaced_char_count")) or 0
+        chars += extracted
+        tables_on_page += parse_int(row.get("table_candidate_count")) or 0
+        if pics and empty >= pics:
+            figure_pages += 1
+
+    figure_share = figure_pages / len(page_rows) if page_rows else 0.0
+    unplaced_share = unplaced / chars if chars else 0.0
+
+    # Noise is judged on the CHUNK, not the page around it. An earlier version
+    # demoted anything from a figure-heavy page, which marked a 411-token
+    # passage on minerals due diligence as noise because the page it sat on
+    # was mostly pictures. The page tells you what surrounded the text, not
+    # whether the text is evidence.
+    prose_lines = [l for l in chunk_text.splitlines() if len(l.split()) >= 6]
+    if chunk_type == CHUNK_TYPE_SHORT_EVIDENCE or token_count < TIER_NOISE_MIN_TOKENS:
+        return "noise"
+    if not prose_lines and not has_table_rows:
+        return "noise"
+    if has_table_rows or table_context.strip() or tables_on_page:
+        return "layout_sensitive"
+    if unplaced_share >= TIER_UNPLACED_SHARE:
+        return "layout_sensitive"
+    return "narrative"
+
+
 def build_chunk_output(
     *,
     ticker: str,
@@ -1669,6 +1753,14 @@ def build_chunk_output(
     # its multi-year span handling, canonical ticker. Rebuilding it from
     # doc_meta here produced 'Company: unknown / Reporting year: unknown' on
     # every chunk, because doc_meta carries neither.
+    retrieval_tier = classify_retrieval_tier(
+        chunk_text,
+        token_count,
+        chunk_type,
+        table_context,
+        _page_rows_for_span(page_spans, source_start, source_end),
+    )
+
     meta = dict(embedding_metadata or doc_meta)
     meta.setdefault("ticker", ticker)
     meta["section_code"] = section_code
@@ -1714,9 +1806,17 @@ def build_chunk_output(
         "doc_type": doc_type,
         "source_type": doc_meta.get("source_type") or doc_type,
         "source_scope": doc_meta.get("source_scope") or "full_report",
-        "retrieval_tier": doc_meta.get("retrieval_tier") or "primary",
+        "retrieval_tier": retrieval_tier,
+        # Inclusion follows the action. The default was an unconditional true,
+        # so a document with no parse-index row -- which defaults its quality
+        # status to needs_review -- emitted rag_action=
+        # manual_review_before_indexing alongside include_in_esg_index=true.
+        # TGT-2019 produced 203 such chunks, eligible for the retrieval corpus
+        # while flagged as unreviewed.
         "include_in_esg_index": (
-            "true" if doc_meta.get("include_in_esg_index", True) else "false"
+            "true"
+            if doc_meta.get("include_in_esg_index", True) and rag_action == "index_as_esg"
+            else "false"
         ),
         "duplicate_of_source_id": doc_meta.get("duplicate_of_source_id") or "",
         "doc_quality_status": quality_status,
