@@ -96,6 +96,17 @@ def test_explicit_10k_year_excludes_fiscal_content_year():
     assert detect_filing_years(
         "How did gross margin change from fiscal 2023 to fiscal 2024?"
     ) == (2023, 2024)
+    assert detect_filing_years(
+        "How did the 2024 and 2025 10-Ks explain results for fiscal 2023?"
+    ) == (2024, 2025)
+
+
+def test_possessive_normalization_resolves_corpus_aliases():
+    assert detect_entities(
+        "According to Retailer's 2025 10-K",
+        {"RTL"},
+        {"retailer s": "RTL"},
+    ) == ("RTL",)
 
 
 def test_generic_novel_intent_families_map_to_expected_sections():
@@ -111,6 +122,240 @@ def test_generic_novel_intent_families_map_to_expected_sections():
     assert detect_claims("Compare supplier concentration and continuity risks") == (
         "risk factors",
     )
+
+
+def test_generic_section_ontology_fallback_is_question_id_independent():
+    assert detect_claims(
+        "Describe the product portfolio, customer channels, and store footprint"
+    ) == ("generic business disclosure",)
+    assert detect_claims(
+        "Explain the decrease in sales and the factors driving gross profit"
+    ) == ("generic performance analysis",)
+    assert detect_claims(
+        "What share-based compensation expense remained unrecognized?"
+    ) == ("generic financial-note disclosure",)
+    assert detect_claims(
+        "What could adversely affect the company if customer demand weakens?"
+    ) == ("generic risk disclosure",)
+
+
+def test_broad_same_source_business_question_is_decomposed_atomically():
+    kind, subs = build_subqueries(
+        "arbitrary-request",
+        "In Costco's 2024 10-K Item 1, describe its products, customers, "
+        "suppliers, sales channels, and store footprint.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert kind.value == "cross_section_synthesis"
+    assert [sq.claim_key for sq in subs] == [
+        "products and services",
+        "customers and demand",
+        "suppliers and sourcing",
+        "sales channels",
+        "operating footprint",
+    ]
+    assert {sq.section_code for sq in subs} == {"Item_1"}
+    assert all(sq.claim_key in sq.comparison_side_id.replace("-", " ") for sq in subs)
+    assert len({sq.subquery_id for sq in subs}) == 5
+
+
+def test_broad_financial_note_question_splits_amount_method_and_terms():
+    _, subs = build_subqueries(
+        "not-a-benchmark-id",
+        "For Costco's 2024 10-K Item 8, what amounts were reported, how were "
+        "they measured, and what were the agreement terms and maturities?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert [sq.claim_key for sq in subs] == [
+        "reported amounts",
+        "measurement and estimates",
+        "contractual terms",
+    ]
+    assert all(sq.section_code == "Item_8" for sq in subs)
+
+
+def test_atomic_refinement_does_not_cross_the_resolved_section():
+    _, subs = build_subqueries(
+        "random",
+        "In Costco's 2024 10-K Item 1A, explain the risk exposure, potential "
+        "consequences, and mitigating controls.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert [sq.claim_key for sq in subs] == [
+        "risk exposure",
+        "risk consequences",
+        "risk mitigation",
+    ]
+    assert {sq.section_code for sq in subs} == {"Item_1A"}
+
+
+def test_single_generic_concept_gets_a_focused_prompt_without_overdecomposition():
+    _, subs = build_subqueries(
+        "random",
+        "What does Costco's 2024 10-K Item 1 say about its workforce?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert len(subs) == 1
+    assert subs[0].claim_key == "workforce"
+    assert "employees" in subs[0].question
+
+
+def test_five_atomic_requirements_each_receive_an_evidence_slot():
+    _, subs = build_subqueries(
+        "random",
+        "In Costco's 2024 10-K Item 1, describe its products, customers, "
+        "suppliers, sales channels, and store footprint.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    response = aggregate(subs, FakeAdapter(), evidence_limit=5)
+    assert response["status"] == "success"
+    assert response["requirement_count"] == 5
+    assert response["all_requirements_represented"] is True
+    assert set(response["requirement_coverage"]) == {
+        sq.comparison_side_id for sq in subs
+    }
+    assert all(count >= 1 for count in response["requirement_coverage"].values())
+
+
+def test_sufficiency_feature_is_conservative_until_direct_labels_exist():
+    _, subs = build_subqueries(
+        "irrelevant-request-id",
+        "Compare Costco's 2023 and 2024 10-K strategy.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    response = aggregate(subs, FakeAdapter(), sufficiency_enabled=True)
+    assert response["support"]["overall_support_status"] == "partial"
+    assert response["support"]["support_confidence"] is None
+    assert all(
+        item["support_status"] == "partial"
+        for item in response["support"]["requirements"]
+    )
+
+
+def test_sufficiency_feature_accepts_only_explicit_direct_support_labels():
+    _, subs = build_subqueries(
+        "irrelevant-request-id",
+        "Compare Costco's 2023 and 2024 10-K strategy.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    adapter = FakeAdapter()
+    labels = {}
+    for subquery in subs:
+        chunk = adapter.retrieve(subquery)[0]
+        labels[(chunk.chunk_id, subquery.comparison_side_id)] = "direct"
+    response = aggregate(
+        subs,
+        adapter,
+        sufficiency_enabled=True,
+        direct_support_labels=labels,
+    )
+    assert response["support"]["overall_support_status"] == "satisfied"
+
+
+def test_conditional_adverse_language_routes_to_risk_not_brand_business():
+    _, subs = build_subqueries(
+        "generic",
+        "According to Costco's 2024 10-K, what could happen if the company "
+        "cannot protect its brand or retain customer loyalty?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert [(sq.claim_key, sq.section_code) for sq in subs] == [
+        ("risk factors", "Item_1A"),
+    ]
+
+
+def test_impairment_charge_language_overrides_continuing_operations():
+    _, subs = build_subqueries(
+        "generic",
+        "In Costco's 2024 10-K, what impairment charges were recorded for "
+        "continuing operations and what was the largest component?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert [(sq.claim_key, sq.section_code) for sq in subs] == [
+        ("goodwill and impairment", "Item_8"),
+    ]
+
+
+def test_loyalty_revenue_accounting_uses_recognition_prompt():
+    _, subs = build_subqueries(
+        "generic",
+        "In Costco's 2024 10-K, how does its loyalty program work, and how "
+        "is revenue accounted for as customers earn points and store notes?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert [(sq.claim_key, sq.section_code) for sq in subs] == [
+        ("revenue recognition policy", "Item_8"),
+    ]
+    assert "loyalty points" in subs[0].question
+
+
+def test_revenue_mix_and_location_count_become_two_sections():
+    _, subs = build_subqueries(
+        "generic",
+        "According to Costco's 2024 10-K, what percentage of total revenue "
+        "came from fuel and how many charging stations did it operate?",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert {(sq.claim_key, sq.section_code) for sq in subs} == {
+        ("revenue composition", "Item_7"),
+        ("operating footprint", "Item_1"),
+    }
+
+
+def test_customer_service_is_not_misread_as_products_or_customer_demand():
+    _, subs = build_subqueries(
+        "generic",
+        "In Costco's 2024 10-K, describe the distribution and "
+        "customer-service features of the business.",
+        TICKERS,
+        ALIASES,
+        RESOLVER,
+    )
+    assert {(sq.claim_key, sq.section_code) for sq in subs} == {
+        ("distribution network", "Item_1"),
+        ("customer service", "Item_1"),
+    }
+
+
+def test_clause_local_company_year_pairing_beats_global_distance():
+    resolver = SourceResolver([
+        FilingRecord("AAA", 2023, "10-K", "aaa-23"),
+        FilingRecord("BBB", 2026, "10-K", "bbb-26"),
+    ])
+    _, subs = build_subqueries(
+        "arbitrary-request",
+        "How did Alpha Retail in its 2023 10-K and Beta Retail in its 2026 10-K "
+        "describe gross margin performance?",
+        {"AAA", "BBB"},
+        {"alpha retail": "AAA", "beta retail": "BBB"},
+        resolver,
+    )
+    assert {(sq.ticker, sq.filing_year) for sq in subs} == {
+        ("AAA", 2023),
+        ("BBB", 2026),
+    }
 
 
 def test_generic_same_section_multi_requirement_produces_two_routes():

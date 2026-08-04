@@ -25,6 +25,10 @@ CROSS_ENCODER_REPO = "cross-encoder/ms-marco-MiniLM-L6-v2"
 CROSS_ENCODER_REVISION = "c5ee24cb16019beea0893ab7796b1df96625c6b8"
 CROSS_ENCODER_MAX_LENGTH = 512
 
+ANCHORED_CONFIG_DEFAULT = "config/retrieval_anchored_k16_v1.json"
+ANCHORED_POLICY_ENV = "RAG_RETRIEVAL_POLICY"
+ANCHORED_POLICY_ID = "balanced_anchored_round_robin_k16"
+
 EMBEDDING_TABLE = "benchmark_embeddings_bge_base_en_v15"
 LIVE_VIEW = "rag_eligible_10k_chunks"
 CANDIDATES_PER_SOURCE = 20
@@ -32,6 +36,8 @@ FINAL_EVIDENCE_COUNT = 5
 CROSS_ENCODER_BATCH_SIZE = 8
 MULTIVIEW_RRF_K = 60
 SECTION_ADAPTIVE_POLICY_VERSION = "1.0.0"
+SOFT_SECTION_ROUTING_VERSION = "1.1.0"
+SUPPORTED_RETRIEVAL_SECTIONS = ("Item_1", "Item_1A", "Item_7", "Item_8")
 SECTION_PROFILES = {
     "Item_1": "business operations products services customers channels stores distribution sourcing suppliers competition",
     "Item_1A": "risk factors exposure uncertainty adverse impact mitigation regulation cybersecurity supply chain macroeconomic",
@@ -105,11 +111,23 @@ def _round_robin(per_source: list[list[dict[str, Any]]], limit: int) -> list[dic
 
 
 class ProductionRetriever:
-    def __init__(self, conn=None, bi_encoder=None, cross_encoder=None):
+    def __init__(
+        self,
+        conn=None,
+        bi_encoder=None,
+        cross_encoder=None,
+        *,
+        anchor_cross_encoder=None,
+        expansion_cross_encoder=None,
+        anchored_config=None,
+    ):
         self.conn = conn or _connect()
         self._owns_connection = conn is None
         self.bi_encoder = bi_encoder
         self.cross_encoder = cross_encoder
+        self.anchor_cross_encoder = anchor_cross_encoder
+        self.expansion_cross_encoder = expansion_cross_encoder
+        self.anchored_config = anchored_config
 
     def close(self) -> None:
         if self._owns_connection and self.conn is not None:
@@ -122,7 +140,7 @@ class ProductionRetriever:
     def __exit__(self, exc_type, exc, traceback) -> None:
         self.close()
 
-    def _load_models(self) -> None:
+    def _load_bi_encoder(self) -> None:
         if self.bi_encoder is None:
             import torch
             from sentence_transformers import SentenceTransformer
@@ -140,6 +158,9 @@ class ProductionRetriever:
                 raise RuntimeError(
                     f"bi-encoder dimension mismatch: {dimension} != {BI_ENCODER_DIMENSION}"
                 )
+
+    def _load_models(self) -> None:
+        self._load_bi_encoder()
         if self.cross_encoder is None:
             from sentence_transformers import CrossEncoder
 
@@ -151,10 +172,16 @@ class ProductionRetriever:
             )
 
     def _fetch_candidates(
-        self, question: str, source: SourceSpec, query_vector: str
+        self,
+        question: str,
+        source: SourceSpec,
+        query_vector: str,
+        *,
+        limit: int = CANDIDATES_PER_SOURCE,
     ) -> list[dict[str, Any]]:
         sql = f"""
-          SELECT r.chunk_id, r.ticker, r.filing_year, r.accession_number,
+          SELECT r.chunk_id, r.source_chunk_id, r.chunk_text_sha256,
+                 r.ticker, r.filing_year, r.coverage_year, r.accession_number,
                  r.doc_type, r.section_code, r.chunk_index, r.chunk_text,
                  r.embedding_text, r.token_count,
                  1-(e.embedding <=> %s::vector) AS semantic_score
@@ -173,7 +200,7 @@ class ProductionRetriever:
             source.accession_number,
             source.section_code,
             query_vector,
-            CANDIDATES_PER_SOURCE,
+            limit,
         )
         with self.conn.cursor() as cursor:
             cursor.execute(sql, params)
@@ -185,6 +212,55 @@ class ProductionRetriever:
             row["source"] = asdict(source)
         if not rows:
             raise LookupError(f"authorized source produced no candidates: {source}")
+        return rows
+
+    def _fetch_soft_section_candidates(
+        self,
+        question: str,
+        source: SourceSpec,
+        query_vector: str,
+        *,
+        limit: int = CANDIDATES_PER_SOURCE,
+    ) -> list[dict[str, Any]]:
+        """Retrieve across supported sections while preserving hard source identity."""
+        sql = f"""
+          SELECT r.chunk_id, r.source_chunk_id, r.chunk_text_sha256,
+                 r.ticker, r.filing_year, r.coverage_year, r.accession_number,
+                 r.doc_type, r.section_code, r.chunk_index, r.chunk_text,
+                 r.embedding_text, r.token_count,
+                 1-(e.embedding <=> %s::vector) AS semantic_score
+          FROM public.{EMBEDDING_TABLE} e
+          JOIN public.{LIVE_VIEW} r USING(chunk_id)
+          WHERE r.ticker=%s AND r.filing_year=%s AND r.doc_type=%s
+            AND r.accession_number=%s
+            AND r.section_code = ANY(%s)
+          ORDER BY e.embedding <=> %s::vector, r.chunk_id
+          LIMIT %s
+        """
+        params = (
+            query_vector,
+            source.ticker,
+            source.filing_year,
+            source.doc_type,
+            source.accession_number,
+            list(SUPPORTED_RETRIEVAL_SECTIONS),
+            query_vector,
+            limit,
+        )
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            names = [column.name for column in cursor.description]
+            rows = [dict(zip(names, row)) for row in cursor.fetchall()]
+        for rank, row in enumerate(rows, 1):
+            row["semantic_score"] = float(row["semantic_score"])
+            row["semantic_rank"] = rank
+            row["source"] = asdict(source)
+            row["preferred_section_code"] = source.section_code
+            row["section_route_match"] = row["section_code"] == source.section_code
+        if not rows:
+            raise LookupError(
+                f"authorized source produced no supported-section candidates: {source}"
+            )
         return rows
 
     def retrieve(self, question: str, sources: Iterable[SourceSpec]) -> dict[str, Any]:
@@ -292,6 +368,7 @@ class ProductionRetriever:
 
         self._load_models()
         candidates_by_view: dict[str, list[dict[str, Any]]] = {}
+        soft_section_fallback_used = False
         for name, query in views.items():
             vector = self.bi_encoder.encode(
                 [QUERY_PREFIX + query],
@@ -299,9 +376,24 @@ class ProductionRetriever:
                 convert_to_numpy=True,
                 show_progress_bar=False,
             )[0]
-            candidates_by_view[name] = self._fetch_candidates(
-                query, source, _vector_literal(vector)
-            )
+            query_vector = _vector_literal(vector)
+            try:
+                preferred_candidates = self._fetch_candidates(
+                    query,
+                    source,
+                    query_vector,
+                )
+            except LookupError:
+                preferred_candidates = []
+            if len(preferred_candidates) >= FINAL_EVIDENCE_COUNT:
+                candidates_by_view[name] = preferred_candidates
+            else:
+                soft_section_fallback_used = True
+                candidates_by_view[name] = self._fetch_soft_section_candidates(
+                    query,
+                    source,
+                    query_vector,
+                )
 
         by_chunk: dict[int, dict[str, Any]] = {}
         for name, rows in candidates_by_view.items():
@@ -376,8 +468,10 @@ class ProductionRetriever:
             "question": focused_question,
             "policy": {
                 "policy_version": SECTION_ADAPTIVE_POLICY_VERSION,
+                "soft_section_routing_version": SOFT_SECTION_ROUTING_VERSION,
                 "models_fixed": True,
-                "section_routing": "detected_required_hard_filter",
+                "section_routing": "hard_section_with_supported_section_fallback",
+                "soft_section_fallback_used": soft_section_fallback_used,
                 "query_views": list(views),
                 "candidates_per_view": CANDIDATES_PER_SOURCE,
                 "candidate_fusion": f"reciprocal_rank_fusion_k_{MULTIVIEW_RRF_K}",
@@ -393,6 +487,273 @@ class ProductionRetriever:
                 name: len(rows) for name, rows in candidates_by_view.items()
             },
             "pooled_candidate_count": len(pool),
+            "evidence": evidence,
+        }
+
+    def _anchored_policy(self):
+        from src.anchored_reranking import AnchoredRerankingConfig
+
+        if self.anchored_config is None:
+            path = os.getenv("RAG_ANCHORED_CONFIG", ANCHORED_CONFIG_DEFAULT)
+            self.anchored_config = AnchoredRerankingConfig.load(path)
+        return self.anchored_config
+
+    def _score_anchored_pairs(
+        self,
+        pairs: list[tuple[str, str]],
+        *,
+        role: str,
+    ) -> list[float]:
+        """Score one frozen reranker role with memory-safe lifecycle control."""
+        import gc
+
+        config = self._anchored_policy()
+        if role == "anchor":
+            injected = self.anchor_cross_encoder
+            model_id = config.anchor_model_id
+            revision = config.anchor_model_revision
+        elif role == "expansion":
+            injected = self.expansion_cross_encoder
+            model_id = config.expansion_model_id
+            revision = config.expansion_model_revision
+        else:
+            raise ValueError(f"unknown reranker role: {role}")
+
+        model = injected
+        loaded_here = model is None
+        if loaded_here:
+            from sentence_transformers import CrossEncoder
+
+            model = CrossEncoder(
+                model_id,
+                revision=revision,
+                trust_remote_code=False,
+                device="cpu",
+                max_length=config.max_length,
+            )
+            if config.model_lifecycle == "resident":
+                if role == "anchor":
+                    self.anchor_cross_encoder = model
+                else:
+                    self.expansion_cross_encoder = model
+                loaded_here = False
+        values = model.predict(
+            pairs,
+            batch_size=config.batch_size,
+            show_progress_bar=False,
+            convert_to_numpy=True,
+        )
+        scores = [float(value) for value in values]
+        if loaded_here and config.model_lifecycle == "sequential":
+            del model
+            gc.collect()
+        return scores
+
+    @staticmethod
+    def _merge_candidate_rows(
+        rows_by_view: dict[str, list[dict[str, Any]]],
+        *,
+        subquery: Any,
+        section_policy: str,
+    ) -> list[dict[str, Any]]:
+        merged: dict[int, dict[str, Any]] = {}
+        for view_name, rows in rows_by_view.items():
+            for rank, row in enumerate(rows, 1):
+                chunk_id = int(row["chunk_id"])
+                item = merged.setdefault(chunk_id, dict(row))
+                item.setdefault("view_ranks", {})[view_name] = rank
+        output = list(merged.values())
+        for item in output:
+            item["selected_for_subquery_id"] = subquery.subquery_id
+            item["subquery_id"] = subquery.subquery_id
+            item["claim_key"] = subquery.claim_key
+            item["comparison_side_id"] = subquery.comparison_side_id
+            item["section_policy"] = section_policy
+            item["semantic_rank"] = min(item["view_ranks"].values())
+        return output
+
+    def _build_anchored_candidate_group(
+        self,
+        original_question: str,
+        subquery: Any,
+    ) -> dict[str, Any]:
+        config = self._anchored_policy()
+        source = SourceSpec(
+            ticker=subquery.ticker,
+            filing_year=subquery.filing_year,
+            accession_number=subquery.accession_number,
+            section_code=subquery.section_code,
+            doc_type=subquery.doc_type,
+        )
+        profile = SECTION_PROFILES.get(
+            source.section_code,
+            "annual report disclosure description factors changes impacts",
+        )
+        raw_views = {
+            "original": original_question,
+            "focused": subquery.question,
+            "profile": f"{subquery.claim_key}. {profile}",
+        }
+        views: dict[str, str] = {}
+        normalized_seen: set[str] = set()
+        for name, value in raw_views.items():
+            normalized = " ".join(str(value).casefold().split())
+            if normalized and normalized not in normalized_seen:
+                views[name] = str(value)
+                normalized_seen.add(normalized)
+
+        self._load_bi_encoder()
+        hard_by_view: dict[str, list[dict[str, Any]]] = {}
+        soft_by_view: dict[str, list[dict[str, Any]]] = {}
+        for name, query in views.items():
+            vector = self.bi_encoder.encode(
+                [QUERY_PREFIX + query],
+                normalize_embeddings=True,
+                convert_to_numpy=True,
+                show_progress_bar=False,
+            )[0]
+            literal = _vector_literal(vector)
+            try:
+                hard_by_view[name] = self._fetch_candidates(
+                    query,
+                    source,
+                    literal,
+                    limit=config.hard_candidate_limit,
+                )
+            except LookupError:
+                hard_by_view[name] = []
+            try:
+                soft_by_view[name] = self._fetch_soft_section_candidates(
+                    query,
+                    source,
+                    literal,
+                    limit=config.soft_candidate_limit,
+                )
+            except LookupError:
+                soft_by_view[name] = []
+        hard = self._merge_candidate_rows(
+            hard_by_view,
+            subquery=subquery,
+            section_policy="hard",
+        )
+        soft = self._merge_candidate_rows(
+            soft_by_view,
+            subquery=subquery,
+            section_policy="soft",
+        )
+        if not hard and not soft:
+            raise LookupError(
+                f"no candidates for anchored requirement {subquery.subquery_id}"
+            )
+        return {
+            "requirement_id": subquery.subquery_id,
+            "subquery": subquery,
+            "hard": hard,
+            "soft": soft,
+        }
+
+    def retrieve_anchored(
+        self,
+        original_question: str,
+        subqueries: Iterable[Any],
+    ) -> dict[str, Any]:
+        """Run the frozen L12-anchor/BGE-expansion policy across requirements."""
+        from src.anchored_reranking import select_anchored_evidence
+
+        original_question = str(original_question or "").strip()
+        if not original_question:
+            raise ValueError("question must be non-empty")
+        requirements = list(subqueries)
+        if not requirements:
+            raise ValueError("at least one requirement is required")
+        config = self._anchored_policy()
+        groups = [
+            self._build_anchored_candidate_group(original_question, subquery)
+            for subquery in requirements
+        ]
+
+        unique_pairs: list[tuple[str, str]] = []
+        pair_rows: list[list[dict[str, Any]]] = []
+        by_identity: dict[tuple[str, int], int] = {}
+        for group in groups:
+            question = str(group["subquery"].question)
+            for row in [*group["hard"], *group["soft"]]:
+                identity = (group["requirement_id"], int(row["chunk_id"]))
+                index = by_identity.get(identity)
+                if index is None:
+                    passage = str(row.get(config.passage_field) or "").strip()
+                    if not passage:
+                        raise ValueError(
+                            f"chunk {row.get('chunk_id')} lacks {config.passage_field}"
+                        )
+                    index = len(unique_pairs)
+                    by_identity[identity] = index
+                    unique_pairs.append((question, passage))
+                    pair_rows.append([])
+                pair_rows[index].append(row)
+
+        l12_scores = self._score_anchored_pairs(unique_pairs, role="anchor")
+        for rows, score in zip(pair_rows, l12_scores, strict=True):
+            for row in rows:
+                row["l12_score"] = score
+                row["cross_encoder_score"] = score
+
+        bge_scores = self._score_anchored_pairs(unique_pairs, role="expansion")
+        for rows, score in zip(pair_rows, bge_scores, strict=True):
+            for row in rows:
+                row["bge_score"] = score
+
+        for group in groups:
+            by_chunk: dict[int, list[dict[str, Any]]] = {}
+            for row in [*group["hard"], *group["soft"]]:
+                by_chunk.setdefault(int(row["chunk_id"]), []).append(row)
+            l12_order = sorted(
+                (rows[0] for rows in by_chunk.values()),
+                key=lambda row: (-row["l12_score"], int(row["chunk_id"])),
+            )
+            for rank, row in enumerate(l12_order, 1):
+                for copy in by_chunk[int(row["chunk_id"])]:
+                    copy["cross_encoder_rank_within_source"] = rank
+
+        evidence = select_anchored_evidence(groups, config)
+        represented = {
+            str(item["selected_for_subquery_id"])
+            for item in evidence
+        }
+        coverage = [
+            {
+                "subquery_id": requirement.subquery_id,
+                "comparison_side_id": requirement.comparison_side_id,
+                "claim_key": requirement.claim_key,
+                "retrieval_status": (
+                    "represented" if requirement.subquery_id in represented
+                    else "unsupported"
+                ),
+            }
+            for requirement in requirements
+        ]
+        return {
+            "status": "success",
+            "question": original_question,
+            "policy": {
+                "policy_id": config.policy_id,
+                "anchor_model": config.anchor_model_id,
+                "anchor_model_revision": config.anchor_model_revision,
+                "expansion_model": config.expansion_model_id,
+                "expansion_model_revision": config.expansion_model_revision,
+                "passage_field": config.passage_field,
+                "max_length": config.max_length,
+                "anchor_count": config.anchor_count,
+                "final_evidence_count": config.evidence_limit,
+                "candidate_views": ["original", "focused", "profile"],
+                "database_writes": False,
+                "gold_fields_used": False,
+                "question_id_overrides": False,
+                "model_lifecycle": config.model_lifecycle,
+                "bi_encoder": BI_ENCODER_REPO,
+                "bi_encoder_revision": BI_ENCODER_REVISION,
+            },
+            "requirement_coverage": coverage,
             "evidence": evidence,
         }
 

@@ -51,6 +51,16 @@ class AliasConnection:
         return AliasCursor()
 
 
+class PossessiveAliasCursor(AliasCursor):
+    def fetchall(self):
+        return [("RTL", "RETAILER'S GROUP INC")]
+
+
+class PossessiveAliasConnection:
+    def cursor(self):
+        return PossessiveAliasCursor()
+
+
 def test_aliases_retain_safe_full_names_and_drop_generic_first_words():
     tickers, aliases = _aliases_from_connection(AliasConnection())
     assert tickers == {"DBGI", "DECK", "GPI", "LULU", "ORLY"}
@@ -59,6 +69,22 @@ def test_aliases_retain_safe_full_names_and_drop_generic_first_words():
     assert aliases["lululemon"] == "LULU"
     assert "digital" not in aliases
     assert "group" not in aliases
+
+
+def test_aliases_add_only_unique_corpus_derived_leading_names():
+    tickers, aliases = _aliases_from_connection(AliasConnection())
+    assert aliases["group 1"] == "GPI"
+    assert aliases["o reilly"] == "ORLY"
+    assert aliases["deckers"] == "DECK"
+    assert "group" not in aliases
+
+
+def test_aliases_generate_bidirectional_possessive_forms():
+    tickers, aliases = _aliases_from_connection(PossessiveAliasConnection())
+    assert tickers == {"RTL"}
+    assert aliases["retailer s group"] == "RTL"
+    assert aliases["retailers group"] == "RTL"
+    assert aliases["retailers"] == "RTL"
 
 
 class SimpleRawRetriever:
@@ -86,6 +112,27 @@ class SimpleRawRetriever:
     def close(self):
         self.closed = True
 
+    def retrieve_anchored(self, question, requirements):
+        requirement = list(requirements)[0]
+        return {
+            "status": "success",
+            "question": question,
+            "policy": {"policy_id": "balanced_anchored_round_robin_k16"},
+            "requirement_coverage": [{
+                "subquery_id": requirement.subquery_id,
+                "retrieval_status": "represented",
+            }],
+            "evidence": [
+                {
+                    "chunk_id": rank,
+                    "final_rank": rank,
+                    "aggregated_rank": rank,
+                    "selected_for_subquery_id": requirement.subquery_id,
+                }
+                for rank in range(1, 17)
+            ],
+        }
+
 
 def test_explicit_simple_query_preserves_locked_path():
     retriever = SimpleRawRetriever()
@@ -99,3 +146,26 @@ def test_explicit_simple_query_preserves_locked_path():
     assert len(response["evidence"]) == 5
     assert [x["aggregated_rank"] for x in response["evidence"]] == [1, 2, 3, 4, 5]
     assert retriever.closed is False
+
+
+def test_explicit_query_uses_anchored_path_only_when_feature_flagged(monkeypatch):
+    monkeypatch.setenv(
+        "RAG_RETRIEVAL_POLICY",
+        "balanced_anchored_round_robin_k16",
+    )
+    retriever = SimpleRawRetriever()
+    response = run_query(
+        "What were the revenue drivers?",
+        {
+            "ticker": "COST",
+            "filing_year": 2024,
+            "doc_type": "10-K",
+            "accession_number": "acc",
+            "section_code": "Item_7",
+        },
+        retriever=retriever,
+    )
+    assert response["status"] == "success"
+    assert response["is_decomposed"] is False
+    assert response["policy"]["policy_id"] == "balanced_anchored_round_robin_k16"
+    assert len(response["evidence"]) == 16

@@ -103,6 +103,23 @@ class QueryApiTests(unittest.TestCase):
             self.assertIn(field, sql)
         self.assertEqual(conn.fake_cursor.params[-1], 20)
 
+    def test_soft_section_fetch_keeps_source_hard_and_sections_broad(self):
+        conn = FakeConnection(database_rows(100, 2))
+        retriever = query_api.ProductionRetriever(
+            conn=conn, bi_encoder=FakeBiEncoder(), cross_encoder=FakeCrossEncoder()
+        )
+        source = query_api.SourceSpec("TEST", 2025, "acc", "Item_8")
+        rows = retriever._fetch_soft_section_candidates(
+            "question", source, "[1,0]"
+        )
+        self.assertEqual(len(rows), 2)
+        self.assertIn("section_code = ANY", conn.fake_cursor.sql)
+        self.assertEqual(
+            tuple(conn.fake_cursor.params[5]),
+            query_api.SUPPORTED_RETRIEVAL_SECTIONS,
+        )
+        self.assertTrue(all(row["preferred_section_code"] == "Item_8" for row in rows))
+
     def test_retrieve_reranks_and_returns_exactly_five(self):
         conn = FakeConnection(database_rows(100, 8))
         retriever = query_api.ProductionRetriever(
@@ -176,6 +193,41 @@ class QueryApiTests(unittest.TestCase):
         self.assertEqual(
             result["policy"]["section_selection"],
             "cross_encoder_financial_notes",
+        )
+
+    def test_anchored_policy_returns_six_anchors_and_k16(self):
+        conn = FakeConnection(database_rows(100, 30))
+        retriever = query_api.ProductionRetriever(
+            conn=conn,
+            bi_encoder=FakeBiEncoder(),
+            cross_encoder=FakeCrossEncoder(),
+            anchor_cross_encoder=FakeCrossEncoder(),
+            expansion_cross_encoder=FakeCrossEncoder(),
+        )
+        subquery = SimpleNamespace(
+            subquery_id="sq-test",
+            question="focused revenue performance",
+            claim_key="revenue performance",
+            comparison_side_id="TEST-2025-Item_7-revenue",
+            ticker="TEST",
+            filing_year=2025,
+            accession_number="acc",
+            section_code="Item_7",
+            doc_type="10-K",
+        )
+        with patch.object(query_api, "_vector_literal", return_value="[1,0]"):
+            result = retriever.retrieve_anchored(
+                "original revenue question",
+                [subquery],
+            )
+        self.assertEqual(len(result["evidence"]), 16)
+        self.assertEqual(
+            [item["selection_reason"] for item in result["evidence"][:6]],
+            ["l12_anchor"] * 6,
+        )
+        self.assertEqual(
+            result["policy"]["policy_id"],
+            "balanced_anchored_round_robin_k16",
         )
 
 
