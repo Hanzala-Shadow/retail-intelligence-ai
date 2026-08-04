@@ -8,9 +8,12 @@ source -> pinned cross-encoder reranking -> deterministic source-aware top 5.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import resource
 import sys
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -45,6 +48,44 @@ SECTION_PROFILES = {
     "Item_8": "financial statements notes accounting policy recognition measurement estimates commitments contingencies impairment taxes leases",
 }
 NARRATIVE_RRF_SECTIONS = {"Item_1", "Item_1A", "Item_7"}
+
+
+def _runtime_model_device() -> str:
+    """Return the explicitly authorized inference device.
+
+    CPU remains the production default. GPU execution must be opted into for
+    an isolated benchmark or a dedicated inference worker.
+    """
+    device = os.getenv("RAG_MODEL_DEVICE", "cpu").strip().lower()
+    if device == "cpu" or device == "cuda" or device.startswith("cuda:"):
+        return device
+    raise ValueError("RAG_MODEL_DEVICE must be cpu, cuda, or cuda:<index>")
+
+
+def _peak_rss_kib() -> int:
+    return int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+
+
+def _evidence_identity_sha256(evidence: list[dict[str, Any]]) -> str:
+    """Hash only deterministic selection identity, never passage text."""
+    identity = [
+        {
+            "final_rank": int(item["final_rank"]),
+            "source_chunk_id": item.get("source_chunk_id"),
+            "chunk_id": int(item["chunk_id"]),
+            "selected_for_subquery_id": str(
+                item.get("selected_for_subquery_id") or ""
+            ),
+            "selection_reason": str(item.get("selection_reason") or ""),
+        }
+        for item in evidence
+    ]
+    payload = json.dumps(
+        identity,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -140,17 +181,21 @@ class ProductionRetriever:
     def __exit__(self, exc_type, exc, traceback) -> None:
         self.close()
 
-    def _load_bi_encoder(self) -> None:
+    def _load_bi_encoder(
+        self,
+        runtime_profile: dict[str, Any] | None = None,
+    ) -> None:
         if self.bi_encoder is None:
             import torch
             from sentence_transformers import SentenceTransformer
 
+            started = time.perf_counter()
             torch.set_num_threads(2)
             self.bi_encoder = SentenceTransformer(
                 BI_ENCODER_REPO,
                 revision=BI_ENCODER_REVISION,
                 trust_remote_code=False,
-                device="cpu",
+                device=_runtime_model_device(),
             )
             self.bi_encoder.max_seq_length = BI_ENCODER_MAX_LENGTH
             dimension = self.bi_encoder.get_embedding_dimension()
@@ -158,6 +203,10 @@ class ProductionRetriever:
                 raise RuntimeError(
                     f"bi-encoder dimension mismatch: {dimension} != {BI_ENCODER_DIMENSION}"
                 )
+            if runtime_profile is not None:
+                runtime_profile["timings_ms"]["bi_encoder_load"] += (
+                    time.perf_counter() - started
+                ) * 1000
 
     def _load_models(self) -> None:
         self._load_bi_encoder()
@@ -503,6 +552,7 @@ class ProductionRetriever:
         pairs: list[tuple[str, str]],
         *,
         role: str,
+        runtime_profile: dict[str, Any] | None = None,
     ) -> list[float]:
         """Score one frozen reranker role with memory-safe lifecycle control."""
         import gc
@@ -521,6 +571,7 @@ class ProductionRetriever:
 
         model = injected
         loaded_here = model is None
+        load_started = time.perf_counter()
         if loaded_here:
             from sentence_transformers import CrossEncoder
 
@@ -528,7 +579,7 @@ class ProductionRetriever:
                 model_id,
                 revision=revision,
                 trust_remote_code=False,
-                device="cpu",
+                device=_runtime_model_device(),
                 max_length=config.max_length,
             )
             if config.model_lifecycle == "resident":
@@ -537,12 +588,22 @@ class ProductionRetriever:
                 else:
                     self.expansion_cross_encoder = model
                 loaded_here = False
+        if runtime_profile is not None:
+            runtime_profile["timings_ms"][f"{role}_model_load"] += (
+                time.perf_counter() - load_started
+            ) * 1000
+            runtime_profile["scored_pairs"][role] = len(pairs)
+        inference_started = time.perf_counter()
         values = model.predict(
             pairs,
             batch_size=config.batch_size,
             show_progress_bar=False,
             convert_to_numpy=True,
         )
+        if runtime_profile is not None:
+            runtime_profile["timings_ms"][f"{role}_inference"] += (
+                time.perf_counter() - inference_started
+            ) * 1000
         scores = [float(value) for value in values]
         if loaded_here and config.model_lifecycle == "sequential":
             del model
@@ -576,6 +637,7 @@ class ProductionRetriever:
         self,
         original_question: str,
         subquery: Any,
+        runtime_profile: dict[str, Any],
     ) -> dict[str, Any]:
         config = self._anchored_policy()
         source = SourceSpec(
@@ -602,17 +664,22 @@ class ProductionRetriever:
                 views[name] = str(value)
                 normalized_seen.add(normalized)
 
-        self._load_bi_encoder()
+        self._load_bi_encoder(runtime_profile)
         hard_by_view: dict[str, list[dict[str, Any]]] = {}
         soft_by_view: dict[str, list[dict[str, Any]]] = {}
         for name, query in views.items():
+            embedding_started = time.perf_counter()
             vector = self.bi_encoder.encode(
                 [QUERY_PREFIX + query],
                 normalize_embeddings=True,
                 convert_to_numpy=True,
                 show_progress_bar=False,
             )[0]
+            runtime_profile["timings_ms"]["embedding"] += (
+                time.perf_counter() - embedding_started
+            ) * 1000
             literal = _vector_literal(vector)
+            fetch_started = time.perf_counter()
             try:
                 hard_by_view[name] = self._fetch_candidates(
                     query,
@@ -622,6 +689,10 @@ class ProductionRetriever:
                 )
             except LookupError:
                 hard_by_view[name] = []
+            runtime_profile["timings_ms"]["database_fetch"] += (
+                time.perf_counter() - fetch_started
+            ) * 1000
+            fetch_started = time.perf_counter()
             try:
                 soft_by_view[name] = self._fetch_soft_section_candidates(
                     query,
@@ -631,6 +702,10 @@ class ProductionRetriever:
                 )
             except LookupError:
                 soft_by_view[name] = []
+            runtime_profile["timings_ms"]["database_fetch"] += (
+                time.perf_counter() - fetch_started
+            ) * 1000
+        merge_started = time.perf_counter()
         hard = self._merge_candidate_rows(
             hard_by_view,
             subquery=subquery,
@@ -641,6 +716,18 @@ class ProductionRetriever:
             subquery=subquery,
             section_policy="soft",
         )
+        runtime_profile["timings_ms"]["candidate_merge"] += (
+            time.perf_counter() - merge_started
+        ) * 1000
+        runtime_profile["candidate_counts"]["views"] += len(views)
+        runtime_profile["candidate_counts"]["hard_positions"] += sum(
+            len(rows) for rows in hard_by_view.values()
+        )
+        runtime_profile["candidate_counts"]["soft_positions"] += sum(
+            len(rows) for rows in soft_by_view.values()
+        )
+        runtime_profile["candidate_counts"]["hard_unique"] += len(hard)
+        runtime_profile["candidate_counts"]["soft_unique"] += len(soft)
         if not hard and not soft:
             raise LookupError(
                 f"no candidates for anchored requirement {subquery.subquery_id}"
@@ -666,11 +753,48 @@ class ProductionRetriever:
         requirements = list(subqueries)
         if not requirements:
             raise ValueError("at least one requirement is required")
+        total_started = time.perf_counter()
         config = self._anchored_policy()
+        runtime_profile: dict[str, Any] = {
+            "schema_version": 1,
+            "device": _runtime_model_device(),
+            "model_lifecycle": config.model_lifecycle,
+            "requirement_count": len(requirements),
+            "candidate_counts": {
+                "views": 0,
+                "hard_positions": 0,
+                "soft_positions": 0,
+                "hard_unique": 0,
+                "soft_unique": 0,
+                "unique_requirement_chunk_pairs": 0,
+            },
+            "scored_pairs": {"anchor": 0, "expansion": 0},
+            "timings_ms": {
+                "bi_encoder_load": 0.0,
+                "embedding": 0.0,
+                "database_fetch": 0.0,
+                "candidate_merge": 0.0,
+                "anchor_model_load": 0.0,
+                "anchor_inference": 0.0,
+                "expansion_model_load": 0.0,
+                "expansion_inference": 0.0,
+                "selection": 0.0,
+                "total": 0.0,
+            },
+            "peak_rss_kib_before": _peak_rss_kib(),
+        }
+        candidate_started = time.perf_counter()
         groups = [
-            self._build_anchored_candidate_group(original_question, subquery)
+            self._build_anchored_candidate_group(
+                original_question,
+                subquery,
+                runtime_profile,
+            )
             for subquery in requirements
         ]
+        runtime_profile["timings_ms"]["candidate_build_total"] = (
+            time.perf_counter() - candidate_started
+        ) * 1000
 
         unique_pairs: list[tuple[str, str]] = []
         pair_rows: list[list[dict[str, Any]]] = []
@@ -691,14 +815,25 @@ class ProductionRetriever:
                     unique_pairs.append((question, passage))
                     pair_rows.append([])
                 pair_rows[index].append(row)
+        runtime_profile["candidate_counts"][
+            "unique_requirement_chunk_pairs"
+        ] = len(unique_pairs)
 
-        l12_scores = self._score_anchored_pairs(unique_pairs, role="anchor")
+        l12_scores = self._score_anchored_pairs(
+            unique_pairs,
+            role="anchor",
+            runtime_profile=runtime_profile,
+        )
         for rows, score in zip(pair_rows, l12_scores, strict=True):
             for row in rows:
                 row["l12_score"] = score
                 row["cross_encoder_score"] = score
 
-        bge_scores = self._score_anchored_pairs(unique_pairs, role="expansion")
+        bge_scores = self._score_anchored_pairs(
+            unique_pairs,
+            role="expansion",
+            runtime_profile=runtime_profile,
+        )
         for rows, score in zip(pair_rows, bge_scores, strict=True):
             for row in rows:
                 row["bge_score"] = score
@@ -715,7 +850,11 @@ class ProductionRetriever:
                 for copy in by_chunk[int(row["chunk_id"])]:
                     copy["cross_encoder_rank_within_source"] = rank
 
+        selection_started = time.perf_counter()
         evidence = select_anchored_evidence(groups, config)
+        runtime_profile["timings_ms"]["selection"] = (
+            time.perf_counter() - selection_started
+        ) * 1000
         represented = {
             str(item["selected_for_subquery_id"])
             for item in evidence
@@ -732,6 +871,17 @@ class ProductionRetriever:
             }
             for requirement in requirements
         ]
+        runtime_profile["timings_ms"]["total"] = (
+            time.perf_counter() - total_started
+        ) * 1000
+        runtime_profile["timings_ms"] = {
+            name: round(float(value), 3)
+            for name, value in runtime_profile["timings_ms"].items()
+        }
+        runtime_profile["peak_rss_kib_after"] = _peak_rss_kib()
+        runtime_profile["evidence_identity_sha256"] = (
+            _evidence_identity_sha256(evidence)
+        )
         return {
             "status": "success",
             "question": original_question,
@@ -754,6 +904,7 @@ class ProductionRetriever:
                 "bi_encoder_revision": BI_ENCODER_REVISION,
             },
             "requirement_coverage": coverage,
+            "runtime_profile": runtime_profile,
             "evidence": evidence,
         }
 

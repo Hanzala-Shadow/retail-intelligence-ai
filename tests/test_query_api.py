@@ -229,6 +229,25 @@ class QueryApiTests(unittest.TestCase):
             result["policy"]["policy_id"],
             "balanced_anchored_round_robin_k16",
         )
+        runtime = result["runtime_profile"]
+        self.assertEqual(runtime["device"], "cpu")
+        self.assertEqual(runtime["requirement_count"], 1)
+        self.assertEqual(runtime["scored_pairs"]["anchor"], 30)
+        self.assertEqual(runtime["scored_pairs"]["expansion"], 30)
+        self.assertEqual(
+            runtime["candidate_counts"]["unique_requirement_chunk_pairs"],
+            30,
+        )
+        self.assertEqual(len(runtime["evidence_identity_sha256"]), 64)
+        self.assertGreaterEqual(runtime["timings_ms"]["total"], 0)
+
+    def test_runtime_device_rejects_unapproved_value(self):
+        with patch.dict(
+            "os.environ",
+            {"RAG_MODEL_DEVICE": "automatic"},
+        ):
+            with self.assertRaisesRegex(ValueError, "RAG_MODEL_DEVICE"):
+                query_api._runtime_model_device()
 
 
 if __name__ == "__main__":

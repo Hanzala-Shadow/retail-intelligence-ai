@@ -39,6 +39,34 @@ def test_config_pins_frozen_models_and_limits():
     assert item.max_length == 512
 
 
+def test_gpu_profile_changes_runtime_only():
+    cpu = config()
+    gpu = AnchoredRerankingConfig.load(
+        ROOT / "config" / "retrieval_anchored_k16_gpu_v1.json"
+    )
+    selection_fields = (
+        "policy_id",
+        "anchor_model_id",
+        "anchor_model_revision",
+        "expansion_model_id",
+        "expansion_model_revision",
+        "passage_field",
+        "max_length",
+        "anchor_count",
+        "evidence_limit",
+        "hard_candidate_limit",
+        "soft_candidate_limit",
+    )
+    assert {
+        name: getattr(cpu, name) for name in selection_fields
+    } == {
+        name: getattr(gpu, name) for name in selection_fields
+    }
+    assert cpu.model_lifecycle == "sequential"
+    assert gpu.model_lifecycle == "resident"
+    assert gpu.batch_size == 32
+
+
 def test_selector_balances_anchors_and_expansion():
     groups = []
     for number, requirement in enumerate(("sq-a", "sq-b", "sq-c")):
