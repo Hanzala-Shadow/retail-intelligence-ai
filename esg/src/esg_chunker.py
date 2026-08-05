@@ -36,6 +36,15 @@ MAX_TABLE_CONTEXT_TOKENS = 64
 VALIDATED_TABLE_TRANSITION_REPAIRS = frozenset({("AMZN", "2023"), ("LOW", "2023")})
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
+# Sections between index checkpoints. Each checkpoint re-canonicalises, re-sorts
+# and rewrites the WHOLE index, so a checkpoint per section makes the stage
+# quadratic: a 199-document run rewrote a 17 MB CSV 5,515 times -- roughly 47 GB
+# of writes for a 17 MB file, and the rate decayed from 1,615 to 330 chunks/min
+# as it went. Batching cuts that by the batch size. The cost of a larger batch is
+# bounded and cheap: a crash loses at most this many sections of planning, which
+# resume redoes, and the per-section markers keep an interrupted section from
+# ever being mistaken for a finished one.
+CHECKPOINT_EVERY_DEFAULT = 25
 # Large tables of contents sit far above NAVIGATION_TRACE_MAX_TOKENS, so the
 # short-section navigation heuristic never inspects them. They are recognised
 # instead by how much of their character budget is spent on dot leaders.
@@ -2816,7 +2825,7 @@ def run(
     pdf_stem: str | None = None,
     resume: bool = True,
     force: bool = False,
-    checkpoint_every: int = 1,
+    checkpoint_every: int = CHECKPOINT_EVERY_DEFAULT,
     workers: int = 1,
     bge_tokenizer_path: str | Path | None = None,
     company_manifest: str | Path = config.ESG_ACCEPTED_COMPANY_MANIFEST_CSV,
@@ -3179,9 +3188,14 @@ def main():
     parser.add_argument(
         "--checkpoint-every",
         type=positive_int,
-        default=1,
+        default=CHECKPOINT_EVERY_DEFAULT,
         metavar="N",
-        help="Atomically checkpoint the chunks index after every N updated sections (default: 1).",
+        help=(
+            "Atomically checkpoint the chunks index after every N updated "
+            f"sections (default: {CHECKPOINT_EVERY_DEFAULT}). Each checkpoint "
+            "rewrites the whole index, so 1 makes the stage quadratic; pass 1 "
+            "only when losing a single section of work matters more than time."
+        ),
     )
     parser.add_argument(
         "--workers",
