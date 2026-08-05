@@ -40,3 +40,7 @@ outputs/**
 scratchpad/**
 !scratchpad/
 !scratchpad/README.md
+
+# QA snapshots are regenerated per run and stamped with the database hash.
+reports/**
+!reports/
