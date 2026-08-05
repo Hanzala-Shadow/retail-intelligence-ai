@@ -1,12 +1,16 @@
 # Environments
 .env
 venv/
+venv-docling/
 env/
 __pycache__/
 *.pyc
 
-# Credentials
+# Credentials. Broad on purpose: this project has committed an OAuth client
+# secret to a shared branch before, and a pattern costs nothing to keep.
 credentials.json
+client_secret.json
+token.json
 *.pem
 *.key
 
@@ -18,6 +22,21 @@ credentials.json
 # Logs
 logs/*.log
 
-# Large/raw data
+# Input corpus and all regenerated pipeline output. The numbered sustainability
+# folders contain the transferred Docling cache and fused-page cache.
 data/01_raw/
 data/02_interim/
+data/03_sections/sustainability/
+data/04_chunks/
+data/05_db/
+data/05_embedding/
+data/00_reference/*
+!data/00_reference/.gitkeep
+!data/00_reference/companies.csv
+!data/00_reference/sustainability_report_tracker.csv
+outputs/**
+
+# Disposable local work. Keep only the cleanup rules readable in Git.
+scratchpad/**
+!scratchpad/
+!scratchpad/README.md

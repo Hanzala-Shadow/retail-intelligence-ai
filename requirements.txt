@@ -1,0 +1,3 @@
+python-dotenv==1.2.2
+tiktoken==0.13.0
+transformers==5.14.1
