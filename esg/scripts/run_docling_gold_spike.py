@@ -35,6 +35,14 @@ from typing import Any, Iterable
 # because this script runs in the docling venv, outside the pipeline package.
 HEADER_FOOTER_BAND_SHARE = 0.12
 
+# Same idea, rotated 90 degrees: a persistent vertical nav rail (e.g. TDUP's
+# pink sidebar with section links) sits in the left or right margin on every
+# page, not the top/bottom band HEADER_FOOTER_BAND_SHARE covers. Measured
+# against TDUP-2022: the rail's right edge sits at x=145 of 1224 (0.118) and
+# real body text never starts before x=237 (0.194), so 0.15 separates them
+# with room on both sides.
+SIDE_BAND_SHARE = 0.15
+
 # Where a column boundary sits across the gutter. 0.9 keeps trailing text
 # with its own column and mirrors the row rule (cut just before the next row
 # starts). Not corpus-validated -- it is a knob, exposed as --col-cut-share.
@@ -1085,6 +1093,15 @@ def stage_overlay(args: argparse.Namespace) -> int:
                 r = fitz.Rect(
                     bbox[0] * scale, bbox[1] * scale, bbox[2] * scale, bbox[3] * scale
                 )
+                if page.rotation:
+                    # draw_rect/insert_text on a Page place coordinates in raw
+                    # mediabox space, but docling's bbox is in the
+                    # rotated/displayed space page.rect reports. Map it back
+                    # before drawing, or the box lands as a thin, misplaced
+                    # sliver on any rotated page (seen on MOV-2021, /Rotate 90
+                    # throughout).
+                    r = r * page.derotation_matrix
+                    r.normalize()
                 page.draw_rect(r, color=color, width=1.2)
                 page.insert_text(
                     (r.x0 + 2, max(r.y0 - 3, 8)),
@@ -1476,7 +1493,23 @@ def fuse_page(pdf_path: Path, page_no: int, regions: list[dict[str, Any]], snap_
     doc = fitz.open(str(pdf_path))
     page = doc[page_no - 1]
     words = list(page.get_text("words"))
+    if page.rotation:
+        # get_text("words") reports coordinates in raw, un-rotated mediabox
+        # space, while docling's region boxes are in the rotated/displayed
+        # page space page.rect already reflects. Left unreconciled, a rotated
+        # page's words and regions live in two different coordinate frames
+        # and almost nothing lands inside a box -- verified on MOV-2021 (every
+        # page /Rotate 90), which held 60-83% of its words unplaced for
+        # exactly this reason, not because docling missed the text.
+        matrix = page.rotation_matrix
+        rotated = []
+        for word in words:
+            r = fitz.Rect(word[0], word[1], word[2], word[3]) * matrix
+            r.normalize()
+            rotated.append((r.x0, r.y0, r.x1, r.y1, *word[4:]))
+        words = rotated
     page_height = page.rect.height
+    page_width = page.rect.width
     boxed = [r for r in regions if r.get("bbox")]
     scale = _scale_for_page([r["bbox"] for r in boxed], page.rect)
 
@@ -1519,6 +1552,7 @@ def fuse_page(pdf_path: Path, page_no: int, regions: list[dict[str, Any]], snap_
     # happens to sit low (region 9 on ORLY p12 is content, and is in the band).
     # Docling's own labels do not help here -- it calls nav ribbons "text".
     band = page_height * HEADER_FOOTER_BAND_SHARE
+    side_band = page_width * SIDE_BAND_SHARE
 
     blocks: list[str] = []
     for idx, region in enumerate(boxed):
@@ -1528,6 +1562,10 @@ def fuse_page(pdf_path: Path, page_no: int, regions: list[dict[str, Any]], snap_
             label += "|band=header"
         elif b[1] * scale >= page_height - band:
             label += "|band=footer"
+        elif b[2] * scale <= side_band:
+            label += "|band=left"
+        elif b[0] * scale >= page_width - side_band:
+            label += "|band=right"
         text = ""
         if table_mode == "grid" and label.startswith("table") and region.get("grid"):
             # Empty means the grid was declined as incoherent. Fall back to

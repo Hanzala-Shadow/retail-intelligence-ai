@@ -54,16 +54,18 @@ UNPLACED_MARKER = "[unplaced words]"
 EMPTY_REGION_NOTE = "(no text layer in this region)"
 
 # A block header looks like "[6:text|band=footer]". The band suffix marks a
-# region sitting in the top or bottom 12% of the page. It is a hint, not a
-# verdict: on ORLY p12 the line "2,013 LEADERSHIP AWARDS EARNED IN 2023." sits
-# in the band and is real content.
+# region sitting in the top/bottom 12% of the page (header/footer) or the
+# left/right 15% margin (left/right -- a persistent nav rail, e.g. TDUP's
+# section-link sidebar). It is a hint, not a verdict: on ORLY p12 the line
+# "2,013 LEADERSHIP AWARDS EARNED IN 2023." sits in the band and is real
+# content.
 # The trailing (.*) matters: the fuse stage writes an empty region as
 # "[19:picture] (no text layer in this region)" -- tag and note on ONE line.
 # Anchoring the tag to end-of-line missed those, so the note and every later
 # tag were swallowed into the preceding block's text, producing heading text
 # like 'Whistleblower Policy\n\n[6:picture]'.
 BLOCK_HEADER_RE = re.compile(
-    r"^\[(\d+):([^\]|]*)(?:\|band=(header|footer))?\][ \t]*(.*)$", re.M
+    r"^\[(\d+):([^\]|]*)(?:\|band=(header|footer|left|right))?\][ \t]*(.*)$", re.M
 )
 
 # section_splitter_esg.read_page_map only reads page, char_start and char_end.
@@ -321,6 +323,18 @@ def build_document(
         if repeated:
             kept_blocks = []
             for kind, text, label in blocks:
+                # _furniture_key strips digits, so a band block that is pure
+                # digits (a section number docling boxed apart from its label,
+                # e.g. TDUP's sidebar splitting "01 Approach" into "01" and
+                # "Approach") always hashes to "" and the repeated-key lookup
+                # below can never match it, no matter how many pages repeat
+                # it -- repeated_band_keys skips empty keys on purpose so a
+                # single stray block cannot poison the registry. A digit-only
+                # band fragment is never meaningful on its own regardless of
+                # repetition, unlike a labelled line, so it is dropped outright.
+                if kind == "band" and not re.search(r"[A-Za-z]", text):
+                    n_dropped += 1
+                    continue
                 if kind == "band" and _furniture_key(text) in repeated:
                     n_dropped += 1
                     continue
