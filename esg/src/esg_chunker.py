@@ -36,15 +36,20 @@ MAX_TABLE_CONTEXT_TOKENS = 64
 VALIDATED_TABLE_TRANSITION_REPAIRS = frozenset({("AMZN", "2023"), ("LOW", "2023")})
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
-# Sections between index checkpoints. Each checkpoint re-canonicalises, re-sorts
-# and rewrites the WHOLE index, so a checkpoint per section makes the stage
-# quadratic: a 199-document run rewrote a 17 MB CSV 5,515 times -- roughly 47 GB
-# of writes for a 17 MB file, and the rate decayed from 1,615 to 330 chunks/min
-# as it went. Batching cuts that by the batch size. The cost of a larger batch is
-# bounded and cheap: a crash loses at most this many sections of planning, which
-# resume redoes, and the per-section markers keep an interrupted section from
-# ever being mistaken for a finished one.
-CHECKPOINT_EVERY_DEFAULT = 25
+# Sections between index checkpoints. Each checkpoint re-sorts and rewrites the
+# WHOLE index (write_index's already_canonical=True skips re-canonicalizing,
+# but the sort, CSV serialization and fsync are still full-corpus), so a
+# checkpoint per section makes the stage quadratic: a 199-document run
+# rewrote a 17 MB CSV 5,515 times -- roughly 47 GB of writes for a 17 MB file,
+# and the rate decayed from 1,615 to 330 chunks/min as it went. Batching cuts
+# that by the batch size, but the per-checkpoint cost still scales with total
+# corpus size, so the same batch size buys less as the corpus grows: the index
+# is 159 MB and 51k rows as of 2026-08-06, 9x the size that motivated 25, so
+# this was raised to keep total checkpoint overhead in the same proportion.
+# The cost of a larger batch is bounded and cheap: a crash loses at most this
+# many sections of planning, which resume redoes, and the per-section markers
+# keep an interrupted section from ever being mistaken for a finished one.
+CHECKPOINT_EVERY_DEFAULT = 200
 # Large tables of contents sit far above NAVIGATION_TRACE_MAX_TOKENS, so the
 # short-section navigation heuristic never inspects them. They are recognised
 # instead by how much of their character budget is spent on dot leaders.
@@ -2773,10 +2778,26 @@ def index_sort_key(row: dict) -> tuple[str, str, str, int, str]:
     )
 
 
-def write_index(index_path: Path, rows: list[dict]) -> None:
-    """Atomically checkpoint the deduplicated chunks index."""
+def write_index(
+    index_path: Path, rows: list[dict], already_canonical: bool = False
+) -> None:
+    """Atomically checkpoint the deduplicated chunks index.
+
+    ``already_canonical`` skips re-running canonicalize_index_rows, which
+    rebuilds a fresh dict per row plus two more full-corpus dicts to dedupe by
+    slot and by chunk_id. run()'s checkpoint() has nothing to dedupe --
+    rows_by_section already holds one clean row list per section key, replaced
+    wholesale (never appended to) each time a section is (re)chunked, so
+    flatten_index_rows(rows_by_section, unkeyed_rows) is canonical by
+    construction. Re-canonicalizing it anyway was pure waste repeated on every
+    checkpoint of a run: at 51k rows, several full-corpus passes each time
+    checkpoint_every sections complete.
+    """
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    rows = sorted(canonicalize_index_rows(rows), key=index_sort_key)
+    rows = sorted(
+        rows if already_canonical else canonicalize_index_rows(rows),
+        key=index_sort_key,
+    )
     tmp_path = index_path.with_name(f"{index_path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
     try:
         with tmp_path.open("w", newline="", encoding="utf-8") as f:
@@ -2887,6 +2908,7 @@ def run(
         write_index(
             index_path,
             flatten_index_rows(rows_by_section, unkeyed_rows),
+            already_canonical=True,
         )
         for marker in pending_markers:
             clear_section_marker(marker)
