@@ -67,6 +67,7 @@ SHORT_SECTION_ACTION_EXCLUDED = "excluded"
 QUALITY_FLAG_SHORT_SECTION_EXCLUDED = "short_section_excluded_from_retrieval"
 QUALITY_FLAG_UNSAFE_RETRIEVAL_CONTENT = "unsafe_retrieval_content"
 QUALITY_FLAG_SECTION_HELD = "section_held_by_manual_review"
+QUALITY_FLAG_FURNITURE_SPAN = "furniture_span_excluded_from_retrieval"
 SECTION_HOLD_ACTIONS = frozenset(
     {"manual_review_before_indexing", "exclude_from_esg_index"}
 )
@@ -1894,8 +1895,18 @@ def build_chunk_output(
         page_spans, source_start, source_end
     )
     page_role_value = "|".join(sorted(set(span_roles)))
+    quality_flags_value = str(doc_meta.get("quality_flags") or "")
     if span_roles and furniture_share >= MAX_FURNITURE_CHAR_SHARE:
         rag_action = "exclude_from_esg_index"
+        # Say why, in the field a reviewer reads. Every other exclusion path
+        # writes its reason into quality_flags; this one recorded it only in
+        # page_role, which the database load does not carry, so its chunks
+        # arrived at QA as exclusions with no reviewable cause at all -- 215 of
+        # them on the 682-document build (Checkpoint 5 Q26). page_role keeps
+        # the detail of which furniture; this names the gate that fired.
+        quality_flags_value = quality_flags_with_existing(
+            quality_flags_value, QUALITY_FLAG_FURNITURE_SPAN
+        )
     source_id = doc_meta.get("source_id") or _default_source_id(ticker, pdf_stem)
     source_version_id = doc_meta.get("source_version_id") or f"{source_id}__unknown"
     chunk_id = f"{source_id}__{section_instance_id}__chunk_{chunk_index:04d}"
@@ -1929,7 +1940,7 @@ def build_chunk_output(
         "doc_quality_status": quality_status,
         "rag_action": rag_action,
         "page_role": page_role_value,
-        "quality_flags": doc_meta.get("quality_flags") or "",
+        "quality_flags": quality_flags_value,
         "pdf_stem": pdf_stem,
         "section_code": section_code,
         "section_instance_id": section_instance_id,
