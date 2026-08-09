@@ -1,58 +1,0 @@
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 1185.81it/s]
-/home/ubuntu/projects/retail-intelligence-ai/src/embedding_model_benchmark.py:161: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
-  actual_dimension = model.get_sentence_embedding_dimension()
-[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (452 > 256). Running this sequence through the model will result in indexing errors
-Batches:   0%|          | 0/32 [00:00<?, ?it/s]Batches:   3%|▎         | 1/32 [00:02<01:09,  2.23s/it]Batches:   6%|▋         | 2/32 [00:04<01:07,  2.24s/it]Batches:   9%|▉         | 3/32 [00:06<01:03,  2.19s/it]Batches:  12%|█▎        | 4/32 [00:08<01:01,  2.20s/it]Batches:  16%|█▌        | 5/32 [00:11<00:59,  2.21s/it]Batches:  19%|█▉        | 6/32 [00:13<00:58,  2.23s/it]Batches:  22%|██▏       | 7/32 [00:15<00:55,  2.21s/it]Batches:  25%|██▌       | 8/32 [00:17<00:53,  2.21s/it]Batches:  28%|██▊       | 9/32 [00:19<00:50,  2.21s/it]Batches:  31%|███▏      | 10/32 [00:22<00:48,  2.21s/it]Batches:  34%|███▍      | 11/32 [00:24<00:46,  2.21s/it]Batches:  38%|███▊      | 12/32 [00:26<00:44,  2.22s/it]Batches:  41%|████      | 13/32 [00:28<00:42,  2.21s/it]Batches:  44%|████▍     | 14/32 [00:31<00:40,  2.24s/it]Batches:  47%|████▋     | 15/32 [00:33<00:37,  2.21s/it]Batches:  50%|█████     | 16/32 [00:35<00:35,  2.21s/it]Batches:  53%|█████▎    | 17/32 [00:37<00:33,  2.21s/it]Batches:  56%|█████▋    | 18/32 [00:39<00:31,  2.23s/it]Batches:  59%|█████▉    | 19/32 [00:42<00:28,  2.21s/it]Batches:  62%|██████▎   | 20/32 [00:44<00:26,  2.21s/it]Batches:  66%|██████▌   | 21/32 [00:46<00:24,  2.19s/it]Batches:  69%|██████▉   | 22/32 [00:48<00:21,  2.19s/it]Batches:  72%|███████▏  | 23/32 [00:50<00:19,  2.21s/it]Batches:  75%|███████▌  | 24/32 [00:52<00:17,  2.19s/it]Batches:  78%|███████▊  | 25/32 [00:55<00:15,  2.19s/it]Batches:  81%|████████▏ | 26/32 [00:57<00:13,  2.20s/it]Batches:  84%|████████▍ | 27/32 [00:59<00:11,  2.21s/it]Batches:  88%|████████▊ | 28/32 [01:01<00:08,  2.19s/it]Batches:  91%|█████████ | 29/32 [01:04<00:06,  2.21s/it]Batches:  94%|█████████▍| 30/32 [01:06<00:04,  2.20s/it]Batches:  97%|█████████▋| 31/32 [01:08<00:02,  2.10s/it]Batches: 100%|██████████| 32/32 [01:08<00:00,  1.51s/it]Batches: 100%|██████████| 32/32 [01:08<00:00,  2.13s/it]
-{
-  "model_id": "all_minilm_l6_v2",
-  "status": "PASS",
-  "started_at": "2026-07-15T12:12:22.490518+00:00",
-  "completed_at": "2026-07-15T12:13:40.620874+00:00",
-  "model_name": "sentence-transformers/all-MiniLM-L6-v2",
-  "requested_revision": "main",
-  "resolved_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
-  "license_reported_by_hub": "apache-2.0",
-  "license_expected": "Apache-2.0",
-  "device": "cpu",
-  "precision": "float32",
-  "cpu_threads": 2,
-  "rows": 1000,
-  "dimension": 384,
-  "final_batch_size": 32,
-  "model_load_seconds": 1.3492216550002922,
-  "embedding_seconds": 68.20690811699751,
-  "rows_per_second": 14.66127152816644,
-  "source_tokens": 468786,
-  "source_tokens_per_second": 6872.998834603032,
-  "model_tokens_after_truncation": 246952,
-  "model_tokens_per_second": 3620.6303264237586,
-  "inputs_exceeding_model_limit": 923,
-  "maximum_observed_model_tokens": 600,
-  "configured_max_input_tokens": 256,
-  "truncation_enabled": true,
-  "normalization_enabled": true,
-  "minimum_vector_norm": 0.9999998807907104,
-  "maximum_vector_norm": 1.0000001192092896,
-  "maximum_normalization_error": 1.1920928955078125e-07,
-  "finite_vectors": true,
-  "minimum_self_similarity": 0.9999997019767761,
-  "maximum_self_similarity": 1.0000003576278687,
-  "peak_worker_rss_mib": 792.3046875,
-  "vector_bytes_per_row_float32": 1536,
-  "estimated_full_vector_storage_mib": 131.11962890625,
-  "estimated_full_runtime_seconds": 6105.268552460564,
-  "estimated_full_runtime_hours": 1.6959079312390455,
-  "input_sha256": "5281e08da3085d1c826cf36625d4ad931a98d242455ac3ee818a3464a7c1d805",
-  "query_prefix": "",
-  "document_prefix": "",
-  "supplied_mteb_retrieval_score": null,
-  "versions": {
-    "python": "3.12.3",
-    "torch": "2.13.0+cpu",
-    "sentence_transformers": "5.6.0",
-    "transformers": "5.13.1",
-    "huggingface_hub": "1.23.0",
-    "numpy": "2.4.6"
-  }
-}

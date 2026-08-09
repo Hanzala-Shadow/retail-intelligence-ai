@@ -62,6 +62,29 @@ def _runtime_model_device() -> str:
     raise ValueError("RAG_MODEL_DEVICE must be cpu, cuda, or cuda:<index>")
 
 
+def _runtime_reranker_backend() -> str:
+    """Return the explicitly selected anchored-reranker execution backend."""
+    backend = os.getenv("RAG_RERANKER_BACKEND", "local").strip().lower()
+    if backend in {"local", "remote"}:
+        return backend
+    raise ValueError("RAG_RERANKER_BACKEND must be local or remote")
+
+
+def _runtime_embedder_backend() -> str:
+    backend = os.getenv("RAG_EMBEDDER_BACKEND", "local").strip().lower()
+    if backend in {"local", "remote"}:
+        return backend
+    raise ValueError("RAG_EMBEDDER_BACKEND must be local or remote")
+
+
+def _runtime_profile_device() -> str:
+    return (
+        "remote_cuda"
+        if _runtime_reranker_backend() == "remote"
+        else _runtime_model_device()
+    )
+
+
 def _peak_rss_kib() -> int:
     return int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
@@ -161,6 +184,7 @@ class ProductionRetriever:
         anchor_cross_encoder=None,
         expansion_cross_encoder=None,
         anchored_config=None,
+        remote_reranker_client=None,
     ):
         self.conn = conn or _connect()
         self._owns_connection = conn is None
@@ -169,6 +193,7 @@ class ProductionRetriever:
         self.anchor_cross_encoder = anchor_cross_encoder
         self.expansion_cross_encoder = expansion_cross_encoder
         self.anchored_config = anchored_config
+        self.remote_reranker_client = remote_reranker_client
 
     def close(self) -> None:
         if self._owns_connection and self.conn is not None:
@@ -186,6 +211,12 @@ class ProductionRetriever:
         runtime_profile: dict[str, Any] | None = None,
     ) -> None:
         if self.bi_encoder is None:
+            if _runtime_embedder_backend() == "remote":
+                from src.remote_embedder import RemoteEmbedder
+                self.bi_encoder = RemoteEmbedder.from_env()
+                if runtime_profile is not None:
+                    runtime_profile["timings_ms"]["bi_encoder_load"] += 0.0
+                return
             import torch
             from sentence_transformers import SentenceTransformer
 
@@ -569,6 +600,27 @@ class ProductionRetriever:
         else:
             raise ValueError(f"unknown reranker role: {role}")
 
+        if _runtime_reranker_backend() == "remote":
+            if self.remote_reranker_client is None:
+                from src.remote_reranker import RemoteRerankerClient
+
+                self.remote_reranker_client = RemoteRerankerClient.from_env()
+            inference_started = time.perf_counter()
+            scores = self.remote_reranker_client.score(
+                role=role,
+                model_id=model_id,
+                revision=revision,
+                max_length=config.max_length,
+                batch_size=config.batch_size,
+                pairs=pairs,
+            )
+            if runtime_profile is not None:
+                runtime_profile["timings_ms"][f"{role}_inference"] += (
+                    time.perf_counter() - inference_started
+                ) * 1000
+                runtime_profile["scored_pairs"][role] = len(pairs)
+            return scores
+
         model = injected
         loaded_here = model is None
         load_started = time.perf_counter()
@@ -757,7 +809,8 @@ class ProductionRetriever:
         config = self._anchored_policy()
         runtime_profile: dict[str, Any] = {
             "schema_version": 1,
-            "device": _runtime_model_device(),
+            "device": _runtime_profile_device(),
+            "reranker_backend": _runtime_reranker_backend(),
             "model_lifecycle": config.model_lifecycle,
             "requirement_count": len(requirements),
             "candidate_counts": {

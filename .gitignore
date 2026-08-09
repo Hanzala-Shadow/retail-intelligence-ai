@@ -58,3 +58,33 @@ reports/*.log
 reports/*.tar.gz
 data/03_sections/esg/
 *.docx
+
+# Annual Filings production exclusions
+.env.*
+!.env.template
+*.crt
+.venv/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+logs/
+reports/
+data_v2/
+data/03_sections/
+data/05_embeddings/
+*.log
+*.tar
+*.tar.gz
+*.zip
+annual_filings_server_backups/
+
+# Minimal versioned annual-filings test/reference fixtures
+!data/
+!data/00_reference/
+!data/00_reference/rag_eval_questions.csv
+!data_v2/
+data_v2/*
+!data_v2/00_reference/
+data_v2/00_reference/*
+!data_v2/00_reference/approved_companies.csv

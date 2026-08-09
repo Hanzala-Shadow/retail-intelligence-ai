@@ -1,5 +1,0 @@
-config/retrieval_rewrite_requirements_v1.json
-scripts/run_source_claim_rewriting_benchmark.py
-scripts/run_source_claim_rewriting_pass.sh
-tests/test_source_claim_rewriting_benchmark.py
-reports/week4_retrieval/claim_requirement_coverage_20260721/

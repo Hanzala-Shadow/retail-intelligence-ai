@@ -1,0 +1,27 @@
+[Unit]
+Description=Annual Filings Chatbot Streamlit UI
+After=network-online.target annual-filings-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/projects/retail-intelligence-production-retrieval
+Environment=PYTHONPATH=/home/ubuntu/projects/retail-intelligence-production-retrieval
+Environment=CHATBOT_API_URL=http://127.0.0.1:8000
+Environment=CHATBOT_UI_TIMEOUT_SECONDS=600
+Environment=STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+ExecStart=/home/ubuntu/projects/retail-intelligence-ai/venv/bin/python -m streamlit run app/ui/Home.py --server.headless true --server.address 127.0.0.1 --server.port 8501 --browser.gatherUsageStats false
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=60
+TimeoutStopSec=30
+KillSignal=SIGINT
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

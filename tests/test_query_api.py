@@ -58,6 +58,15 @@ class FakeCrossEncoder:
         return np.asarray([float(text.rsplit(" ", 1)[-1]) for _, text in pairs])
 
 
+class FakeRemoteReranker:
+    def __init__(self):
+        self.calls = []
+
+    def score(self, **kwargs):
+        self.calls.append(kwargs)
+        return [float(text.rsplit(" ", 1)[-1]) for _, text in kwargs["pairs"]]
+
+
 def database_rows(start, count):
     return [
         (
@@ -248,6 +257,67 @@ class QueryApiTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "RAG_MODEL_DEVICE"):
                 query_api._runtime_model_device()
+
+    def test_remote_backend_delegates_only_anchored_pair_scoring(self):
+        remote = FakeRemoteReranker()
+        retriever = query_api.ProductionRetriever(
+            conn=FakeConnection([]),
+            bi_encoder=FakeBiEncoder(),
+            remote_reranker_client=remote,
+            anchored_config=query_api.ProductionRetriever(
+                conn=FakeConnection([])
+            )._anchored_policy(),
+        )
+        pairs = [("question", "embedding 1.5"), ("question", "embedding 2.5")]
+        with patch.dict(
+            "os.environ",
+            {"RAG_RERANKER_BACKEND": "remote", "RAG_MODEL_DEVICE": "cpu"},
+        ):
+            scores = retriever._score_anchored_pairs(pairs, role="anchor")
+            self.assertEqual(query_api._runtime_profile_device(), "remote_cuda")
+        self.assertEqual(scores, [1.5, 2.5])
+        self.assertEqual(len(remote.calls), 1)
+        self.assertEqual(remote.calls[0]["role"], "anchor")
+        self.assertEqual(remote.calls[0]["max_length"], 512)
+
+    def test_remote_and_local_scoring_preserve_exact_k16_identity(self):
+        subquery = SimpleNamespace(
+            subquery_id="sq-test",
+            question="focused revenue performance",
+            claim_key="revenue performance",
+            comparison_side_id="TEST-2025-Item_7-revenue",
+            ticker="TEST",
+            filing_year=2025,
+            accession_number="acc",
+            section_code="Item_7",
+            doc_type="10-K",
+        )
+        local = query_api.ProductionRetriever(
+            conn=FakeConnection(database_rows(100, 30)),
+            bi_encoder=FakeBiEncoder(),
+            anchor_cross_encoder=FakeCrossEncoder(),
+            expansion_cross_encoder=FakeCrossEncoder(),
+        )
+        remote = query_api.ProductionRetriever(
+            conn=FakeConnection(database_rows(100, 30)),
+            bi_encoder=FakeBiEncoder(),
+            remote_reranker_client=FakeRemoteReranker(),
+        )
+        with patch.object(query_api, "_vector_literal", return_value="[1,0]"):
+            local_result = local.retrieve_anchored("original question", [subquery])
+        with patch.object(query_api, "_vector_literal", return_value="[1,0]"), patch.dict(
+            "os.environ",
+            {"RAG_RERANKER_BACKEND": "remote", "RAG_MODEL_DEVICE": "cpu"},
+        ):
+            remote_result = remote.retrieve_anchored("original question", [subquery])
+        self.assertEqual(
+            local_result["runtime_profile"]["evidence_identity_sha256"],
+            remote_result["runtime_profile"]["evidence_identity_sha256"],
+        )
+        self.assertEqual(
+            [row["chunk_id"] for row in local_result["evidence"]],
+            [row["chunk_id"] for row in remote_result["evidence"]],
+        )
 
 
 if __name__ == "__main__":

@@ -74,7 +74,11 @@ def main() -> int:
     parser.add_argument("--requests", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--device", choices=("cpu", "cuda"), required=True)
+    parser.add_argument(
+        "--device",
+        choices=("cpu", "cuda", "remote"),
+        required=True,
+    )
     parser.add_argument("--expected-requests", type=int, required=True)
     parser.add_argument("--env-file", type=Path)
     args = parser.parse_args()
@@ -100,13 +104,22 @@ def main() -> int:
         "balanced_anchored_round_robin_k16"
     )
     os.environ["RAG_ANCHORED_CONFIG"] = str(args.config.resolve())
-    os.environ["RAG_MODEL_DEVICE"] = args.device
+    os.environ["RAG_MODEL_DEVICE"] = (
+        "cpu" if args.device == "remote" else args.device
+    )
+    os.environ["RAG_RERANKER_BACKEND"] = (
+        "remote" if args.device == "remote" else "local"
+    )
 
     if args.device == "cuda":
         import torch
 
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but torch cannot access it")
+    if args.device == "remote":
+        from src.remote_reranker import RemoteRerankerClient
+
+        RemoteRerankerClient.from_env()
 
     import psycopg2
 

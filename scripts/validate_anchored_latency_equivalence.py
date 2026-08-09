@@ -83,11 +83,30 @@ def main() -> int:
     parser.add_argument("--baseline-dir", type=Path, required=True)
     parser.add_argument("--challenger-dir", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--expected-identity-sha256")
     args = parser.parse_args()
     report = compare_runs(
         load_rows(args.baseline_dir),
         load_rows(args.challenger_dir),
     )
+    if args.expected_identity_sha256:
+        expected = args.expected_identity_sha256.strip().lower()
+        if len(expected) != 64:
+            raise ValueError("expected identity SHA-256 must contain 64 hex characters")
+        challenger = load_rows(args.challenger_dir)
+        mismatches = [
+            request_id
+            for request_id, row in challenger.items()
+            if str(row.get("evidence_identity_sha256") or "").lower() != expected
+        ]
+        report["expected_identity_sha256"] = expected
+        report["expected_identity_matches"] = len(challenger) - len(mismatches)
+        if mismatches:
+            report["failures"].extend(
+                {"request_id": request_id, "reasons": ["expected_identity_hash"]}
+                for request_id in mismatches
+            )
+            report["structural_pass"] = False
     payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
     print(payload, end="")
     if args.output:

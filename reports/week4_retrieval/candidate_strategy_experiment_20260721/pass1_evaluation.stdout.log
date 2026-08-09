@@ -1,7 +1,0 @@
-semantic20_lexical20_rrf_pool20: gates=FAIL
-semantic20_lexical20_union: gates=FAIL
-semantic_depth20_control: gates=FAIL
-semantic_depth40: gates=FAIL
-semantic_depth50: gates=FAIL
-decision: NOT_EVALUATED
-wrote reports/week4_retrieval/candidate_strategy_experiment_20260721/pass1_evaluation/rag_eval_report.json, reports/week4_retrieval/candidate_strategy_experiment_20260721/pass1_evaluation/rag_eval_report.md, reports/week4_retrieval/candidate_strategy_experiment_20260721/pass1_evaluation/rag_eval_per_question.csv

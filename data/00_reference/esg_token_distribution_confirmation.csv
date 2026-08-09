@@ -1,9 +1,0 @@
-metric,value
-total_chunks,33042.0
-min_token_count,100.0
-max_token_count,600.0
-mean_token_count,474.6
-chunks_below_50_tokens,0.0
-chunks_eligible,31900.0
-chunks_excluded,1142.0
-exclusion_rate_pct,3.46

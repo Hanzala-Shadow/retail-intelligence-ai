@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "model_id": "deepseek.v3.2",
+  "variant": "hardened_analyst_scope_v4",
+  "region": "eu-north-1",
+  "temperature": 0,
+  "complexity_budgets": {
+    "single": {"max_tokens": 650, "max_words": 220},
+    "comparative": {"max_tokens": 850, "max_words": 320},
+    "multi_axis": {"max_tokens": 1000, "max_words": 420}
+  },
+  "pricing_usd_per_million_tokens": {"input": 0.74, "output": 2.22},
+  "insufficiency_sentinel": "[INSUFFICIENT_EVIDENCE]"
+}
