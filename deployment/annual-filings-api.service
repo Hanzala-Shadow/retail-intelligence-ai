@@ -7,11 +7,11 @@ Wants=network-online.target
 Type=simple
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/projects/retail-intelligence-production-retrieval
+WorkingDirectory=/home/ubuntu/projects/retail-intelligence-ai
 EnvironmentFile=/home/ubuntu/projects/retail-intelligence-ai/.env
-Environment=PYTHONPATH=/home/ubuntu/projects/retail-intelligence-production-retrieval
+Environment=PYTHONPATH=/home/ubuntu/projects/retail-intelligence-ai
 Environment=RAG_RETRIEVAL_POLICY=balanced_anchored_round_robin_k16
-Environment=RAG_ANCHORED_CONFIG=/home/ubuntu/projects/retail-intelligence-production-retrieval/config/retrieval_anchored_k16_gpu_v1.json
+Environment=RAG_ANCHORED_CONFIG=/home/ubuntu/projects/retail-intelligence-ai/config/retrieval_anchored_k16_gpu_v1.json
 Environment=RAG_MODEL_DEVICE=cpu
 Environment=RAG_RERANKER_BACKEND=remote
 Environment=BEDROCK_REGION=eu-north-1

@@ -7,7 +7,7 @@ if [[ $# -ne 1 || ! "$1" =~ ^pass[12]$ ]]; then
 fi
 
 PASS_NAME="$1"
-REPO="/home/ubuntu/projects/retail-intelligence-production-retrieval"
+REPO="/home/ubuntu/projects/retail-intelligence-ai"
 VENV_PYTHON="/home/ubuntu/projects/retail-intelligence-ai/venv/bin/python"
 REWRITE_ROOT="$REPO/reports/week4_retrieval/claim_requirement_coverage_20260721"
 OUTPUT_DIR="$REWRITE_ROOT/$PASS_NAME"

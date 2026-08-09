@@ -7,8 +7,8 @@ Wants=network-online.target
 Type=simple
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/projects/retail-intelligence-production-retrieval
-Environment=PYTHONPATH=/home/ubuntu/projects/retail-intelligence-production-retrieval
+WorkingDirectory=/home/ubuntu/projects/retail-intelligence-ai
+Environment=PYTHONPATH=/home/ubuntu/projects/retail-intelligence-ai
 Environment=CHATBOT_API_URL=http://127.0.0.1:8000
 Environment=CHATBOT_UI_TIMEOUT_SECONDS=600
 Environment=STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
