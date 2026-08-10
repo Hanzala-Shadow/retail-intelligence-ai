@@ -88,3 +88,6 @@ data_v2/*
 !data_v2/00_reference/
 data_v2/00_reference/*
 !data_v2/00_reference/approved_companies.csv
+
+# Generated annual-filings historical corpus and batch work
+data_history/
