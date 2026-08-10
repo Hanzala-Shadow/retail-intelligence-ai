@@ -270,18 +270,33 @@ def parse_html(path: Path) -> tuple[str, int, int, list[str]]:
     return text, semantic_count, layout_count, sorted(set(flags))
 
 
-def load_manifest(path: Path) -> list[dict[str, str]]:
+def load_manifest(
+    path: Path,
+    expected_documents: int = 561,
+) -> list[dict[str, str]]:
     with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
-    if len(rows) != 561 or {row["selection_status"] for row in rows} != {"selected"}:
-        raise ValueError("manifest is not the frozen 561-row selected corpus")
-    if len({(row["ticker"], row["coverage_year"]) for row in rows}) != 561:
+    if len(rows) != expected_documents:
+        raise ValueError(
+            f"manifest rows {len(rows)} != expected {expected_documents}"
+        )
+    if {row["selection_status"].lower() for row in rows} != {"selected"}:
+        raise ValueError("manifest contains non-selected records")
+    if len({(row["ticker"], row["coverage_year"]) for row in rows}) != len(rows):
         raise ValueError("duplicate company/coverage-year pair in manifest")
+    if len({row["accession_number"] for row in rows}) != len(rows):
+        raise ValueError("duplicate accession number in manifest")
     return rows
 
 
 def source_for(row: dict[str, str], raw_root: Path) -> Path:
-    matches = list((raw_root / row["ticker"]).glob(f"{row['accession_number']}.*"))
+    relative = row.get("source_file", "").strip()
+    direct = raw_root / relative if relative else None
+    if direct is not None and direct.is_file():
+        return direct
+    matches = list(
+        (raw_root / row["ticker"]).rglob(f"*{row['accession_number']}*.htm*")
+    )
     matches = [path for path in matches if path.suffix.lower() in {".htm", ".html"}]
     if len(matches) != 1:
         raise FileNotFoundError(
@@ -295,6 +310,7 @@ def run(
     raw_root: Path,
     output_root: Path,
     accessions: set[str] | None = None,
+    expected_documents: int = 561,
 ) -> dict[str, object]:
     final_text = output_root / "html_text"
     final_manifest = output_root / "parsed_documents.jsonl"
@@ -306,7 +322,7 @@ def run(
     records = []
     config_hash = parser_config_sha256()
     counts = Counter()
-    manifest_rows = load_manifest(manifest)
+    manifest_rows = load_manifest(manifest, expected_documents)
     if accessions is not None:
         manifest_rows = [
             row for row in manifest_rows if row["accession_number"] in accessions
@@ -374,6 +390,7 @@ def main() -> None:
         type=Path,
         help="Optional newline-delimited pilot accession list.",
     )
+    parser.add_argument("--expected-documents", type=int, default=561)
     args = parser.parse_args()
     accessions = None
     if args.accessions_file:
@@ -384,7 +401,13 @@ def main() -> None:
         }
     print(
         json.dumps(
-            run(args.manifest, args.raw_root, args.output_root, accessions),
+            run(
+                args.manifest,
+                args.raw_root,
+                args.output_root,
+                accessions,
+                args.expected_documents,
+            ),
             indent=2,
         )
     )
