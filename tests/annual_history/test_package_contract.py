@@ -9,6 +9,9 @@ def test_schema_is_relational_only_and_isolated():
     assert 'vector(' not in sql
     assert 'rag_eligible_10k_chunks' not in sql
     assert 'fy2325_v2_' not in sql
+    assert "quality_status IN ('passed','review_required')" in sql
+    assert "rag_action IN ('include','exclude','review_required')" in sql
+    assert "rag_action IN ('exclude','review_required')" in sql
 
 def test_manifest_builder_has_frozen_gates():
     source=(ROOT/'scripts/annual_history/build_manifest.py').read_text()

@@ -91,9 +91,18 @@ CREATE TABLE IF NOT EXISTS annual_history_sections (
     splitter_config_sha256 CHAR(64) NOT NULL,
     boundary_method TEXT NOT NULL,
     boundary_confidence TEXT NOT NULL CHECK (boundary_confidence IN ('high','low')),
-    quality_status TEXT NOT NULL CHECK (quality_status = 'passed'),
+    quality_status TEXT NOT NULL
+      CHECK (quality_status IN ('passed','review_required')),
     quality_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
-    rag_action TEXT NOT NULL CHECK (rag_action IN ('include','exclude')),
+    rag_action TEXT NOT NULL
+      CHECK (rag_action IN ('include','exclude','review_required')),
+    CHECK (
+      (quality_status = 'passed'
+       AND rag_action IN ('include','exclude'))
+      OR
+      (quality_status = 'review_required'
+       AND rag_action IN ('exclude','review_required'))
+    ),
     UNIQUE (dataset_id, source_section_id)
 );
 
