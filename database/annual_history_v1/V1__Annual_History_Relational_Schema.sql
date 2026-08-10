@@ -62,7 +62,8 @@ CREATE TABLE IF NOT EXISTS annual_history_documents (
     text_sha256 CHAR(64) NOT NULL,
     parser_version TEXT NOT NULL,
     parser_config_sha256 CHAR(64) NOT NULL,
-    parse_status TEXT NOT NULL CHECK (parse_status = 'passed'),
+    parse_status TEXT NOT NULL
+      CHECK (parse_status IN ('passed','review_required')),
     char_count BIGINT NOT NULL CHECK (char_count > 0),
     semantic_table_count INTEGER NOT NULL CHECK (semantic_table_count >= 0),
     layout_table_count INTEGER NOT NULL CHECK (layout_table_count >= 0),
@@ -90,7 +91,8 @@ CREATE TABLE IF NOT EXISTS annual_history_sections (
     splitter_version TEXT NOT NULL,
     splitter_config_sha256 CHAR(64) NOT NULL,
     boundary_method TEXT NOT NULL,
-    boundary_confidence TEXT NOT NULL CHECK (boundary_confidence IN ('high','low')),
+    boundary_confidence TEXT NOT NULL
+      CHECK (boundary_confidence IN ('high','medium','low')),
     quality_status TEXT NOT NULL
       CHECK (quality_status IN ('passed','review_required')),
     quality_flags JSONB NOT NULL DEFAULT '[]'::jsonb,

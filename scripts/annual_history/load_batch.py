@@ -10,6 +10,139 @@ from psycopg2.extras import Json, execute_values
 
 DATASET = "annual-10k-fy2015-2025-v1"
 
+def require_values(rows, field, allowed, artifact):
+    invalid = sorted({
+        str(row.get(field))
+        for row in rows
+        if row.get(field) not in allowed
+    })
+    if invalid:
+        raise RuntimeError(
+            f"{artifact}.{field} contains unsupported values: "
+            f"{invalid}; allowed={sorted(allowed)}"
+        )
+
+def validate_artifact_contract(
+    filings,
+    documents,
+    sections,
+    chunks,
+):
+    require_values(
+        filings,
+        "resolution_confidence",
+        {"high", "medium"},
+        "filings",
+    )
+    require_values(
+        documents,
+        "parse_status",
+        {"passed", "review_required"},
+        "documents",
+    )
+    require_values(
+        sections,
+        "boundary_confidence",
+        {"high", "medium", "low"},
+        "sections",
+    )
+    require_values(
+        sections,
+        "quality_status",
+        {"passed", "review_required"},
+        "sections",
+    )
+    require_values(
+        sections,
+        "rag_action",
+        {"include", "exclude", "review_required"},
+        "sections",
+    )
+    require_values(
+        chunks,
+        "quality_status",
+        {"passed", "failed"},
+        "chunks",
+    )
+    require_values(
+        chunks,
+        "rag_action",
+        {"include", "exclude"},
+        "chunks",
+    )
+
+    bad_sections = [
+        row["section_id"]
+        for row in sections
+        if not (
+            (
+                row["quality_status"] == "passed"
+                and row["rag_action"]
+                in {"include", "exclude"}
+            )
+            or (
+                row["quality_status"] == "review_required"
+                and row["rag_action"]
+                in {"exclude", "review_required"}
+            )
+        )
+    ]
+    if bad_sections:
+        raise RuntimeError(
+            "section status/action coherence failure: "
+            f"{bad_sections[:10]}"
+        )
+
+    bad_chunks = [
+        row["chunk_id"]
+        for row in chunks
+        if not (
+            (
+                row["quality_status"] == "passed"
+                and row["rag_action"] == "include"
+            )
+            or (
+                row["quality_status"] == "failed"
+                and row["rag_action"] == "exclude"
+            )
+        )
+    ]
+    if bad_chunks:
+        raise RuntimeError(
+            "chunk status/action coherence failure: "
+            f"{bad_chunks[:10]}"
+        )
+
+    filing_accessions = {
+        row["accession_number"] for row in filings
+    }
+    document_accessions = {
+        row["accession_number"] for row in documents
+    }
+    if filing_accessions != document_accessions:
+        raise RuntimeError(
+            "filing/document accession identity mismatch"
+        )
+
+    document_status = {
+        row["accession_number"]: row["parse_status"]
+        for row in documents
+    }
+    unsafe_sections = [
+        row["section_id"]
+        for row in sections
+        if (
+            document_status[row["accession_number"]]
+            == "review_required"
+            and row["rag_action"] == "include"
+        )
+    ]
+    if unsafe_sections:
+        raise RuntimeError(
+            "review-required documents contain includable "
+            f"sections: {unsafe_sections[:10]}"
+        )
+
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -33,8 +166,13 @@ def main():
     sections=list(jsonl(a.sections_root/'sections.jsonl'))
     chunks=list(jsonl(a.chunks_root/'chunks.jsonl'))
     if len(documents)!=len(filings): raise RuntimeError('document/filing count mismatch')
-    if any(r['parse_status']!='passed' for r in documents): raise RuntimeError('batch contains non-passed parse')
     if {r['accession_number'] for r in documents}!={r['accession_number'] for r in filings}: raise RuntimeError('document accession mismatch')
+    validate_artifact_contract(
+        filings,
+        documents,
+        sections,
+        chunks,
+    )
     conn=psycopg2.connect(db); conn.autocommit=False
     try:
         cur=conn.cursor()
