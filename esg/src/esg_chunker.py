@@ -33,6 +33,8 @@ BGE_MODEL_LIMIT = 512
 BGE_INPUT_LIMIT = 500
 OVERLAP_BGE_TOKENS = 48
 MAX_TABLE_CONTEXT_TOKENS = 64
+MAX_MODEL_SUBSECTION_CHARS = 200
+MAX_MODEL_SUBSECTION_SEGMENTS = 3
 VALIDATED_TABLE_TRANSITION_REPAIRS = frozenset({("AMZN", "2023"), ("LOW", "2023")})
 SHORT_EVIDENCE_MIN_TOKENS = 25
 NAVIGATION_TRACE_MAX_TOKENS = 150
@@ -76,11 +78,11 @@ CITATION_VALIDATION_VERSION = "semantic_v1"
 # Versions the chunking rule set: CHUNK_SIZE, OVERLAP, MAX_CHUNK_TOKENS, the
 # short-section and navigation-trace classifiers, and the source-alignment
 # logic. Bump when any of those change.
-CHUNKER_VERSION = "esg_chunk_v3"
+CHUNKER_VERSION = "esg_chunk_v4"
 # Frozen release identity. Change it whenever source selection or any
 # processing stage changes, so a vector index can be tied to the exact
 # corpus that produced it. Override with ESG_DATASET_ID.
-DEFAULT_DATASET_ID = "esg_docling_fusion_v1"
+DEFAULT_DATASET_ID = "esg_docling_fusion_v2"
 # BGE's input window, including [CLS] and [SEP]. Anything longer is
 # truncated by the model without warning.
 BGE_MAX_INPUT_TOKENS = 512
@@ -445,11 +447,30 @@ def is_orphan_numeric_fragment(text: str) -> bool:
 
 def retrieval_chunk_exclusion_reason(text: str, token_count: int) -> str:
     """High-precision content gates applied after chunk boundaries are known."""
+    if "\ufffd" in text:
+        return "unicode_replacement_character"
+    if is_explicit_toc_dominant(text):
+        return "table_of_contents_or_navigation"
     if is_large_navigation_trace_section(text, token_count):
         return "table_of_contents_or_navigation"
     if is_orphan_numeric_fragment(text):
         return "orphan_numeric_fragment"
     return ""
+
+
+def is_explicit_toc_dominant(text: str) -> bool:
+    """Find explicit contents listings without matching ordinary prose."""
+    beginning = text[:400]
+    has_contents_heading = bool(
+        re.search(r"(?im)^\s*(?:table\s+of\s+contents|contents)\b", beginning)
+    )
+    if not has_contents_heading:
+        return False
+    page_references = re.findall(
+        r"(?m)^\s*[^\n]{2,160}?(?:\.{2,}\s*|\s+)\d{1,3}\s*$",
+        text,
+    )
+    return len(page_references) >= 4
 
 
 def classify_navigation_trace_section(text: str, token_count: int) -> str:
@@ -970,11 +991,71 @@ def normalize_for_embedding(text: str) -> str:
     return out.strip()
 
 
+def _credible_subsection_segment(value: str) -> str:
+    """Return a short heading, never a prose sentence or damaged text."""
+    clean = " ".join(normalize_for_embedding(value).split())
+    words = clean.split()
+    if (
+        not clean
+        or clean.casefold() in {"unknown", "n/a", "none"}
+        or "\ufffd" in clean
+        or len(clean) > 120
+        or len(words) > 14
+        or re.search(r"[.!?](?:\s|$)", clean)
+    ):
+        return ""
+    return clean
+
+
+def model_subsection_text(metadata: dict[str, Any], topic: str) -> str:
+    """Clean model-facing subsection context while preserving raw row fields."""
+    raw = str(
+        metadata.get("section_title_original")
+        or metadata.get("section_title")
+        or ""
+    )
+    # The sectioner joins heading transitions with a Unicode arrow. Accept the
+    # common mojibake rendering too so older metadata stays safe.
+    segments = re.split(r"\s*(?:\u2192|â†’|->)\s*", raw)
+    chosen: list[str] = []
+    seen: set[str] = set()
+    for segment in segments:
+        clean = _credible_subsection_segment(segment)
+        if not clean or clean.casefold() in seen:
+            continue
+        candidate = " \u2192 ".join([*chosen, clean])
+        if len(candidate) > MAX_MODEL_SUBSECTION_CHARS:
+            break
+        chosen.append(clean)
+        seen.add(clean.casefold())
+        if len(chosen) >= MAX_MODEL_SUBSECTION_SEGMENTS:
+            break
+    if chosen:
+        return " \u2192 ".join(chosen)
+
+    for fallback in (
+        metadata.get("physical_section_title"),
+        metadata.get("section_title"),
+        topic,
+    ):
+        clean = _credible_subsection_segment(str(fallback or ""))
+        if clean:
+            return clean[:MAX_MODEL_SUBSECTION_CHARS]
+    return "Other"
+
+
 def classify_embedding_content(text: str, table_context: str = "") -> str:
     """Match the live embedding-context classifier for token budgeting."""
+    if table_context.strip():
+        return "table_continuation"
     lines = [line.strip() for line in text.split("\n") if line.strip()]
     if not lines:
         return "narrative"
+    if any(
+        line.startswith("|") and line.endswith("|") and line.count("|") >= 3
+        for line in lines
+    ):
+        return "table"
     short_ratio = sum(
         len(line.split()) <= SHORT_LINE_MAX_WORDS for line in lines
     ) / len(lines)
@@ -1003,11 +1084,7 @@ def final_embedding_text(
     document = DOCUMENT_LABELS.get(
         doc_key, (doc_key or "Sustainability Report").replace("_", " ").title()
     )
-    subsection = (
-        metadata.get("section_title_original")
-        or metadata.get("section_title")
-        or "unknown"
-    ).strip()
+    subsection = model_subsection_text(metadata, topic)
     header_lines = [
         f"Company: {(metadata.get('company_name') or '').strip() or 'unknown'}",
         f"Ticker: {ticker or 'unknown'}",
@@ -1134,6 +1211,13 @@ def _credible_table_context(header_text: str, tokenizer) -> str:
     # A numeric value is not a table header. Treating it as context gives later
     # values a false label and makes the chunk look safer than it is.
     if not clean or not re.search(r"[A-Za-z]", clean):
+        return ""
+    weak = re.sub(r"[^A-Za-z0-9]+", " ", clean).strip()
+    if (
+        re.fullmatch(r"[A-Za-z]\s+\d+", weak)
+        or re.fullmatch(r"\d+\s*[xX]", weak)
+        or weak.casefold() == "c0ntent"
+    ):
         return ""
     tokens = tokenizer.encode(clean, add_special_tokens=False, truncation=False)
     return clean if len(tokens) <= MAX_TABLE_CONTEXT_TOKENS else ""
@@ -1880,6 +1964,16 @@ def build_chunk_output(
                 f"({ticker} {pdf_stem} {section_instance_id} chunk {chunk_index}). "
                 "Lower MAX_CHUNK_TOKENS or shorten the embedding header."
             )
+
+    # Apply the same content gate to every output path, including short
+    # sections that do not pass through the normal v4 chunk loop.
+    retrieval_exclusion_reason = retrieval_chunk_exclusion_reason(
+        chunk_text, token_count
+    )
+    if retrieval_exclusion_reason:
+        doc_meta = doc_meta_for_excluded_retrieval_content(
+            doc_meta, retrieval_exclusion_reason
+        )
 
     doc_type = doc_meta.get("doc_type") or DOC_TYPE
     quality_status = doc_meta.get("doc_quality_status") or "needs_review"
@@ -3223,7 +3317,7 @@ def main():
         # only copy used to live in gitignored scratch under tmp/.
         default=os.environ.get("ESG_BGE_TOKENIZER_DIR") or str(config.ESG_BGE_TOKENIZER_DIR),
         help=(
-            "Local BGE tokenizer directory. Required for esg_chunk_v3. "
+            f"Local BGE tokenizer directory. Required for {CHUNKER_VERSION}. "
             "Defaults to ESG_BGE_TOKENIZER_DIR, else the copy committed under "
             "models/bge-base-en-v1.5-tokenizer."
         ),

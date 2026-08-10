@@ -36,6 +36,16 @@ data/00_reference/*
 !data/00_reference/sustainability_report_tracker.csv
 outputs/**
 
+# Handoff packages and their archives. These are rebuilt from a chunk index by
+# esg/scripts/build_chunk_handoff.py, so the script is the thing worth keeping;
+# a single full-corpus handout is roughly 400 MB and must never reach history.
+data/handout*/
+data/handoff*/
+data/_pre_run_backups/
+data/*.db
+data/*.tar
+data/*.zip
+
 # Disposable local work. Keep only the cleanup rules readable in Git.
 scratchpad/**
 !scratchpad/
