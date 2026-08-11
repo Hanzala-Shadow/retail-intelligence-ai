@@ -1,0 +1,194 @@
+ticker,company_name,decision,reason,qa_rows,document_rows,eligible_chunks,excluded_chunks,layout_quarantined_documents,tracker_cleanup_rows,policy_excluded_documents
+AAP,ADVANCE AUTO PARTS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,102,47,0,0,2
+AAPL,APPLE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,705,251,0,0,5
+ABG,ASBURY AUTOMOTIVE GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,145,66,0,0,4
+ACI,ALBERTSONS COS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,96,52,0,0,4
+AEO,AMERN EAGLE OUTFITTERS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,123,75,0,0,4
+AKA,A.K.A. BRAND HOLD CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+AMZN,AMAZON.COM INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,575,347,0,0,5
+AN,AUTONATION INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,115,22,0,0,5
+ANF,ABERCROMBIE & FITCH  -CL A,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,178,19,0,0,3
+APC,ARKO PETROLEUM CORP,EXCLUDED_BY_POLICY,All local documents are excluded by source-governance policy,4,4,0,234,0,0,4
+ARHS,ARHAUS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ARKO,ARKO CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,177,57,0,0,4
+ASO,ACADEMY SPO AND OU INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,38,17,0,0,1
+ATER,ATERIAN INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+AZO,AUTOZONE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,6,6,313,146,0,0,6
+BARK,BARK INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BBBY,BED BATH & BEYOND INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,48,9,0,0,1
+BBW,BUILD-A-BEAR WORKSHOP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,51,23,0,0,2
+BBWI,BATH & BODY WORKS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,290,246,0,0,4
+BBY,BEST BUY CO INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,372,159,0,0,5
+BIRD,ALLBIRDS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,63,15,0,0,4
+BJ,BJS WHSL CLUB HLDGS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,27,1,0,0,1
+BKE,BUCKLE INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BNED,BARNES & NOBLE EDUCATION INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BOBS,BOBS DISCOUNT FURNITURE INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BOOT,BOOT BARN HOLDINGS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BRLT,BRILLIANT EARTH GP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,115,73,0,0,3
+BSET,BASSETT FURNITURE INDS,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+BURL,BURLINGTON STORES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,176,91,0,0,4
+CAL,CALERES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,52,121,0,0,4
+CART,MAPLEBEAR INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+CASY,CASEYS GENERAL STORES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,260,147,0,0,5
+CATO,CATO CORP  -CL A,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+CHWY,CHEWY INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+COLM,COLUMBIA SPORTSWEAR CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,181,63,0,0,4
+COOK,TRAEGER INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+COST,COSTCO WHOLESALE CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,321,164,0,0,3
+CPNG,COUPANG INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,64,17,0,0,3
+CRCT,CRICUT INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+CRI,CARTER'S INC,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,5,5,212,263,0,1,5
+CRMT,AMERICA'S CAR-MART INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,143,39,0,0,4
+CROX,CROCS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,176,309,0,0,5
+CTRN,CITI TRENDS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+CURV,TORRID HOLDINGS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,103,36,0,0,3
+CVNA,CARVANA CO,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+CVS,CVS HEALTH CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,174,60,0,0,4
+CWH,CAMPING WORLD HOLDINGS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DBGI,DIGITAL BRANDS GRP INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DBI,DESIGNER BRANDS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DDS,DILLARDS INC  -CL A,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DECK,DECKERS OUTDOOR CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,900,836,0,0,5
+DELL,DELL TECHNOLOGIES INC,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,5,5,605,241,0,1,5
+DG,DOLLAR GENERAL CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,149,65,0,0,4
+DIBS,1STDIBS.COM INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DKS,DICKS SPORTING GOODS INC,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,2,2,153,41,0,1,2
+DLTH,DULUTH HOLDINGS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+DLTR,DOLLAR TREE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,291,111,0,0,5
+DXLG,DESTINATION XL GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,24,5,0,0,1
+EBAY,EBAY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,172,60,0,0,5
+ETD,ETHAN ALLEN INTERIORS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ETSY,ETSY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,783,67,0,0,5
+EVGO,EVGO INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+EYE,NATIONAL VISION HOLDINGS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,268,138,0,0,4
+FIGS,FIGS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,118,26,0,0,5
+FIVE,FIVE BELOW INC,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,6,6,18,38,0,1,6
+FL,FOOT LOCKER INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,223,154,0,0,3
+FLWS,1-800-FLOWERS.COM,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+FLXS,FLEXSTEEL INDUSTRIES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,30,12,0,0,2
+FND,FLOOR & DECOR HLDGS,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,71,8,0,0,2
+FOSL,FOSSIL GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,176,54,0,0,4
+GAP,GAP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,380,378,0,0,5
+GCO,GENESCO INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,45,16,0,0,2
+GES,GUESS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,411,337,0,0,4
+GIII,G-III APPAREL GROUP LTD,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,55,16,0,0,3
+GME,GAMESTOP CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+GO,GROCERY OUTLET HLDNG CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,75,68,0,0,3
+GPI,GROUP 1 AUTOMOTIVE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,152,35,0,0,4
+GPRO,GOPRO INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,65,3,0,0,3
+GROV,GROVE COLLABORATIVE HLDG INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,278,110,0,0,5
+GRPN,GROUPON INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,40,16,0,0,1
+GRWG,GROWGENERATION CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+HBB,HAMILTON BEACH BND HDNG,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+HD,HOME DEPOT INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,525,176,0,0,4
+HOFT,HOOKER FURNISHINGS CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,39,39,0,0,2
+HOUR,HOUR LOOP INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+HVT,HAVERTY FURNITURE,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,22,1,0,0,1
+HZO,MARINEMAX INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+IMKTA,INGLES MARKETS INC  -CL A,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+JILL,J JILL INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,40,18,0,0,1
+JRSH,JERASH HOLDINGS (US),NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+JWN,NORDSTROM INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,205,71,0,0,4
+KMX,CARMAX INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,6,6,238,140,0,0,6
+KOSS,KOSS CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+KR,KROGER CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,445,304,0,0,5
+KSS,KOHL'S CORP,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,4,4,170,180,0,1,4
+KTB,KONTOOR BRANDS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,211,83,0,0,3
+LAD,LITHIA MOTORS INC  -CL A,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,154,56,0,0,5
+LAKE,LAKELAND INDUSTRIES INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+LCUT,LIFETIME BRANDS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+LE,LANDS' END INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,44,35,0,0,1
+LEG,LEGGETT & PLATT INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,220,102,0,0,5
+LESL,LESLIE'S INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,113,78,0,0,4
+LEVI,LEVI STRAUSS & CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,290,32,0,0,4
+LIVE,LIVE VENTURES INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+LOVE,LOVESAC CO (THE),ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,5,5,291,90,0,1,5
+LOW,LOWE'S COS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,350,116,0,0,4
+LULU,LULULEMON ATHLETICA INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,302,59,0,0,3
+LVLU,LULU'S FASHION LOUN HOLD INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+LZB,LA-Z-BOY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,169,148,0,0,5
+M,MACY'S INC,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,5,5,340,98,0,1,5
+MELI,MERCADOLIBRE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,204,202,0,0,5
+MGRX,MANGOCEUTICALS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+MHK,MOHAWK INDUSTRIES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,230,151,0,0,4
+MNRO,MONRO INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,131,37,0,0,5
+MOV,MOVADO GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,285,80,0,0,5
+MSS,MAISON SOLUTIONS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+MUSA,MURPHY USA INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,117,38,0,0,4
+NGVC,NATURAL GROCERS VITAMIN CTGE,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,160,86,0,0,5
+NKE,NIKE INC  -CL B,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,626,222,0,0,4
+NWL,NEWELL BRANDS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,223,140,0,0,5
+OLLI,OLLIE'S BARGAIN OUTLET HLDGS,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ONEW,ONEWATER MARINE INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ORBS,EIGHTCO HOLDINGS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ORLY,O'REILLY AUTOMOTIVE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,43,22,0,0,1
+OXM,OXFORD INDUSTRIES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,41,16,0,0,1
+PAG,PENSKE AUTOMOTIVE GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,106,49,0,0,3
+PETS,PETMED EXPRESS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+PEW,GRABAGUN DIGITAL HOLDING INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+PLBY,PLAYBOY INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+PLCE,CHILDRENS PLACE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,213,93,0,0,3
+POWW,OUTDOOR HOLDING CO,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+PRPL,PURPLE INNOVATION INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+PRTS,CARPARTS COM INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,30,8,0,0,1
+PSMT,PRICESMART INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,244,43,0,0,5
+PTRN,PATTERN GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,433,112,0,0,4
+PVH,PVH CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,379,188,0,0,4
+RCKY,ROCKY BRANDS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,56,7,0,0,1
+RDNW,RIDENOW GROUP INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+REAL,REALREAL INC (THE),NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+REBN,REBORN COFFEE INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+RENT,RENT THE RUNWAY INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+RH,RH,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+RIME,ALGORHYTHM HOLDINGS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+RL,RALPH LAUREN CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,518,122,0,0,5
+ROST,ROSS STORES INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,239,57,0,0,4
+RVLV,REVOLVE GROUP INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+SAH,SONIC AUTOMOTIVE INC  -CL A,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+SBH,SALLY BEAUTY HOLDINGS INC,ACCEPT_WITH_REVIEW,3 tracker row(s) require cleanup,4,4,74,0,0,3,4
+SFIX,STITCH FIX INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+SFM,SPROUTS FARMERS MARKET,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,131,86,0,0,5
+SGC,SUPERIOR GROUP OF COS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,169,74,0,0,5
+SGI,SOMNIGROUP INTERNATIONAL INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,176,121,0,0,5
+SHOE,SHOE STATION GROUP INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+SHOO,MADDEN STEVEN LTD,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,238,45,0,0,4
+SNBR,SLEEP NUMBER CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,296,103,0,0,5
+SONO,SONOS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,157,70,0,0,4
+SPWH,SPORTSMANS WAREHOUSE HLDGS,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+SVV,SAVERS VALUE VILLAGE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,116,28,0,0,4
+T,AT&T INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,104,151,0,0,5
+TDUP,THREDUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,132,35,0,0,4
+TGT,TARGET CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,598,335,0,0,5
+TJX,TJX COS INC (THE),ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,497,159,0,0,5
+TLF,TANDY LEATHER FACTORY INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+TLYS,TILLY'S INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+TPR,TAPESTRY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,354,169,0,0,5
+TSCO,TRACTOR SUPPLY CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,63,30,0,0,2
+UAA,UNDER ARMOUR INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,2,2,114,47,0,0,2
+UEIC,UNIVERSAL ELECTRONICS INC,ACCEPT_WITH_REVIEW,2 tracker row(s) require cleanup,3,3,151,21,0,2,3
+ULTA,ULTA BEAUTY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,207,144,0,0,5
+UPBD,UPBOUND GROUP INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,1,1,54,8,0,0,1
+URBN,URBAN OUTFITTERS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,86,29,0,0,3
+VFC,VF CORP,ACCEPT_WITH_REVIEW,1 tracker row(s) require cleanup,4,4,298,146,0,1,4
+VLGEA,VILLAGE SUPER MARKET  -CL A,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+VNCE,VINCE HOLDING CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+VRA,VERA BRADLEY INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,178,41,0,0,5
+VSXY,VICTORIAS SECRET AND CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,6,6,409,156,0,0,6
+VVV,VALVOLINE INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,158,104,0,0,4
+VZ,VERIZON COMMUNICATIONS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,417,45,0,0,4
+W,WAYFAIR INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,123,107,0,0,5
+WHR,WHIRLPOOL CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,438,238,0,0,5
+WINA,WINMARK CORP,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+WMK,WEIS MARKETS INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,59,16,0,0,4
+WMT,WALMART INC,ACCEPT_WITH_REVIEW,2 tracker row(s) require cleanup,5,5,527,173,0,2,5
+WOOF,PETCO HEALTH AND WELLNESS CO,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,226,47,0,0,4
+WRBY,WARBY PARKER INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,342,124,0,0,5
+WSM,WILLIAMS-SONOMA INC,ACCEPT,Current QA passes and eligible retrieval chunks are available,3,3,149,129,0,0,3
+WWW,WOLVERINE WORLD WIDE,ACCEPT,Current QA passes and eligible retrieval chunks are available,4,4,159,109,0,0,4
+XELB,XCEL BRANDS INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+XMAX,XMAX INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+XOM,EXXON MOBIL CORP,ACCEPT,Current QA passes and eligible retrieval chunks are available,5,5,257,72,0,0,5
+YHGJ,YUNHONG GREEN CTI LTD,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+YSWY,YESWAY INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0
+ZUMZ,ZUMIEZ INC,NOT_FOUND,No local ESG document; tracker records not_found,1,0,0,0,0,0,0

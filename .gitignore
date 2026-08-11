@@ -62,3 +62,4 @@ data/_pre_promotion_backups/
 # Inputs, not regenerated outputs: the fusion bridge reads these for source
 # identity and cannot mint the IDs itself, so a clean clone must carry them.
 !data/00_reference/esg_parse_index.csv
+!data/00_reference/esg_accepted_company_manifest.csv
