@@ -101,6 +101,18 @@ def test_explicit_10k_year_excludes_fiscal_content_year():
     ) == (2024, 2025)
 
 
+def test_fy_prefixed_years_are_detected():
+    assert detect_filing_years(
+        "What net sales did Amazon report in its FY2024 10-K?"
+    ) == (2024,)
+    assert detect_filing_years(
+        "Compare Amazon FY2023 and FY2024 net sales"
+    ) == (2023, 2024)
+    assert detect_filing_years(
+        "How did results change from FY 2023 to FY 2024?"
+    ) == (2023, 2024)
+
+
 def test_possessive_normalization_resolves_corpus_aliases():
     assert detect_entities(
         "According to Retailer's 2025 10-K",

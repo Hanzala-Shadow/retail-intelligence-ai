@@ -257,11 +257,19 @@ CLAIM_PROMPTS.update(ATOMIC_PROMPTS)
 VALID_SECTIONS = {f"Item_{n}" for n in range(1, 17)} | {
     "Item_1A", "Item_1B", "Item_1C", "Item_7A", "Item_9A", "Item_9B"
 }
-YEAR_RE = re.compile(r"\b(20\d{2}|19\d{2})\b")
-SECTION_RE = re.compile(r"\bitem\s*(\d{1,2}[a-c]?)\b", re.I)
+YEAR_RE = re.compile(
+    r"(?<!\w)(?:fy\s*)?((?:19|20)\d{2})\b",
+    re.I,
+)
+SECTION_RE = re.compile(
+    r"\bitem\s*(\d{1,2}[a-c]?)\b",
+    re.I,
+)
 FILING_YEAR_BEFORE_10K_RE = re.compile(
-    r"\b((?:19|20)\d{2})(?:\s*(?:,|and|or|through|to|-)\s*"
-    r"((?:19|20)\d{2}))?\s+(?:fiscal[- ]year\s+)?"
+    r"(?<!\w)(?:fy\s*)?((?:19|20)\d{2})"
+    r"(?:\s*(?:,|and|or|through|to|-)\s*"
+    r"(?:fy\s*)?((?:19|20)\d{2}))?"
+    r"\s+(?:fiscal[- ]year\s+)?"
     r"10-k(?:s|\s+filings?)?\b",
     re.I,
 )
