@@ -1,15 +1,15 @@
 company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
-2,M,MACY'S INC,2018,PDF,https://drive.google.com/file/d/1HVG9UMFr-wxLLv87rkkYZfuJteJlGloU/view,downloaded,M-MACY_S INC-2018.pdf
-2,M,MACY'S INC,2020,PDF,https://drive.google.com/file/d/1jdEbdmBNPOXyc3SaOz0cWiK2U3dxjxCx/view,downloaded,M-MACY_S INC-2020.pdf
+2,M,MACY'S INC,2018,PDF,https://drive.google.com/file/d/1HVG9UMFr-wxLLv87rkkYZfuJteJlGloU/view,downloaded,M-MACY'S INC-2018.pdf
+2,M,MACY'S INC,2020,PDF,https://drive.google.com/file/d/1jdEbdmBNPOXyc3SaOz0cWiK2U3dxjxCx/view,downloaded,M-MACY'S INC-2020.pdf
 2,M,MACY'S INC,2021,PDF,https://drive.google.com/file/d/1UGik-XA3LaAXZcFAvvXmKpfZdVNRv3zf/view,downloaded,M-MACY'S INC-2021.pdf
 2,M,MACY'S INC,2022,PDF,https://drive.google.com/file/d/1cqvvqWWFd_8DPA0w49zlJW9NXHwX_6M7/view,downloaded,M-MACY'S INC-2022.pdf
 2,M,MACY'S INC,2023,PDF,https://drive.google.com/file/d/1-QEA6GsDd7EcjVvizL2FCvJbHaHsyOpE/view,downloaded,M-MACY'S INC-2023.pdf
 2,M,MACY'S INC,2024,PDF,https://drive.google.com/file/d/10YZP1U18GbeBWZRNvdisCAUTv5jxyD2w/view,downloaded,M-MACY'S INC-2024.pdf
 2,M,MACY'S INC,2025,PDF,https://drive.google.com/file/d/1mduP8T5ksVwI9ebKZzpJ88erbQlLBug8/view,downloaded,M-MACY'S INC-2025.pdf
 3,KSS,KOHL'S CORP,2021,PDF,https://drive.google.com/file/d/19BSPHqFOK9FKlz4i5cePCpN6EUaUNMei/view,downloaded,KSS-KOHL'S CORP-2021.pdf
-3,KSS,KOHL'S CORP,2022,PDF,https://drive.google.com/file/d/18TUa1JJrkMeYBr_S7hSfcRqRlSANk6wR/view,downloaded,KSS-KOHL'S-2022.pdf
-3,KSS,KOHL'S CORP,2023,PDF,https://drive.google.com/file/d/1TB8aV2KLoeo8dnS5Bs94wxoaKSIDbsq5/view,downloaded,KSS-KOHL'S-2023.pdf
-3,KSS,KOHL'S CORP,2024,PDF,https://drive.google.com/file/d/165rEG3Jy1cwQTUedt1xtDor2Eg2HLIWW/view,downloaded,KSS-KOHL'S-2024.pdf
+3,KSS,KOHL'S CORP,2022,PDF,https://drive.google.com/file/d/18TUa1JJrkMeYBr_S7hSfcRqRlSANk6wR/view,downloaded,KSS-KOHL'S CORP-2022.pdf
+3,KSS,KOHL'S CORP,2023,PDF,https://drive.google.com/file/d/1TB8aV2KLoeo8dnS5Bs94wxoaKSIDbsq5/view,downloaded,KSS-KOHL'S CORP-2023.pdf
+3,KSS,KOHL'S CORP,2024,PDF,https://drive.google.com/file/d/165rEG3Jy1cwQTUedt1xtDor2Eg2HLIWW/view,downloaded,KSS-KOHL'S CORP-2024.pdf
 4,CPNG,COUPANG INC,2022,PDF,https://drive.google.com/file/d/1Q-1z_ViaZylyGZyckbBz2JqQ42SXnkPD/view,downloaded,CPNG-Coupang-2022.pdf
 4,CPNG,COUPANG INC,2023,PDF,https://drive.google.com/file/d/1kYVh4-itAd5bDDenacjwGNBnXPVX5GMW/view,downloaded,CPNG-Coupang-2023.pdf
 4,CPNG,COUPANG INC,2024,PDF,https://drive.google.com/file/d/10rIijXniLt9Dir_ke-2THFBmXa19Ei6P/view,downloaded,CPNG-Coupang-2024.pdf
@@ -38,10 +38,10 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 10,MELI,MERCADOLIBRE INC,2025,PDF,https://drive.google.com/file/d/1uNkeBvA2o8xy2mno1qQ-lnTpqGC4ZIkd/view,downloaded,MELI-MERCADOLIBRE-2025.pdf
 11,GRPN,GROUPON INC,2021,PDF,https://drive.google.com/file/d/1opLkKzvTkL1m570hORf-pew2CgtDt3F_/view,downloaded,GRPN-Groupon Inc-2021.pdf
 12,JWN,NORDSTROM INC,2020,PDF,https://drive.google.com/file/d/1gD4G73v9qnyP2mDxER4qcphYDVpxsh_d/view,downloaded,JWN-NORDSTROM INC-2020.pdf
-12,JWN,NORDSTROM INC,2021,PDF,https://drive.google.com/file/d/1LXyhP-_3Gf3khIsYBzTiHDmCpSPIkr7e/view,downloaded,JWN-NORSTROM-2021.pdf
-12,JWN,NORDSTROM INC,2022,PDF,https://drive.google.com/file/d/1vPbFWP3whFYllSFnHWhTutTVwx_2QUJf/view,downloaded,JWN-NORSTROM-2022.pdf
-12,JWN,NORDSTROM INC,2023,PDF,https://drive.google.com/file/d/13MUvSITtGs3MmI9Cx9ZeJVDERLsKqx9A/view,downloaded,JWN-NORSTROM-2023.pdf
-12,JWN,NORDSTROM INC,2024,PDF,https://drive.google.com/file/d/1i2aW2hP-JBKH-AyO10ufqjE9iyy7mpZM/view,downloaded,JWN-NORSTROM-2024.pdf
+12,JWN,NORDSTROM INC,2021,PDF,https://drive.google.com/file/d/1LXyhP-_3Gf3khIsYBzTiHDmCpSPIkr7e/view,downloaded,JWN-NORDSTROM INC-2021.pdf
+12,JWN,NORDSTROM INC,2022,PDF,https://drive.google.com/file/d/1vPbFWP3whFYllSFnHWhTutTVwx_2QUJf/view,downloaded,JWN-NORDSTROM INC-2022.pdf
+12,JWN,NORDSTROM INC,2023,PDF,https://drive.google.com/file/d/13MUvSITtGs3MmI9Cx9ZeJVDERLsKqx9A/view,downloaded,JWN-NORDSTROM INC-2023.pdf
+12,JWN,NORDSTROM INC,2024,PDF,https://drive.google.com/file/d/1i2aW2hP-JBKH-AyO10ufqjE9iyy7mpZM/view,downloaded,JWN-NORDSTROM INC-2024.pdf
 14,SVV,SAVERS VALUE VILLAGE INC,2021,PDF,https://drive.google.com/file/d/1LMMid_UmcPMXoYAwdSYGuZVMZ_DlMzg0/view,downloaded,SVV-Savers Value Village-2021.pdf
 14,SVV,SAVERS VALUE VILLAGE INC,2022,PDF,https://drive.google.com/file/d/1De_P0M_izfCCt8KkQKt6D_H8snsSCFNf/view,downloaded,SVV-Savers Value Village-2022.pdf
 14,SVV,SAVERS VALUE VILLAGE INC,2023,PDF,https://drive.google.com/file/d/18RBNzKKaiISgrQnnWAH7OXFCak1qcZgG/view,downloaded,SVV-Savers Value Village-2023.pdf
@@ -58,8 +58,8 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 16,ETSY,ETSY INC,2016,PDF,https://drive.google.com/file/d/1Vkyxd8EwET1VFm1gpX_bo_nJFkmSKU2c/view,downloaded,ETSY-ETSY INC-2016.pdf
 16,ETSY,ETSY INC,2017,PDF,https://drive.google.com/file/d/1KCknnbKo_Vtw39QapcQLdg6VSzaIm_ae/view,downloaded,ETSY-ETSY INC-2017.pdf
 16,ETSY,ETSY INC,2018,PDF,https://drive.google.com/file/d/1q6bTM7YZeiusTRiOILi-5IJkaoMH9Owe/view,downloaded,ETSY-ETSY INC-2018.pdf
-16,ETSY,ETSY INC,2019,PDF,https://drive.google.com/file/d/11T6XCDHNyYJdXOUNVmgDdqwFjETTWZ32/view,downloaded,ETSY-ETSY INC-2019.pdf
-16,ETSY,ETSY INC,2020,PDF,https://drive.google.com/file/d/1FNa6GSQeGSwaKvj3LiaQ2zXMjm8i-hC9/view,downloaded,ETSY-ETSY INC-2020.pdf
+16,ETSY,ETSY INC,2019,PDF,https://drive.google.com/file/d/11T6XCDHNyYJdXOUNVmgDdqwFjETTWZ32/view,drive_missing,ETSY-ETSY INC-2019.pdf
+16,ETSY,ETSY INC,2020,PDF,https://drive.google.com/file/d/1FNa6GSQeGSwaKvj3LiaQ2zXMjm8i-hC9/view,drive_missing,ETSY-ETSY INC-2020.pdf
 16,ETSY,ETSY INC,2021,PDF,https://drive.google.com/file/d/1Aemw18XrXUMy1_o7Kprs0cc5JBghuYKe/view,downloaded,ETSY-ETSY INC-2021.pdf
 16,ETSY,ETSY INC,2022,PDF,https://drive.google.com/file/d/15nlrCz5FbnnxlfmY1nmy_1sNSnExyaAs/view,downloaded,ETSY-ETSY INC-2022.pdf
 16,ETSY,ETSY INC,2023,PDF,https://drive.google.com/file/d/14xn21QvUZXK3D9MjxwXY9aeMad8Rh3h8/view,downloaded,ETSY-ETSY INC-2023.pdf
@@ -85,8 +85,8 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 22,LOVE,LOVESAC CO (THE),2025,PDF,https://drive.google.com/file/d/1RQ1_dOajdq7D0Me7X93XHpmNGLa-1Ied/view,downloaded,LOVE-LOVESAC CO (THE)-2025.pdf
 24,HOFT,HOOKER FURNISHINGS CORP,2021,PDF,https://drive.google.com/file/d/1aACm3ad5Egs3hMOY1-0aWll3bjBXkk5e/view,downloaded,HOFT-HOOKER FURNISHINGS CORP-2021.pdf
 24,HOFT,HOOKER FURNISHINGS CORP,2022,PDF,https://drive.google.com/file/d/1iS9NXxEnHlh1gvvKcmW5bXEgCrdvMyQ5/view,downloaded,HOFT-HOOKER FURNISHINGS CORP-2022.pdf
-24,HOFT,HOOKER FURNISHINGS CORP,2023,PDF,https://drive.google.com/file/d/1NMTPRygSiwxknuCCyuAvIwbWTfH6HXn4/view,downloaded,HOOKER FURNISHINGS CORP-HOFT-2023.pdf
-24,HOFT,HOOKER FURNISHINGS CORP,2024,PDF,https://drive.google.com/file/d/1S9R1602PqNPhkNCuWOCXdqR19on3v6_n/view,downloaded,HOOKER FURNISHINGS CORP-HOFT-2024.pdf
+24,HOFT,HOOKER FURNISHINGS CORP,2023,PDF,https://drive.google.com/file/d/1NMTPRygSiwxknuCCyuAvIwbWTfH6HXn4/view,downloaded,HOFT-HOOKER FURNISHINGS CORP-2023.pdf
+24,HOFT,HOOKER FURNISHINGS CORP,2024,PDF,https://drive.google.com/file/d/1S9R1602PqNPhkNCuWOCXdqR19on3v6_n/view,downloaded,HOFT-HOOKER FURNISHINGS CORP-2024.pdf
 26,MHK,MOHAWK INDUSTRIES INC,2016,PDF,https://drive.google.com/file/d/1koqBIApUS3rKaqed4hsoUIRUGwq8V_bc/view,downloaded,MHK-MOHAWK INDUSTRIES INC-2016.pdf
 26,MHK,MOHAWK INDUSTRIES INC,2017,PDF,https://drive.google.com/file/d/1tk7DDzQzTlYqv5DKX4tGQpfZ3MImQfO-/view,downloaded,MHK-MOHAWK INDUSTRIES INC-2017.pdf
 26,MHK,MOHAWK INDUSTRIES INC,2018,PDF,https://drive.google.com/file/d/1cfaGReVhtsWyOugssHa7HyeIDjHkez91/view,downloaded,MHK-MOHAWK INDUSTRIES INC-2018.pdf
@@ -136,10 +136,10 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 42,GES,GUESS INC,2017,PDF,https://drive.google.com/file/d/1A7C_6_VxALUw3HGrAW3WD0WyUoTDG4Ls/view,downloaded,GES-GUESS INC-2016-2017.pdf (filename spans 2016-2017)
 42,GES,GUESS INC,2019,PDF,https://drive.google.com/file/d/1rCb38w_vee4n1oWCTO40Ksl5D8llV3ii/view,downloaded,GES-GUESS INC-2018-2019.pdf (filename spans 2018-2019)
 42,GES,GUESS INC,2021,PDF,https://drive.google.com/file/d/1gQ8PoWB8tZz_yp-fTuex6GtIeORYa6X0/view,downloaded,GES-GUESS INC-2020-2021.pdf (filename spans 2020-2021)
-42,GES,GUESS INC,2021,PDF,https://drive.google.com/file/d/1bGGeGNm17POuyXm7IsCCWvMqavyEwcnY/view,downloaded,GES-GUESS-2021-2020.pdf (filename spans 2020-2021)
-42,GES,GUESS INC,2023,PDF,https://drive.google.com/file/d/10tvqjtbTmfITvaJ8gf9tRtO6iZNnbcCO/view,downloaded,GES-GUESS-2023-2022.pdf (filename spans 2022-2023)
-42,GES,GUESS INC,2024,PDF,https://drive.google.com/file/d/1uK82o5OkU1AYXEiAY31D14Dg6X2XIPT1/view,downloaded,GES-GUESS-2024.pdf
-42,GES,GUESS INC,2025,PDF,https://drive.google.com/file/d/1zRBWzxOS6KFRbXqPZVKUD0jrdr76muj3/view,downloaded,GES-GUESS-2025.pdf
+42,GES,GUESS INC,2021,PDF,https://drive.google.com/file/d/1bGGeGNm17POuyXm7IsCCWvMqavyEwcnY/view,drive_missing,GES-GUESS-2021-2020.pdf (filename spans 2020-2021)
+42,GES,GUESS INC,2023,PDF,https://drive.google.com/file/d/10tvqjtbTmfITvaJ8gf9tRtO6iZNnbcCO/view,downloaded,GES-GUESS INC-2022-2023.pdf (filename spans 2022-2023)
+42,GES,GUESS INC,2024,PDF,https://drive.google.com/file/d/1uK82o5OkU1AYXEiAY31D14Dg6X2XIPT1/view,downloaded,GES-GUESS INC-2024.pdf
+42,GES,GUESS INC,2025,PDF,https://drive.google.com/file/d/1zRBWzxOS6KFRbXqPZVKUD0jrdr76muj3/view,downloaded,GES-GUESS INC-2025.pdf
 43,AEO,AMERN EAGLE OUTFITTERS INC,2021,PDF,https://drive.google.com/file/d/1EXJFW4QtK6QPpARZE0SRV3U1FMQ2q4Aq/view,downloaded,AEO-AMERICAN EAGLE OUTFITTERS INC-2021.pdf
 43,AEO,AMERN EAGLE OUTFITTERS INC,2022,PDF,https://drive.google.com/file/d/1ClOl3sXp5ior6-WKk2Yc79n35FoQsvBn/view,downloaded,AEO-AMERICAN EAGLE OUTFITTERS INC-2022.pdf
 43,AEO,AMERN EAGLE OUTFITTERS INC,2023,PDF,https://drive.google.com/file/d/1zNUVuuIWEXmUSyvG3eAla8krTwKwhP5U/view,downloaded,AEO-AMERICAN EAGLE OUTFITTERS INC-2023.pdf
@@ -166,11 +166,11 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 49,GAP,GAP INC,2018,PDF,https://drive.google.com/file/d/19swt5iJ5n9XemLtGs8KmXZJSCrQ-yDuY/view,downloaded,GAP-GAP INC-2018.pdf
 49,GAP,GAP INC,2019,PDF,https://drive.google.com/file/d/1AmysKOQYf9veovyY5CuQbPP4EZKva6DH/view,downloaded,GAP-GAP INC-2019.pdf
 49,GAP,GAP INC,2020,PDF,https://drive.google.com/file/d/1Xi9SehUf8CQvbW2ABzv4UQaqwyg2rwA-/view,downloaded,GAP-GAP INC-2020.pdf
-49,GAP,GAP INC,2021,PDF,https://drive.google.com/file/d/1jge30OYPvSEgnW8zsjcqsbPbjjwoEtqg/view,downloaded,GAP-GAP-2021.pdf
-49,GAP,GAP INC,2022,PDF,https://drive.google.com/file/d/1_GkealyExIktiwSqvH6_X9SXM9cW8d-4/view,downloaded,GAP-GAP-2022.pdf
-49,GAP,GAP INC,2023,PDF,https://drive.google.com/file/d/14bB44FGMVkqL1zV9pPCbCQGp2r-JV6sI/view,downloaded,GAP-GAP-2023.pdf
-49,GAP,GAP INC,2024,PDF,https://drive.google.com/file/d/1vS6kSLpPaHEWke2tVwpZRxr3Vft4w_nU/view,downloaded,GAP-GAP-2024.pdf
-49,GAP,GAP INC,2025,PDF,https://drive.google.com/file/d/13mva9jPxJxerVZ-KAI13zubcK0TDu4jw/view,downloaded,GAP-GAP-2025.pdf
+49,GAP,GAP INC,2021,PDF,https://drive.google.com/file/d/1jge30OYPvSEgnW8zsjcqsbPbjjwoEtqg/view,downloaded,GAP-GAP INC-2021.pdf
+49,GAP,GAP INC,2022,PDF,https://drive.google.com/file/d/1_GkealyExIktiwSqvH6_X9SXM9cW8d-4/view,downloaded,GAP-GAP INC-2022.pdf
+49,GAP,GAP INC,2023,PDF,https://drive.google.com/file/d/14bB44FGMVkqL1zV9pPCbCQGp2r-JV6sI/view,downloaded,GAP-GAP INC-2023.pdf
+49,GAP,GAP INC,2024,PDF,https://drive.google.com/file/d/1vS6kSLpPaHEWke2tVwpZRxr3Vft4w_nU/view,downloaded,GAP-GAP INC-2024.pdf
+49,GAP,GAP INC,2025,PDF,https://drive.google.com/file/d/13mva9jPxJxerVZ-KAI13zubcK0TDu4jw/view,downloaded,GAP-GAP INC-2025.pdf
 50,BURL,BURLINGTON STORES INC,2018,PDF,https://drive.google.com/file/d/1xtueO3vEYEkTQDSvSvGN8yoi-PIhu_0O/view,downloaded,BURL-BURLINGTON STORES INC-2018.pdf
 50,BURL,BURLINGTON STORES INC,2019,PDF,https://drive.google.com/file/d/1jr2mXyZc9S0AeAtQrrgBDmiOYmN9V9sq/view,downloaded,BURL-BURLINGTON STORES INC-2019.pdf
 50,BURL,BURLINGTON STORES INC,2020,PDF,https://drive.google.com/file/d/1sOQU9O4sHnzRmQYDgnNiUoyE3SRhi6Th/view,downloaded,BURL-BURLINGTON STORES INC-2020.pdf
@@ -192,9 +192,9 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 60,VSXY,VICTORIAS SECRET AND CO,2025,PDF,https://drive.google.com/file/d/1wnFRAAWevR8KRh3i0qbEBseex6-EKcQJ/view,downloaded,VSXY-Victorias Secret-2025.pdf
 64,PLCE,CHILDRENS PLACE INC,2019,PDF,https://drive.google.com/file/d/19CSFPIopid-ny7JYDYN2ooMwg_TjH8Yt/view,downloaded,PLCE-CHILDRENS PLACE INC-2019.pdf
 64,PLCE,CHILDRENS PLACE INC,2020,PDF,https://drive.google.com/file/d/1L-Gg7V8BeVOR_DZQZ7dA6Z1znhNQ5h__/view,downloaded,PLCE-CHILDRENS PLACE INC-2020.pdf
-64,PLCE,CHILDRENS PLACE INC,2021,PDF,https://drive.google.com/file/d/1R9tb61DVTERP3f8HI8sMPy_3nwjXqn2t/view,downloaded,PLCE-The Childrens Place-2021.pdf
-64,PLCE,CHILDRENS PLACE INC,2022,PDF,https://drive.google.com/file/d/1ajCdZ1KKJj7Wo2qu42Za4k675JM3OzaU/view,downloaded,PLCE-The Childrens Place-2022.pdf
-64,PLCE,CHILDRENS PLACE INC,2023,PDF,https://drive.google.com/file/d/1GChSrTLap59yEB1FpkxX41653nE3IB1e/view,downloaded,PLCE-The Childrens Place-2023.pdf
+64,PLCE,CHILDRENS PLACE INC,2021,PDF,https://drive.google.com/file/d/1R9tb61DVTERP3f8HI8sMPy_3nwjXqn2t/view,downloaded,PLCE-CHILDRENS PLACE INC-2021.pdf
+64,PLCE,CHILDRENS PLACE INC,2022,PDF,https://drive.google.com/file/d/1ajCdZ1KKJj7Wo2qu42Za4k675JM3OzaU/view,downloaded,PLCE-CHILDRENS PLACE INC-2022.pdf
+64,PLCE,CHILDRENS PLACE INC,2023,PDF,https://drive.google.com/file/d/1GChSrTLap59yEB1FpkxX41653nE3IB1e/view,downloaded,PLCE-CHILDRENS PLACE INC-2023.pdf
 68,CAL,CALERES INC,2020,PDF,https://drive.google.com/file/d/10hLN6AXKoRO_RHfObCAhvCcMAKtgUTIS/view,downloaded,CAL-CALERES INC-2020.pdf
 68,CAL,CALERES INC,2021,PDF,https://drive.google.com/file/d/1kJVpnGyGAZlwokEAomo5ddRnzvYicbp4/view,downloaded,CAL-CALERES INC-2021.pdf
 68,CAL,CALERES INC,2022,PDF,https://drive.google.com/file/d/1Hobo4mZHYCrigni7ZTZzUNNLTrlsA2Ia/view,downloaded,CAL-CALERES INC-2022.pdf
@@ -210,7 +210,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 74,TDUP,THREDUP INC,2023,PDF,https://drive.google.com/file/d/1K8ExPqk7P9tcjBRC2P0c8a39u8H_2U0r/view,downloaded,TDUP-THREDUP INC-2023.pdf
 74,TDUP,THREDUP INC,2024,PDF,https://drive.google.com/file/d/13QZgf-ARWmdmhf3NJatX3zhYwChM_ro_/view,downloaded,TDUP-THREDUP INC-2024.pdf
 77,BBY,BEST BUY CO INC,2015,PDF,https://drive.google.com/file/d/1sSWsHW3-GhJs_1tkS9JEoPaMt_A3hMDI/view,downloaded,BBY-BEST BUY CO INC-2015.pdf
-77,BBY,BEST BUY CO INC,2016,PDF,https://drive.google.com/file/d/1vZ-kn6Sr8gui_djfSfF1EWrWZ_45LWT5/view,downloaded,BBY-BEST BUY CO INC-2016.pdf
+77,BBY,BEST BUY CO INC,2016,PDF,https://drive.google.com/file/d/1q7a9zTZ4k9LmLVeQwcQszwUaYvBcXLRo/view,downloaded,BBY-BEST BUY CO INC-2016.pdf
 77,BBY,BEST BUY CO INC,2017,PDF,https://drive.google.com/file/d/1-REQkdJ9SNdXGQwrprbsnPRYpNxCdLmI/view,downloaded,BBY-BEST BUY CO INC-2017.pdf
 77,BBY,BEST BUY CO INC,2018,PDF,https://drive.google.com/file/d/1XrQUDOQAJwB0m1RB150bl45ipf5AOoyQ/view,downloaded,BBY-BEST BUY CO INC-2018.pdf
 77,BBY,BEST BUY CO INC,2019,PDF,https://drive.google.com/file/d/1tra7Z5ahbKCL-c3G-G_hzhilPAkatIz8/view,downloaded,BBY-BEST BUY CO INC-2019.pdf
@@ -229,12 +229,12 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 79,HD,HOME DEPOT INC,2022,PDF,https://drive.google.com/file/d/1wWcwxS7IDWVB9MOzVBEp_b-VaaO5z36B/view,downloaded,HD-HOME DEPOT INC-2022.pdf
 79,HD,HOME DEPOT INC,2023,PDF,https://drive.google.com/file/d/1mkUCDyD7oE-NYUvZ-yFRY2WJEqESgqbx/view,downloaded,HD-HOME DEPOT INC-2023.pdf
 79,HD,HOME DEPOT INC,2024,PDF,https://drive.google.com/file/d/1Bj2ZXgDHcyd7Vq5SJghTDS6zD-kCvXf7/view,downloaded,HD-HOME DEPOT INC-2024.pdf
-80,LOW,LOWE'S COS INC,2015,PDF,https://drive.google.com/file/d/1MAFoxwu3yCe3QrZQKFOQXvRWnCE9Zgt7/view,downloaded,LOW-LOWE_S COS INC-2015.pdf
-80,LOW,LOWE'S COS INC,2016,PDF,https://drive.google.com/file/d/1lb88xjacrSXTXj6JtTCSFrXs4uPTc5Cd/view,downloaded,LOW-LOWE_S COS INC-2016.pdf
-80,LOW,LOWE'S COS INC,2017,PDF,https://drive.google.com/file/d/1CosDeSKhZoAoDB7JtYJhzCIigfVrjkii/view,downloaded,LOW-LOWE_S COS INC-2017.pdf
-80,LOW,LOWE'S COS INC,2018,PDF,https://drive.google.com/file/d/1BtXha9KmPnvYF9F2Ku1nUgli57_fehS7/view,downloaded,LOW-LOWE_S COS INC-2018.pdf
-80,LOW,LOWE'S COS INC,2019,PDF,https://drive.google.com/file/d/1wH-sjPu3bm8eI3O4T5tLKxqHsaNRtQAj/view,downloaded,LOW-LOWE_S COS INC-2019.pdf
-80,LOW,LOWE'S COS INC,2020,PDF,https://drive.google.com/file/d/1LHcCDKG4V-QXJ4eNb3FV52jSE_elnXmb/view,downloaded,LOW-LOWE_S COS INC-2020.pdf
+80,LOW,LOWE'S COS INC,2015,PDF,https://drive.google.com/file/d/1MAFoxwu3yCe3QrZQKFOQXvRWnCE9Zgt7/view,downloaded,LOW-LOWE'S COS INC-2015.pdf
+80,LOW,LOWE'S COS INC,2016,PDF,https://drive.google.com/file/d/1lb88xjacrSXTXj6JtTCSFrXs4uPTc5Cd/view,downloaded,LOW-LOWE'S COS INC-2016.pdf
+80,LOW,LOWE'S COS INC,2017,PDF,https://drive.google.com/file/d/1CosDeSKhZoAoDB7JtYJhzCIigfVrjkii/view,downloaded,LOW-LOWE'S COS INC-2017.pdf
+80,LOW,LOWE'S COS INC,2018,PDF,https://drive.google.com/file/d/1BtXha9KmPnvYF9F2Ku1nUgli57_fehS7/view,downloaded,LOW-LOWE'S COS INC-2018.pdf
+80,LOW,LOWE'S COS INC,2019,PDF,https://drive.google.com/file/d/1wH-sjPu3bm8eI3O4T5tLKxqHsaNRtQAj/view,downloaded,LOW-LOWE'S COS INC-2019.pdf
+80,LOW,LOWE'S COS INC,2020,PDF,https://drive.google.com/file/d/1LHcCDKG4V-QXJ4eNb3FV52jSE_elnXmb/view,downloaded,LOW-LOWE'S COS INC-2020.pdf
 80,LOW,LOWE'S COS INC,2021,PDF,https://drive.google.com/file/d/14eyPDUnNiOXP-H8ESBAh-SrmfNZzTYUw/view,downloaded,LOW-LOWE'S COS INC-2021.pdf
 80,LOW,LOWE'S COS INC,2022,PDF,https://drive.google.com/file/d/1_Pb9M73dEf6fuSjqWavw0Rq0TvJzWwGb/view,downloaded,LOW-LOWE'S COS INC-2022.pdf
 80,LOW,LOWE'S COS INC,2023,PDF,https://drive.google.com/file/d/1JRhMgKugoIE3Lx8s7hkTV8XqgdHWP4T_/view,downloaded,LOW-LOWE'S COS INC-2023.pdf
@@ -301,14 +301,14 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 104,TSCO,TRACTOR SUPPLY CO,2023,PDF,https://drive.google.com/file/d/1_40h1NFivUJLNVbSBRz20fvjxhNWinsH/view,downloaded,TSCO-TRACTOR SUPPLY CO-2023.pdf
 104,TSCO,TRACTOR SUPPLY CO,2024,PDF,https://drive.google.com/file/d/1lVpf7OJZdGYxonlXzv00Mm7LLT_oUyyh/view,downloaded,TSCO-TRACTOR SUPPLY CO-2024.pdf
 104,TSCO,TRACTOR SUPPLY CO,2025,PDF,https://drive.google.com/file/d/197Zs-7SKJBOp0zU6mSv-2LGifCoOTGM8/view,downloaded,TSCO-TRACTOR SUPPLY CO-2025.pdf
-105,LESL,LESLIE'S INC,2020,PDF,https://drive.google.com/file/d/1yV_XZSc8TOx6LfcrTh5PJHqIZD4xFbRO/view,downloaded,LESL-LESLIE_S INC-2020.pdf
+105,LESL,LESLIE'S INC,2020,PDF,https://drive.google.com/file/d/1yV_XZSc8TOx6LfcrTh5PJHqIZD4xFbRO/view,downloaded,LESL-LESLIE'S INC-2020.pdf
 105,LESL,LESLIE'S INC,2021,PDF,https://drive.google.com/file/d/1lp51n6IkTbU0MT5NqoCZ8wbfOfQcW2nZ/view,downloaded,LESL-LESLIE'S INC-2021.pdf
 105,LESL,LESLIE'S INC,2022,PDF,https://drive.google.com/file/d/1GxLLfGuHvcWwkyOqkHqFT1OvzJ266ArI/view,downloaded,LESL-LESLIE'S INC-2022.pdf
 105,LESL,LESLIE'S INC,2023,PDF,https://drive.google.com/file/d/1-YiZ2acgySGcaPouxrL3PZdH_0CnAilP/view,downloaded,LESL-LESLIE'S INC-2023.pdf
 105,LESL,LESLIE'S INC,2024,PDF,https://drive.google.com/file/d/1Bu7M7d8mJbi5Z-vs-yLxcqN1XF34APyx/view,downloaded,LESL-LESLIE'S INC-2024.pdf
-106,UPBD,UPBOUND GROUP INC,2021,PDF,https://drive.google.com/file/d/104XyvDeGnhBmCKUNiJW1JirrQPUyVN7w/view,downloaded,UPD-UPBOUND GROUP INC-2021.pdf
-106,UPBD,UPBOUND GROUP INC,2022,PDF,https://drive.google.com/file/d/1aSyukIyfYlG693fu49w0Os3o2lIcoKCj/view,downloaded,UPD-UPBOUND GROUP INC-2022.pdf
-106,UPBD,UPBOUND GROUP INC,2023,PDF,https://drive.google.com/file/d/1bl4clSro5CA3CXX9uPeF_5RJmWlIEHy9/view,downloaded,UPD-UPBOUND GROUP INC-2023.pdf
+106,UPBD,UPBOUND GROUP INC,2021,PDF,https://drive.google.com/file/d/104XyvDeGnhBmCKUNiJW1JirrQPUyVN7w/view,downloaded,UPBD-UPBOUND GROUP INC-2021.pdf
+106,UPBD,UPBOUND GROUP INC,2022,PDF,https://drive.google.com/file/d/1aSyukIyfYlG693fu49w0Os3o2lIcoKCj/view,downloaded,UPBD-UPBOUND GROUP INC-2022.pdf
+106,UPBD,UPBOUND GROUP INC,2023,PDF,https://drive.google.com/file/d/1bl4clSro5CA3CXX9uPeF_5RJmWlIEHy9/view,downloaded,UPBD-UPBOUND GROUP INC-2023.pdf
 109,MNRO,MONRO INC,2021,PDF,https://drive.google.com/file/d/1Af3S0j9WvlWBOAj2Ac10Dp5_OiN9oSU3/view,downloaded,MNRO-MONRO INC-2021.pdf
 109,MNRO,MONRO INC,2022,PDF,https://drive.google.com/file/d/14InNEfwfqMikdw_hbJGuz9zaUksFR94k/view,downloaded,MNRO-MONRO INC-2022.pdf
 109,MNRO,MONRO INC,2023,PDF,https://drive.google.com/file/d/139tvQ0WnsVuI7l-ZV9E6UHuDqyri7ZmD/view,downloaded,MNRO-MONRO INC-2023.pdf
@@ -321,7 +321,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 112,PAG,PENSKE AUTOMOTIVE GROUP INC,2020,PDF,https://drive.google.com/file/d/1izMyzORgUblUHz31GDkTyxCn-3IV3hl7/view,downloaded,PAG-PENSKE AUTOMOTIVE GROUP INC-2020.pdf
 112,PAG,PENSKE AUTOMOTIVE GROUP INC,2021,PDF,https://drive.google.com/file/d/1zliTZOKgY6aMJpKJGbE7Ad3IqmRPYi7C/view,downloaded,PAG-PENSKE AUTOMOTIVE GROUP INC-2021.pdf
 112,PAG,PENSKE AUTOMOTIVE GROUP INC,2022,PDF,https://drive.google.com/file/d/1Ass6pmLyLtpOwW2sc4OMAsxGfIhWJ-FQ/view,downloaded,PAG-PENSKE AUTOMOTIVE GROUP INC-2022.pdf
-113,LAD,LITHIA MOTORS INC  -CL A,2020,PDF,https://drive.google.com/file/d/1Nwep0TMghT9lKbHuUIEAbvxmPEZ9SF73/view,downloaded,LAD- Lithia Motors Inc - 2020.pdf
+113,LAD,LITHIA MOTORS INC  -CL A,2020,PDF,https://drive.google.com/file/d/1Nwep0TMghT9lKbHuUIEAbvxmPEZ9SF73/view,downloaded,LAD-LITHIA MOTORS INC -CL A-2020.pdf
 113,LAD,LITHIA MOTORS INC  -CL A,2021,PDF,https://drive.google.com/file/d/10OQV38Oia6U2Mb6UW93NkjF-4am51rca/view,downloaded,LAD-LITHIA MOTORS INC -CL A-2021.pdf
 113,LAD,LITHIA MOTORS INC  -CL A,2022,PDF,https://drive.google.com/file/d/16Sj5HukFBLN8v0UwfnIe5IWzq2WN7QSn/view,downloaded,LAD-LITHIA MOTORS INC -CL A-2022.pdf
 113,LAD,LITHIA MOTORS INC  -CL A,2023,PDF,https://drive.google.com/file/d/1dIvPfUjYAtYFy7XgEXX2HK94s6BvJ9uH/view,downloaded,LAD-LITHIA MOTORS INC -CL A-2023.pdf
@@ -346,7 +346,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 119,KMX,CARMAX INC,2023,PDF,https://drive.google.com/file/d/1POHLbUa-6d6FLuqc9hcZQefiLNvxssid/view,downloaded,KMX-CARMAX INC-2023.pdf
 119,KMX,CARMAX INC,2024,PDF,https://drive.google.com/file/d/1wunjY4KkvHk3vDr64rTgbBLpMelET7vl/view,downloaded,KMX-CARMAX INC-2024.pdf
 119,KMX,CARMAX INC,2025,PDF,https://drive.google.com/file/d/1DyLYZpFlZYwOIvIYZYyshepdtmiyd8MV/view,downloaded,KMX-CARMAX INC-2025.pdf
-119,KMX,CARMAX INC,2026,PDF,https://drive.google.com/file/d/1OBsuXugl-2A6FcZZD2c9BmkdRNGI1-qB/view,downloaded,KMX-CARMAX INC-2026.pdf
+119,KMX,CARMAX INC,2026,PDF,https://drive.google.com/file/d/1OBsuXugl-2A6FcZZD2c9BmkdRNGI1-qB/view,drive_missing,KMX-CARMAX INC-2026.pdf
 123,AZO,AUTOZONE INC,2019,PDF,https://drive.google.com/file/d/1y3GbBfSOQvjXmYM5rh-x7WqJ0DbsJIYF/view,downloaded,AZO-AUTOZONE INC-2019.pdf
 123,AZO,AUTOZONE INC,2020,PDF,https://drive.google.com/file/d/1fB4xFWjjqWYP-jf_YXDa12ziTRClHDkP/view,downloaded,AZO-AUTOZONE INC-2020.pdf
 123,AZO,AUTOZONE INC,2021,PDF,https://drive.google.com/file/d/1pszA3PVWjiXHIpsLZzhbROLEdaw3Y4Bg/view,downloaded,AZO-AUTOZONE INC-2021.pdf
@@ -354,9 +354,9 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 123,AZO,AUTOZONE INC,2023,PDF,https://drive.google.com/file/d/1Bx1bFEwsbLL15Ei_sM8t4KhGZy6zFtko/view,downloaded,AZO-AUTOZONE INC-2023.pdf
 123,AZO,AUTOZONE INC,2024,PDF,https://drive.google.com/file/d/1Yf0odu4Rk_LAP77FfyhbbpsQA4C35ZHs/view,downloaded,AZO-AUTOZONE INC-2024.pdf
 123,AZO,AUTOZONE INC,2025,PDF,https://drive.google.com/file/d/1WyrYB3oBt_HUJtumwTiDxzJQWOz8sFJV/view,downloaded,AZO-AUTOZONE INC-2025.pdf
-124,ORLY,O'REILLY AUTOMOTIVE INC,2018,PDF,https://drive.google.com/file/d/1b3auRhZX-4m1bTSl6jqOW1u_38TZ8JZ3/view,downloaded,ORLY-O_REILLY AUTOMOTIVE INC-2018.pdf
-124,ORLY,O'REILLY AUTOMOTIVE INC,2019,PDF,https://drive.google.com/file/d/1D3P1P1O67BUfDCayb0VQdK7VZPGbmhBN/view,downloaded,ORLY-O_REILLY AUTOMOTIVE INC-2019.pdf
-124,ORLY,O'REILLY AUTOMOTIVE INC,2020,PDF,https://drive.google.com/file/d/1ls7I2b_TRlCNo3YknKCnrbp9G16_Yq5Y/view,downloaded,ORLY-O_REILLY AUTOMOTIVE INC-2020.pdf
+124,ORLY,O'REILLY AUTOMOTIVE INC,2018,PDF,https://drive.google.com/file/d/1b3auRhZX-4m1bTSl6jqOW1u_38TZ8JZ3/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2018.pdf
+124,ORLY,O'REILLY AUTOMOTIVE INC,2019,PDF,https://drive.google.com/file/d/1D3P1P1O67BUfDCayb0VQdK7VZPGbmhBN/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2019.pdf
+124,ORLY,O'REILLY AUTOMOTIVE INC,2020,PDF,https://drive.google.com/file/d/1ls7I2b_TRlCNo3YknKCnrbp9G16_Yq5Y/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2020.pdf
 124,ORLY,O'REILLY AUTOMOTIVE INC,2021,PDF,https://drive.google.com/file/d/1jDyYv8HwzqmokisubfGrGssgTR0p9Z1q/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2021.pdf
 124,ORLY,O'REILLY AUTOMOTIVE INC,2022,PDF,https://drive.google.com/file/d/1m1QUDCEw1bLZq_aG5MgxASvrf1zaRaj-/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2022.pdf
 124,ORLY,O'REILLY AUTOMOTIVE INC,2023,PDF,https://drive.google.com/file/d/1BltsEjACUGavr4qXCKaiCfdoI9MH_Wme/view,downloaded,ORLY-O'REILLY AUTOMOTIVE INC-2023.pdf
@@ -456,12 +456,12 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 151,COLM,COLUMBIA SPORTSWEAR CO,2022,PDF,https://drive.google.com/file/d/1HlGYypyVzVYK5Ul6AB1aE_IKX87TnqtI/view,downloaded,COLM-COLUMBIA SPORTSWEAR CO-2022.pdf
 151,COLM,COLUMBIA SPORTSWEAR CO,2023,PDF,https://drive.google.com/file/d/1PHlPTOCuTT55Gqz_QuemfEIsSr2v_27d/view,downloaded,COLM-COLUMBIA SPORTSWEAR CO-2023.pdf
 151,COLM,COLUMBIA SPORTSWEAR CO,2024,PDF,https://drive.google.com/file/d/1UOj6R1HxHtUXSL9KpM_e0Rhd8SE9zji4/view,downloaded,COLM-COLUMBIA SPORTSWEAR CO-2024.pdf
-152,CRI,CARTER'S INC,2020,PDF,https://drive.google.com/file/d/1wgjJr9dnvcpCoUoKh1EYwjBXTevVAqfl/view,downloaded,CRI-CARTER_S INC-2020.pdf
+152,CRI,CARTER'S INC,2020,PDF,https://drive.google.com/file/d/1wgjJr9dnvcpCoUoKh1EYwjBXTevVAqfl/view,downloaded,CRI-CARTER'S INC-2020.pdf
 152,CRI,CARTER'S INC,2021,PDF,https://drive.google.com/file/d/1ogyuP5P-KR0Isx-oxH1MbxxRCgRH8U01/view,downloaded,CRI-CARTER'S INC-2021.pdf
 152,CRI,CARTER'S INC,2022,PDF,https://drive.google.com/file/d/1Fuwd5CRrFl9gNe0OLM1sPNyA5AKptmMv/view,downloaded,CRI-CARTER'S INC-2022.pdf
 152,CRI,CARTER'S INC,2023,PDF,https://drive.google.com/file/d/1pkk04rrvMhpfVX4aPK7-a-qHx9_DwPVC/view,downloaded,CRI-CARTER'S INC-2023.pdf
 152,CRI,CARTER'S INC,2024,PDF,https://drive.google.com/file/d/15_yOeOIBoK0GliPCZENJh6Nqg5uWCEe9/view,downloaded,CRI-CARTER'S INC-2024.pdf
-152,CRI,CARTER'S INC,2025,PDF,https://drive.google.com/file/d/1oRst0uESYuSna9YK1ucSAStDM-_Wg-6E/view,downloaded,CRI-CARTER2S INC-2025.pdf
+152,CRI,CARTER'S INC,2025,PDF,https://drive.google.com/file/d/1oRst0uESYuSna9YK1ucSAStDM-_Wg-6E/view,downloaded,CRI-CARTER'S INC-2025.pdf
 153,UAA,UNDER ARMOUR INC,2021,PDF,https://drive.google.com/file/d/1AYEbPaAqtlXk1hckvUGelgMUtWZWmTv4/view,downloaded,UAA-UNDER ARMOUR INC-2021.pdf
 153,UAA,UNDER ARMOUR INC,2022,PDF,https://drive.google.com/file/d/1OqzX3uNsyC34GUPmKZqlAFMQ0DbBYTLL/view,downloaded,UAA-UNDER ARMOUR INC-2022.pdf
 154,LULU,LULULEMON ATHLETICA INC,2020,PDF,https://drive.google.com/file/d/1JjnidNPIbXCEOI9k5vo6kL1UBsGwRtOA/view,downloaded,LULU-LULULEMON ATHLETICA INC-2020.pdf
@@ -469,9 +469,9 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 154,LULU,LULULEMON ATHLETICA INC,2022,PDF,https://drive.google.com/file/d/1xh2GRbtyqS4W_ypQ85Zr7toyDDHRBPni/view,downloaded,LULU-LULULEMON ATHLETICA INC-2022.pdf
 154,LULU,LULULEMON ATHLETICA INC,2023,PDF,https://drive.google.com/file/d/1UwwXJOzsOw4Kbpvw35tO63-aVHk_6gmr/view,downloaded,LULU-LULULEMON ATHLETICA INC-2023.pdf
 154,LULU,LULULEMON ATHLETICA INC,2024,PDF,https://drive.google.com/file/d/1yFxEbZ6JWDGD4gph1W2P1E9-OLwTnIxR/view,downloaded,LULU-LULULEMON ATHLETICA INC-2024.pdf
-155,GIII,G-III APPAREL GROUP LTD,2023,PDF,https://drive.google.com/file/d/1JI2A4r8Hii7hpmfMYCrskkEWIDspqUHR/view,downloaded,GII-G-III APPAREL GROUP LTD-2023.pdf
-155,GIII,G-III APPAREL GROUP LTD,2024,PDF,https://drive.google.com/file/d/1dLUubUXlj3tk66twSPCJWLnyEonACXp8/view,downloaded,GII-G-III APPAREL GROUP LTD-2024.pdf
-155,GIII,G-III APPAREL GROUP LTD,2025,PDF,https://drive.google.com/file/d/1NwiHAlW42rmx56VBGDs0mcdlLFXyfOSg/view,downloaded,GII-G-III APPAREL GROUP LTD-2025.pdf
+155,GIII,G-III APPAREL GROUP LTD,2023,PDF,https://drive.google.com/file/d/1JI2A4r8Hii7hpmfMYCrskkEWIDspqUHR/view,downloaded,GIII-G-III APPAREL GROUP LTD-2023.pdf
+155,GIII,G-III APPAREL GROUP LTD,2024,PDF,https://drive.google.com/file/d/1dLUubUXlj3tk66twSPCJWLnyEonACXp8/view,downloaded,GIII-G-III APPAREL GROUP LTD-2024.pdf
+155,GIII,G-III APPAREL GROUP LTD,2025,PDF,https://drive.google.com/file/d/1NwiHAlW42rmx56VBGDs0mcdlLFXyfOSg/view,downloaded,GIII-G-III APPAREL GROUP LTD-2025.pdf
 156,TPR,TAPESTRY INC,2015,PDF,https://drive.google.com/file/d/1MVniPc-sF_yEHUgTba36tbeOUge8f0wP/view,downloaded,TPR-TAPESTRY INC-2015.pdf
 156,TPR,TAPESTRY INC,2016,PDF,https://drive.google.com/file/d/1QaIiMtV8XRypS-U0PTFdly5d59-O5RtK/view,downloaded,TPR-TAPESTRY INC-2016.pdf
 156,TPR,TAPESTRY INC,2017,PDF,https://drive.google.com/file/d/1anJQRcuswVFn4LID22-1LoO6kUPw0AFo/view,downloaded,TPR-TAPESTRY INC-2017.pdf
@@ -588,7 +588,7 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 179,CASY,CASEYS GENERAL STORES INC,2024,PDF,https://drive.google.com/file/d/1mlhHyp2UijsDHGE26HsUFggfuplIHsrt/view,downloaded,CASY-CASEYS GENERAL STORES INC-2024.pdf
 182,COST,COSTCO WHOLESALE CORP,2018,PDF,https://drive.google.com/file/d/1rvh1rfLA-J4p0yLeB_k8okLCTzLkupU-/view,downloaded,COST-COSTCO WHOLESALE CORP-2018.pdf
 182,COST,COSTCO WHOLESALE CORP,2019,PDF,https://drive.google.com/file/d/19BL86cmhbqECTlvqDCoMKQm-g7SIN3Ii/view,downloaded,COST-COSTCO WHOLESALE CORP-2019.pdf
-182,COST,COSTCO WHOLESALE CORP,2020,PDF,https://drive.google.com/file/d/1kmZIE-yl-mH6rOayr62I3JlTkVeMPpbL/view,downloaded,COST-COSTCO WHOLESALE CORP-2020.pdf
+182,COST,COSTCO WHOLESALE CORP,2020,PDF,https://drive.google.com/file/d/11xsK3mcbu9MaFHwV6JB8kgJr4lAP22q0/view,downloaded,COST-COSTCO WHOLESALE CORP-2020.pdf
 182,COST,COSTCO WHOLESALE CORP,2021,PDF,https://drive.google.com/file/d/15hnqnKjVHMwNfBXgsSRn57_5_OwE5a2f/view,downloaded,COST-COSTCO WHOLESALE CORP-2021.pdf
 182,COST,COSTCO WHOLESALE CORP,2022,PDF,https://drive.google.com/file/d/181VBVmpDv-J5fU_vL7tCjPq6Wsk6vtM0/view,downloaded,COST-COSTCO WHOLESALE CORP-2022.pdf
 182,COST,COSTCO WHOLESALE CORP,2023,PDF,https://drive.google.com/file/d/1wWttd7RMrz22h_T6KBmlThQsx7LRg9yJ/view,downloaded,COST-COSTCO WHOLESALE CORP-2023.pdf

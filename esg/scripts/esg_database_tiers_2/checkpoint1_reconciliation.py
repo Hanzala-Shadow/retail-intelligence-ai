@@ -776,9 +776,18 @@ def check_q9(manifest: list[dict], out_dir: Path, examples_wanted: int) -> Check
         docs_by_filename[norm_name(doc["filename"])].append(doc)
         docs_by_ticker_year[(norm_ticker(doc["ticker"]), doc["report_year"])].append(doc)
 
+    downloaded_entries = [
+        entry for entry in tracker
+        if (entry.get("status") or "").strip().lower() == "downloaded"
+    ]
+    unavailable_entries = [
+        entry for entry in tracker
+        if (entry.get("status") or "").strip().lower() != "downloaded"
+    ]
+
     claimed: set[int] = set()
     rows: list[dict] = []
-    for entry in tracker:
+    for entry in downloaded_entries:
         ticker = norm_ticker(entry.get("ticker"))
         year = as_int(entry.get("report_year"))
         filename = (entry.get("notes") or "").strip()
@@ -832,18 +841,36 @@ def check_q9(manifest: list[dict], out_dir: Path, examples_wanted: int) -> Check
                       "page_count", "byte_size", "chunks", "eligible_chunks",
                       "drive_file_link"])
 
-    counts = Counter(r["loss_class"] for r in rows)
-    downloaded = [r for r in rows if (r["tracker_status"] or "").lower() == "downloaded"]
+    unavailable_rows = [{
+        "tracker_status": (entry.get("status") or "").strip(),
+        "ticker": norm_ticker(entry.get("ticker")),
+        "report_year": as_int(entry.get("report_year")),
+        "filename": (entry.get("notes") or "").strip(),
+        "drive_file_link": entry.get("drive_file_link"),
+    } for entry in unavailable_entries]
+    unavailable_path = write_csv(
+        out_dir / "unavailable_source_history.csv",
+        unavailable_rows,
+        ["tracker_status", "ticker", "report_year", "filename", "drive_file_link"],
+    )
 
-    result.outputs = [str(path)]
+    counts = Counter(r["loss_class"] for r in rows)
+    unavailable_statuses = Counter(
+        (entry.get("status") or "").strip().lower() or "blank"
+        for entry in unavailable_entries
+    )
+
+    result.outputs = [str(path), str(unavailable_path)]
     result.stats = {
-        "tracker_rows": len(rows),
-        "tracker_rows_marked_downloaded": len(downloaded),
+        "tracker_rows": len(tracker),
+        "tracker_rows_marked_downloaded": len(downloaded_entries),
+        "tracker_rows_not_marked_downloaded": len(unavailable_entries),
+        "non_downloaded_statuses": dict(unavailable_statuses),
         "by_loss_class": {c: counts.get(c, 0) for c in LOSS_CLASSES},
         "documents_never_claimed_by_a_tracker_row": len(
             [d for d in manifest if d["doc_id"] not in claimed]
         ),
-        "loss_rate": round(len(losses) / len(rows), 4) if rows else None,
+        "downloaded_loss_rate": round(len(losses) / len(rows), 4) if rows else None,
     }
     result.examples = losses[:examples_wanted]
 
@@ -859,7 +886,10 @@ def check_q9(manifest: list[dict], out_dir: Path, examples_wanted: int) -> Check
             f"{counts['no_eligible_chunks']} report(s) were chunked but hold no eligible "
             f"chunk (Checkpoint 5 accounts for the gate that removed them)"
         )
-    return result.ok(f"all {len(rows)} tracker reports reached the index")
+    return result.ok(
+        f"all {len(rows)} downloaded tracker reports reached the index; "
+        f"{len(unavailable_entries)} non-downloaded source-history row(s) are listed separately"
+    )
 
 
 # ---------------------------------------------------------------------------

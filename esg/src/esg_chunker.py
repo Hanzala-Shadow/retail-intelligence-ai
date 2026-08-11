@@ -402,6 +402,22 @@ def spaced_dot_leader_char_ratio(text: str) -> float:
     return dot_count / len(text)
 
 
+def is_dot_leader_metric_table(text: str) -> bool:
+    """Keep percentage tables whose row leaders resemble a contents list."""
+    percentage_values = re.findall(r"\b\d+(?:[.,]\d+)?\s*%", text)
+    if len(percentage_values) < 2:
+        return False
+    dot_leader_runs = len(DOT_LEADER_RUN.findall(text)) + len(
+        SPACED_DOT_LEADER_RUN.findall(text)
+    )
+    normalized = normalized_text(text)
+    return (
+        dot_leader_runs >= 2
+        or "percentage of" in normalized
+        or "metric performance" in normalized
+    )
+
+
 def is_large_navigation_trace_section(text: str, token_count: int) -> bool:
     """Recognise tables of contents too large for the short-section heuristic.
 
@@ -413,6 +429,8 @@ def is_large_navigation_trace_section(text: str, token_count: int) -> bool:
     """
     if token_count <= NAVIGATION_TRACE_MAX_TOKENS:
         return False  # already covered by classify_navigation_trace_section
+    if is_dot_leader_metric_table(text):
+        return False
     return (
         has_compact_toc_cluster(text)
         or dot_leader_char_ratio(text) >= NAVIGATION_DOT_LEADER_CHAR_RATIO
@@ -2972,7 +2990,7 @@ def run(
     out: str | Path,
     index: str | Path,
     sections_index: str | Path = config.ESG_SECTIONS_INDEX_CSV,
-    parse_index: str | Path = config.ESG_PARSE_INDEX_CSV,
+    parse_index: str | Path = config.ESG_PARSE_INDEX_V2_CSV,
     source_registry: str | Path = config.ESG_SOURCE_REGISTRY_CSV,
     ticker: str | None = None,
     pdf_stem: str | None = None,
@@ -3290,7 +3308,7 @@ def main():
     parser.add_argument("--out", default=str(config.ESG_CHUNKS_DIR))
     parser.add_argument("--index", default=str(config.ESG_CHUNKS_INDEX_CSV))
     parser.add_argument("--sections-index", default=str(config.ESG_SECTIONS_INDEX_CSV))
-    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_CSV))
+    parser.add_argument("--parse-index", default=str(config.ESG_PARSE_INDEX_V2_CSV))
     parser.add_argument(
         "--source-registry",
         default=str(config.ESG_SOURCE_REGISTRY_CSV),

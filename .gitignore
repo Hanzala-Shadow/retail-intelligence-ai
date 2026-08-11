@@ -54,3 +54,11 @@ scratchpad/**
 # QA snapshots are regenerated per run and stamped with the database hash.
 reports/**
 !reports/
+
+# Local backup snapshots and scratch, never for history.
+data/_pre_promotion_backups/
+.codex_tmp/
+
+# Inputs, not regenerated outputs: the fusion bridge reads these for source
+# identity and cannot mint the IDs itself, so a clean clone must carry them.
+!data/00_reference/esg_parse_index.csv

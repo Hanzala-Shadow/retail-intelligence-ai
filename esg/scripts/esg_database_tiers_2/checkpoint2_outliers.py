@@ -71,12 +71,13 @@ RESIDUAL_Z_THRESHOLD = 3.0
 YOY_RATIO_HIGH = 3.0
 YOY_RATIO_LOW = 1.0 / 3.0
 
-# A document below either floor is degenerate: no real sustainability report is
-# 4 chunks long. Paired with a page count, these separate genuinely short
-# documents from failed parses.
+# Low chunk counts and low parsed-text counts are review signals. A low chunk
+# count alone is not proof of a failed parse: image-heavy reports can be many
+# pages long while carrying only a small amount of extractable text.
 DEGENERATE_MAX_CHUNKS = 10
 DEGENERATE_MIN_PARSED_CHARS = 500
-# ... and a document this long has no innocent explanation for being degenerate.
+# Hard failures need both a long source and direct evidence that usable output
+# is missing: zero chunks, zero sections, or almost no parsed text.
 DEGENERATE_SUSPICIOUS_PAGES = 10
 
 WHITESPACE_RE = re.compile(r"\s+")
@@ -801,11 +802,20 @@ def check_q15(docs: list[dict], zero_chunk: list[dict], out_dir: Path,
         if not reasons:
             continue
         pages = doc["page_count"]
-        verdict = (
-            "defect: a long document producing almost nothing"
-            if pages and pages >= DEGENERATE_SUSPICIOUS_PAGES
-            else "plausible: genuinely short source"
+        hard_output_gap = (
+            (doc["chunk_count"] or 0) == 0
+            or (doc["section_count"] or 0) == 0
+            or (
+                doc["parsed_chars"] is not None
+                and doc["parsed_chars"] < DEGENERATE_MIN_PARSED_CHARS
+            )
         )
+        if pages and pages >= DEGENERATE_SUSPICIOUS_PAGES and hard_output_gap:
+            verdict = "defect: long source with missing or near-empty output"
+        elif pages and pages >= DEGENERATE_SUSPICIOUS_PAGES:
+            verdict = "review: long source with low chunk volume"
+        else:
+            verdict = "plausible: genuinely short source"
         rows.append({
             "doc_id": doc["doc_id"], "ticker": doc["ticker"],
             "report_year": doc["report_year"],
@@ -824,6 +834,7 @@ def check_q15(docs: list[dict], zero_chunk: list[dict], out_dir: Path,
                       "parsed_chars", "byte_size", "parse_status", "doc_quality_status",
                       "reasons", "verdict", "filepath"])
     defects = [r for r in rows if r["verdict"].startswith("defect")]
+    reviews = [r for r in rows if r["verdict"].startswith("review")]
 
     result.outputs = [str(path)]
     result.stats = {
@@ -835,6 +846,7 @@ def check_q15(docs: list[dict], zero_chunk: list[dict], out_dir: Path,
         "degenerate_documents": len(rows),
         "of_which_zero_chunk": len([r for r in rows if not r["chunks"]]),
         "defects": len(defects),
+        "review_needed": len(reviews),
         "defect_tickers": dict(Counter(r["ticker"] for r in defects).most_common(10)),
         "pages_of_defects": {
             "median": median([float(r["pages"]) for r in defects if r["pages"]]),
@@ -848,13 +860,14 @@ def check_q15(docs: list[dict], zero_chunk: list[dict], out_dir: Path,
 
     if defects:
         return result.fail(
-            f"{len(defects)} document(s) of {DEGENERATE_SUSPICIOUS_PAGES}+ pages produce fewer "
-            f"than {DEGENERATE_MAX_CHUNKS} chunks -- failed parses, not short reports"
+            f"{len(defects)} document(s) of {DEGENERATE_SUSPICIOUS_PAGES}+ pages have "
+            "zero or near-empty output"
         )
     if rows:
         return result.warn(
-            f"{len(rows)} degenerate document(s), all short enough for the output to be "
-            f"plausible; each still needs a disposition"
+            f"{len(rows)} low-output document(s) need review; {len(reviews)} are long but "
+            "still contain substantial parsed text, so low chunk count alone is not a "
+            "parse failure"
         )
     return result.ok("no degenerate documents")
 

@@ -116,6 +116,19 @@ Governance .............. 24
             )
         )
 
+    def test_dot_leader_percentage_table_is_not_held_as_navigation(self):
+        metrics = """Metric Performance
+Percentage of suppliers covered by the chemical assessment........100%
+Percentage of suppliers that attended virtual training..............81%
+Percentage of suppliers that received training materials...........100%
+Percentage of workers who received chemicals training...............98%
+"""
+        self.assertTrue(esg_chunker.is_dot_leader_metric_table(metrics))
+        self.assertEqual(
+            esg_chunker.retrieval_chunk_exclusion_reason(metrics, 500),
+            "",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
