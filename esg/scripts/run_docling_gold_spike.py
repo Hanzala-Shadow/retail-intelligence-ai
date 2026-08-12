@@ -308,24 +308,101 @@ def _has_text_layer(pdf_path: Path, sample: int = 12, min_words: int = 20) -> bo
 
 
 
-def _converter_for(pdf_path: Path, args: argparse.Namespace, cache: dict[bool, Any]) -> Any:
-    """Pick the OCR / no-OCR converter for this document.
+def _is_type3(pdf_path: Path, sample: int = 8, threshold: float = 0.5) -> bool:
+    """True when this document's glyphs are Type3 drawing programs.
+
+    Docling's PDF backend reads no text cells at all from a Type3 font.
+    Measured on CROX-CROCS INC-2025 page 11: 0 cells against PyMuPDF's 8,324
+    characters on the same page. Every text cluster the layout model predicts
+    therefore comes back empty and is dropped, leaving only picture and table
+    regions -- so no section_header is emitted, sectioning has nothing to split
+    at, and the document contributes zero chunks after converting, fusing and
+    sectioning without a single error.
+
+    Over the 681-document corpus, 8 documents are majority-Type3 and those 8
+    are exactly the 8 that produced no chunks. No false positives, no false
+    negatives, which is what makes routing on this signal safe.
+
+    Font descriptors only, never page content, and a shallow page sample: the
+    real cases sit at 100% Type3 rather than marginal, so this stays cheap.
+    """
+    import fitz
+
+    try:
+        doc = fitz.open(str(pdf_path))
+    except Exception:
+        return False
+    try:
+        type3 = total = 0
+        for pno in range(min(doc.page_count, sample)):
+            for font in doc[pno].get_fonts(full=True):
+                total += 1
+                if font[2] == "Type3":
+                    type3 += 1
+        return total > 0 and type3 / total > threshold
+    finally:
+        doc.close()
+
+
+def _should_skip_cells(pdf_path: Path, args: argparse.Namespace) -> bool:
+    """Whether this document is converted with cell assignment skipped.
+
+    Shared by the converter choice and the cache payload so the two cannot
+    disagree: _report_sparse_cache reads the recorded flag to tell a Type3
+    document (no docling text by design, words supplied later by fusion) from
+    one that genuinely has no text layer and does need OCR.
+    """
+    if getattr(args, "skip_cells", False):
+        return True
+    if getattr(args, "no_auto_skip_cells", False):
+        return False
+    return _is_type3(pdf_path)
+
+
+def _converter_for(
+    pdf_path: Path, args: argparse.Namespace, cache: dict[tuple[bool, bool], Any]
+) -> Any:
+    """Pick the converter for this document: OCR on/off, cell assignment on/off.
 
     With --auto-ocr, a PDF that already has a text layer is converted with OCR
     disabled so docling does not re-read the page image and duplicate it.
+
+    Type3 documents are converted with cell assignment skipped, which keeps the
+    layout model's regions instead of discarding the ones docling could not put
+    text into. This costs nothing in accuracy here because fusion never used
+    docling's text in the first place -- it takes its words from PyMuPDF, which
+    reads Type3 correctly. Docling only has to say where the regions are.
+
+    Measured on GPRO-GOPRO INC-2023: 0 section_header regions before, 23 after,
+    and the fused pages carry proper heading text ("## Employee Engagement",
+    "## Diversity, Equity, Inclusion, and Belonging (DEIB)") because fusion
+    fills the empty boxes. Full-page OCR reaches the same fused output at 2.0
+    min against 1.6, by re-deriving text that fusion then overwrites -- and its
+    own reading of these headings was badly scrambled. Skipping cells attacks
+    the broken link instead of routing around it.
+
+    Routing rather than a global switch: only Type3 documents change path, and
+    they currently produce nothing at all, so the 673 documents that already
+    work convert exactly as before. --no-auto-skip-cells restores the old
+    behaviour for reproducing an earlier run.
     """
     want_ocr = True
     if getattr(args, "auto_ocr", False) and _has_text_layer(pdf_path):
         want_ocr = False
-    if want_ocr not in cache:
+    skip_cells = _should_skip_cells(pdf_path, args)
+    if skip_cells and not getattr(args, "skip_cells", False):
+        print("  (Type3 fonts -> skipping cell assignment for this document)")
+    key = (want_ocr, skip_cells)
+    if key not in cache:
         import copy as _copy
 
         sub = _copy.copy(args)
         sub.no_ocr = args.no_ocr or (not want_ocr)
-        cache[want_ocr] = _build_converter(sub)
+        sub.skip_cells = skip_cells
+        cache[key] = _build_converter(sub)
         if not want_ocr:
             print("  (text layer present -> OCR disabled for this document)")
-    return cache[want_ocr]
+    return cache[key]
 
 
 def _collect_items(doc: Any, force_page: int | None = None) -> dict[int, list[dict[str, Any]]]:
@@ -431,7 +508,7 @@ def stage_convert_gold_pages(args: argparse.Namespace) -> int:
     )
 
     converter = _build_converter(args)
-    _conv_cache: dict[bool, Any] = {}
+    _conv_cache: dict[tuple[bool, bool], Any] = {}
     page_range_supported = True
     done = 0
     timings: list[float] = []
@@ -602,7 +679,7 @@ def stage_convert(args: argparse.Namespace) -> int:
 
     print(f"docling {_docling_version()}  |  {len(pdfs)} PDF(s)")
     converter = _build_converter(args)
-    _conv_cache: dict[bool, Any] = {}
+    _conv_cache: dict[tuple[bool, bool], Any] = {}
     timings: list[tuple[str, float, int]] = []
 
     # Previously only the --gold-pages path read this, so a whole-document run
@@ -659,6 +736,10 @@ def stage_convert(args: argparse.Namespace) -> int:
                 "pdf_stem": pdf.stem,
                 "n_pages": n_pages,
                 "seconds": round(elapsed, 2),
+                # Recorded so the density report can tell "no text by design"
+                # from "no text layer, needs OCR". Absent on older entries,
+                # which is read as False.
+                "skip_cells": _should_skip_cells(pdf, args),
                 "pages": {str(k): v for k, v in sorted(by_page.items())},
             },
         )
@@ -672,8 +753,11 @@ def stage_convert(args: argparse.Namespace) -> int:
         # A picture-heavy report with no text layer converts quickly and looks
         # successful -- GPRO-2023 produced 19 pages and almost no words. Say so
         # at the point of conversion instead of leaving it to be caught by eye.
+        # A Type3 document is deliberately converted without cell assignment,
+        # so its docling text is empty by construction and this measure says
+        # nothing about the page. Fusion fills the regions from PyMuPDF.
         density = _text_density(by_page, n_pages)
-        if density < SPARSE_REVIEW_WORDS_PER_PAGE:
+        if density < SPARSE_REVIEW_WORDS_PER_PAGE and not _should_skip_cells(pdf, args):
             label = "NO TEXT LAYER" if density < SPARSE_OCR_WORDS_PER_PAGE else "sparse"
             print(
                 f"    ^ {label}: {density:.0f} words/page "
@@ -701,6 +785,11 @@ def _report_sparse_cache(cache_dir: Path) -> None:
     notice was to read the overlays.
     """
     found: list[tuple[float, str, int]] = []
+    # Converted with cell assignment skipped, so docling holds no text for them
+    # by construction. Reporting these as NEEDS OCR would be a false alarm, and
+    # worse, the advice attached to it ("re-convert with -WithOcr") is the
+    # wrong remedy for a Type3 document.
+    skipped_cells: set[str] = set()
     for path in sorted(cache_dir.glob("*.pages.json")):
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
@@ -711,20 +800,33 @@ def _report_sparse_cache(cache_dir: Path) -> None:
         n_pages = cached.get("n_pages") or len(pages)
         by_page = {int(k): v for k, v in pages.items()}
         density = _text_density(by_page, n_pages)
+        stem = cached.get("pdf_stem", path.stem)
+        if cached.get("skip_cells"):
+            skipped_cells.add(stem)
         if density < SPARSE_REVIEW_WORDS_PER_PAGE:
-            found.append((density, cached.get("pdf_stem", path.stem), n_pages))
+            found.append((density, stem, n_pages))
 
     if not found:
         return
 
-    needs_ocr = [f for f in found if f[0] < SPARSE_OCR_WORDS_PER_PAGE]
+    needs_ocr = [f for f in found if f[0] < SPARSE_OCR_WORDS_PER_PAGE and f[1] not in skipped_cells]
     print(f"\n{'=' * 64}")
     print(f"  text density: {len(found)} document(s) below "
           f"{SPARSE_REVIEW_WORDS_PER_PAGE:.0f} words/page")
     print("=" * 64)
     for density, stem, n_pages in sorted(found):
-        tag = "NEEDS OCR" if density < SPARSE_OCR_WORDS_PER_PAGE else "review   "
+        if stem in skipped_cells:
+            tag = "type3 ok "
+        elif density < SPARSE_OCR_WORDS_PER_PAGE:
+            tag = "NEEDS OCR"
+        else:
+            tag = "review   "
         print(f"  {tag}  {density:6.1f} w/pg  {n_pages:4d}p  {stem}")
+    if skipped_cells & {f[1] for f in found}:
+        print(
+            "\n  type3 ok: cell assignment skipped, so docling carries no text for these."
+            "\n  Fusion supplies the words from PyMuPDF; they are not missing text."
+        )
     if needs_ocr:
         print(
             f"\n  {len(needs_ocr)} document(s) have effectively no text layer. "
@@ -1959,6 +2061,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--backend-text", action="store_true", help="force_backend_text=True")
     parser.add_argument("--full-page-ocr", action="store_true", help="OCR the whole page image")
     parser.add_argument("--skip-cells", action="store_true", help="layout boxes only, no text assignment")
+    parser.add_argument(
+        "--no-auto-skip-cells",
+        action="store_true",
+        help="convert Type3 documents the old way (they will contribute no chunks)",
+    )
     parser.add_argument("--snap", type=float, default=12.0, help="fuse: max points to snap a near-miss word to its closest region")
     parser.add_argument("--all-pages", action="store_true", help="review: show every page, not just divergent ones")
     parser.add_argument(
