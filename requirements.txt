@@ -1,3 +1,16 @@
+# Production dependencies for stages 3-5 and the SQLite QA database.
+# Stages 1-2 (docling + CUDA torch) live in requirements-docling.txt and are
+# not needed on a server that receives generated artifacts.
 python-dotenv==1.2.2
 tiktoken==0.13.0
 transformers==5.14.1
+
+# Declared late, and only after a clean-machine build failed on it:
+# common/models.py, esg/src/drive_to_db.py and esg/scripts/build_esg_qa_db.py
+# all import sqlalchemy, so a server installing from this file alone could not
+# build the QA database the transfer package is required to ship.
+sqlalchemy==2.0.52
+
+# Reached transitively through transformers today, which is not a contract.
+# The pipeline imports it directly.
+numpy==2.5.2
