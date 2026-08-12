@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import time
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -2026,6 +2027,28 @@ def _fingerprint_matches(row: dict, fingerprint: SourceFingerprint) -> bool:
     )
 
 
+def _replace_with_retry(tmp_path: Path, path: Path, attempts: int = 5) -> None:
+    """os.replace, retried past a transient Windows sharing violation.
+
+    On Windows a scanner (Defender's real-time protection, a search indexer, a
+    sync client) can hold the freshly written .tmp open for a few hundred
+    milliseconds, and MoveFileEx then fails with WinError 5 even though nothing
+    is wrong with either file. The write itself is complete and fsync'd, so the
+    only correct response is to wait and try again rather than lose the run.
+    esg_chunker.write_index carries the same loop for the same reason.
+    """
+    last_error: OSError | None = None
+    for attempt in range(attempts):
+        try:
+            os.replace(tmp_path, path)
+            return
+        except OSError as error:
+            last_error = error
+            time.sleep(0.2 * (attempt + 1))
+    if last_error is not None:
+        raise last_error
+
+
 def _atomic_write_text(path: Path, text: str) -> None:
     """Write a section through ``.tmp`` so a disconnect cannot truncate it."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -2035,7 +2058,7 @@ def _atomic_write_text(path: Path, text: str) -> None:
             f.write(text)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp_path, path)
+        _replace_with_retry(tmp_path, path)
     except BaseException:
         try:
             tmp_path.unlink(missing_ok=True)
@@ -2403,7 +2426,7 @@ def write_index(index_path: Path, rows: list[dict]) -> None:
             writer.writerows(normalized_rows)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp_path, index_path)
+        _replace_with_retry(tmp_path, index_path)
     except BaseException:
         try:
             tmp_path.unlink(missing_ok=True)
