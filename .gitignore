@@ -45,6 +45,13 @@ data/_pre_run_backups/
 data/*.db
 data/*.tar
 data/*.zip
+# SQLite sidecars. A build in progress leaves esg.db-journal behind, and the
+# transfer guide fails the package outright if a live WAL, SHM or journal file
+# reaches the archive -- it means the database was copied while a writer was
+# still attached and is not a consistent snapshot.
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
 
 # Disposable local work. Keep only the cleanup rules readable in Git.
 scratchpad/**
@@ -69,3 +76,10 @@ data/_pre_promotion_backups/
 # success. The approvals file is empty today but is the same class of input.
 !data/00_reference/esg_file_catalog.csv
 !data/00_reference/esg_ocr_approval.csv
+# The Drive snapshot. Previously left out as a disposable local artifact, but
+# it is the only evidence tying the corpus to its source: the 2026-08-12 copy
+# is what proved all 681 PDFs match Drive byte for byte. A clean clone with no
+# Drive access cannot regenerate it, and the stale copy it replaced had wrong
+# hashes for two files -- which is exactly the sort of thing a committed,
+# dated snapshot makes reviewable.
+!data/00_reference/esg_drive_manifest.csv
