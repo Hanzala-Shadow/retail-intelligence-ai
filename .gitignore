@@ -63,3 +63,9 @@ data/_pre_promotion_backups/
 # identity and cannot mint the IDs itself, so a clean clone must carry them.
 !data/00_reference/esg_parse_index.csv
 !data/00_reference/esg_accepted_company_manifest.csv
+# Same rule, learned the hard way: without the catalog the QA database loads
+# every document, section and chunk against five empty identity tables and
+# comes out with 140,027 foreign key violations, silently -- the build reports
+# success. The approvals file is empty today but is the same class of input.
+!data/00_reference/esg_file_catalog.csv
+!data/00_reference/esg_ocr_approval.csv

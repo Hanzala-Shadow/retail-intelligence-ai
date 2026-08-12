@@ -58,8 +58,6 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 16,ETSY,ETSY INC,2016,PDF,https://drive.google.com/file/d/1Vkyxd8EwET1VFm1gpX_bo_nJFkmSKU2c/view,downloaded,ETSY-ETSY INC-2016.pdf
 16,ETSY,ETSY INC,2017,PDF,https://drive.google.com/file/d/1KCknnbKo_Vtw39QapcQLdg6VSzaIm_ae/view,downloaded,ETSY-ETSY INC-2017.pdf
 16,ETSY,ETSY INC,2018,PDF,https://drive.google.com/file/d/1q6bTM7YZeiusTRiOILi-5IJkaoMH9Owe/view,downloaded,ETSY-ETSY INC-2018.pdf
-16,ETSY,ETSY INC,2019,PDF,https://drive.google.com/file/d/11T6XCDHNyYJdXOUNVmgDdqwFjETTWZ32/view,drive_missing,ETSY-ETSY INC-2019.pdf
-16,ETSY,ETSY INC,2020,PDF,https://drive.google.com/file/d/1FNa6GSQeGSwaKvj3LiaQ2zXMjm8i-hC9/view,drive_missing,ETSY-ETSY INC-2020.pdf
 16,ETSY,ETSY INC,2021,PDF,https://drive.google.com/file/d/1Aemw18XrXUMy1_o7Kprs0cc5JBghuYKe/view,downloaded,ETSY-ETSY INC-2021.pdf
 16,ETSY,ETSY INC,2022,PDF,https://drive.google.com/file/d/15nlrCz5FbnnxlfmY1nmy_1sNSnExyaAs/view,downloaded,ETSY-ETSY INC-2022.pdf
 16,ETSY,ETSY INC,2023,PDF,https://drive.google.com/file/d/14xn21QvUZXK3D9MjxwXY9aeMad8Rh3h8/view,downloaded,ETSY-ETSY INC-2023.pdf
@@ -136,7 +134,6 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 42,GES,GUESS INC,2017,PDF,https://drive.google.com/file/d/1A7C_6_VxALUw3HGrAW3WD0WyUoTDG4Ls/view,downloaded,GES-GUESS INC-2016-2017.pdf (filename spans 2016-2017)
 42,GES,GUESS INC,2019,PDF,https://drive.google.com/file/d/1rCb38w_vee4n1oWCTO40Ksl5D8llV3ii/view,downloaded,GES-GUESS INC-2018-2019.pdf (filename spans 2018-2019)
 42,GES,GUESS INC,2021,PDF,https://drive.google.com/file/d/1gQ8PoWB8tZz_yp-fTuex6GtIeORYa6X0/view,downloaded,GES-GUESS INC-2020-2021.pdf (filename spans 2020-2021)
-42,GES,GUESS INC,2021,PDF,https://drive.google.com/file/d/1bGGeGNm17POuyXm7IsCCWvMqavyEwcnY/view,drive_missing,GES-GUESS-2021-2020.pdf (filename spans 2020-2021)
 42,GES,GUESS INC,2023,PDF,https://drive.google.com/file/d/10tvqjtbTmfITvaJ8gf9tRtO6iZNnbcCO/view,downloaded,GES-GUESS INC-2022-2023.pdf (filename spans 2022-2023)
 42,GES,GUESS INC,2024,PDF,https://drive.google.com/file/d/1uK82o5OkU1AYXEiAY31D14Dg6X2XIPT1/view,downloaded,GES-GUESS INC-2024.pdf
 42,GES,GUESS INC,2025,PDF,https://drive.google.com/file/d/1zRBWzxOS6KFRbXqPZVKUD0jrdr76muj3/view,downloaded,GES-GUESS INC-2025.pdf
@@ -241,7 +238,6 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 80,LOW,LOWE'S COS INC,2024,PDF,https://drive.google.com/file/d/1Ka7qnD4IcvVAyAveBUGH56DDzjQdzxUm/view,downloaded,LOW-LOWE'S COS INC-2024.pdf
 81,FND,FLOOR & DECOR HLDGS,2022,PDF,https://drive.google.com/file/d/145XShWc0KR-BCbwWNIEoSEjI8EWz-kFU/view,downloaded,FND-FLOOR & DECOR HLDGS-2022.pdf
 81,FND,FLOOR & DECOR HLDGS,2023,PDF,https://drive.google.com/file/d/1Kru2rP8SpL9L6FV-EMckBGd6dCO0-kA6/view,downloaded,FND-FLOOR & DECOR HLDGS-2023.pdf
-86,GROV,GROVE COLLABORATIVE HLDG INC,2018,PDF,https://drive.google.com/file/d/1O5UFxJde8NYV5E4aPFgh9GGxvpSVG4Zz/view,downloaded,GROV-GROVE COLLABORATIVE HLDG INC-2018.pdf
 86,GROV,GROVE COLLABORATIVE HLDG INC,2019,PDF,https://drive.google.com/file/d/1eQpV3BUvqcIDwzxvdx8eSRV8g88EidIx/view,downloaded,GROV-GROVE COLLABORATIVE HLDG INC-2019.pdf
 86,GROV,GROVE COLLABORATIVE HLDG INC,2020,PDF,https://drive.google.com/file/d/1P2Nau6DszpVTV6oGh792U7Dx3jk4ukK5/view,downloaded,GROV-GROVE COLLABORATIVE HLDG INC-2020.pdf
 86,GROV,GROVE COLLABORATIVE HLDG INC,2021,PDF,https://drive.google.com/file/d/1XE9YpHUY99_PCbxIym1M51PGXQ-JaKX5/view,downloaded,GROV-GROVE COLLABORATIVE HLDG INC-2021.pdf
@@ -346,7 +342,6 @@ company_id,ticker,company_name,report_year,format,drive_file_link,status,notes
 119,KMX,CARMAX INC,2023,PDF,https://drive.google.com/file/d/1POHLbUa-6d6FLuqc9hcZQefiLNvxssid/view,downloaded,KMX-CARMAX INC-2023.pdf
 119,KMX,CARMAX INC,2024,PDF,https://drive.google.com/file/d/1wunjY4KkvHk3vDr64rTgbBLpMelET7vl/view,downloaded,KMX-CARMAX INC-2024.pdf
 119,KMX,CARMAX INC,2025,PDF,https://drive.google.com/file/d/1DyLYZpFlZYwOIvIYZYyshepdtmiyd8MV/view,downloaded,KMX-CARMAX INC-2025.pdf
-119,KMX,CARMAX INC,2026,PDF,https://drive.google.com/file/d/1OBsuXugl-2A6FcZZD2c9BmkdRNGI1-qB/view,drive_missing,KMX-CARMAX INC-2026.pdf
 123,AZO,AUTOZONE INC,2019,PDF,https://drive.google.com/file/d/1y3GbBfSOQvjXmYM5rh-x7WqJ0DbsJIYF/view,downloaded,AZO-AUTOZONE INC-2019.pdf
 123,AZO,AUTOZONE INC,2020,PDF,https://drive.google.com/file/d/1fB4xFWjjqWYP-jf_YXDa12ziTRClHDkP/view,downloaded,AZO-AUTOZONE INC-2020.pdf
 123,AZO,AUTOZONE INC,2021,PDF,https://drive.google.com/file/d/1pszA3PVWjiXHIpsLZzhbROLEdaw3Y4Bg/view,downloaded,AZO-AUTOZONE INC-2021.pdf
