@@ -43,9 +43,11 @@ param(
     # default is 165 minutes, which would stop an overnight run before
     # midnight; 600 covers a full night.
     [int]    $TimeBudgetMin = 600,
-    # PyTorch's CUDA wheel index. Change the suffix if this build is not
-    # published for your driver's CUDA version.
-    [string] $CudaIndexUrl = "https://download.pytorch.org/whl/cu124",
+    # PyTorch's CUDA wheel index. cu130 is the only suffix that publishes the
+    # pinned torch 2.13.0 / torchvision 0.28.0 for cp313 on Windows; the older
+    # suffixes stop at 2.6.0 (cu124), 2.9.1 (cu126, cu129) and 2.11.0 (cu128).
+    # Change it if this build is not published for your driver's CUDA version.
+    [string] $CudaIndexUrl = "https://download.pytorch.org/whl/cu130",
     # Reuse existing virtualenvs.
     [switch] $SkipSetup,
     # Proceed even when torch reports no CUDA device.
@@ -111,8 +113,9 @@ if (-not $SkipSetup) {
     & $pyDocling -m pip install torch==2.13.0 torchvision==0.28.0 --index-url $CudaIndexUrl
     if ($LASTEXITCODE -ne 0) {
         throw ("could not install the CUDA build of torch from $CudaIndexUrl. " +
-               "That index may not publish these pinned versions -- try another " +
-               "CUDA suffix, e.g. -CudaIndexUrl https://download.pytorch.org/whl/cu126")
+               "That index may not publish these pinned versions -- list what it " +
+               "carries at $CudaIndexUrl/torch/ and pass a suffix that has them, " +
+               "e.g. -CudaIndexUrl https://download.pytorch.org/whl/cu131")
     }
 
     Write-Host "  installing the pinned docling stack"
