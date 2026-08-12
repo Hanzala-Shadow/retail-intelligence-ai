@@ -34,6 +34,41 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+# esg/scripts/<this file> -> esg/scripts -> esg -> repository root.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def store_path(path: Path | str) -> str:
+    """Render a path for persisting into the parse index.
+
+    Repository-relative and POSIX, because these strings travel. The index is
+    packaged and shipped to a server, and an absolute path recorded here names
+    a directory that exists on exactly one machine. The corpus arrived carrying
+    2,284 paths rooted at a former developer's C:/Users/... profile, and this
+    stage was writing 1,362 more against whatever checkout produced the run --
+    which is why normalising the CSVs alone would not have held.
+
+    A path outside the repository is kept absolute rather than forced into a
+    misleading '../../..' chain: it genuinely is machine-specific, and leaving
+    it visible lets the guard test fail loudly instead of hiding it.
+    """
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
+def load_path(stored: str) -> Path:
+    """Resolve a path read back from the parse index.
+
+    Accepts both forms: repository-relative as written by store_path, and the
+    absolute paths still present in indexes produced before that change.
+    """
+    path = Path(stored)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
 # The fuse stage prefixes each block with "[3:section_header]" so a human can
 # match text to a numbered box in the overlay images. That is a debugging aid,
 # not part of the document, and must not reach sectioning.
@@ -502,9 +537,9 @@ def synthesise_parse_row(
         {
             "ticker": ticker,
             "pdf_file": f"{stem}.pdf",
-            "source_pdf": str(pdf.as_posix()) if pdf else "",
+            "source_pdf": store_path(pdf) if pdf else "",
             "parse_source_kind": "raw",
-            "parse_source_pdf": str(pdf.as_posix()) if pdf else "",
+            "parse_source_pdf": store_path(pdf) if pdf else "",
             "parsed_text_file": info["txt"],
             "page_map_file": info["csv"],
             "status": "parsed",
@@ -674,8 +709,8 @@ def load_completed_bridge_records(index_path: Path | None) -> dict[str, dict[str
     with index_path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
             stem = Path(row.get("pdf_file") or "").stem
-            txt = Path(row.get("parsed_text_file") or "")
-            pages = Path(row.get("page_map_file") or "")
+            txt = load_path(row.get("parsed_text_file") or "")
+            pages = load_path(row.get("page_map_file") or "")
             headings = txt.with_name(f"{stem}.headings.csv") if stem and txt.name else Path()
             if not stem or not (_nonempty_file(txt) and _nonempty_file(pages) and _nonempty_file(headings)):
                 continue
@@ -685,8 +720,8 @@ def load_completed_bridge_records(index_path: Path | None) -> dict[str, dict[str
             except ValueError:
                 continue
             completed[stem] = {
-                "txt": str(txt.as_posix()),
-                "csv": str(pages.as_posix()),
+                "txt": store_path(txt),
+                "csv": store_path(pages),
                 "pages": page_count,
                 "chars": char_count,
                 "ticker": (row.get("ticker") or "").strip(),
@@ -776,8 +811,8 @@ def _run_bridge_task(task: BridgeTask) -> dict:
         "dropped": dropped,
         "before": len(text) + dropped,
         "built": {
-            "txt": str(txt_path.as_posix()),
-            "csv": str(pages_path.as_posix()),
+            "txt": store_path(txt_path),
+            "csv": store_path(pages_path),
             "pages": len(rows),
             "chars": len(text),
             "ticker": task.ticker,
