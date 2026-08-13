@@ -3,45 +3,68 @@ from __future__ import annotations
 import streamlit as st
 
 st.set_page_config(
-    page_title="Annual Filings Intelligence",
+    page_title="Retail Intelligence",
     page_icon="📑",
     layout="wide",
 )
 
-st.title("Annual Filing Research")
-st.subheader("Evidence-grounded analysis from indexed SEC filings")
-
 st.markdown(
     """
-Enter a focused question using company names or tickers and the relevant filing
-year or years. Single-company, cross-company, and multi-year analysis are
-supported. Each response includes traceable source citations.
-"""
+    <style>
+      html, body, [class*="css"] {
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+      .stApp { background: #f7f9fc; color: #172033; }
+      .landing-hero {
+        padding: 2rem; border: 1px solid #dce3ee; border-radius: 18px;
+        background: linear-gradient(135deg, #ffffff 0%, #eaf1ff 100%);
+        box-shadow: 0 10px 30px rgba(23, 32, 51, .07);
+      }
+      .landing-kicker {
+        color: #3456d1; font-size: .78rem; font-weight: 750;
+        letter-spacing: .1em; text-transform: uppercase;
+      }
+      .landing-hero h1 { color: #172033; margin: .35rem 0; font-size: 2.35rem; }
+      .landing-hero p { color: #58657a; font-size: 1.03rem; margin-bottom: 0; }
+      #MainMenu, footer { visibility: hidden; }
+    </style>
+    <div class="landing-hero">
+      <div class="landing-kicker">Retail Intelligence Platform</div>
+      <h1>Annual Filing Research</h1>
+      <p>Ask focused questions across indexed SEC 10-K filings and receive
+      evidence-grounded answers with traceable source citations.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
-left, right = st.columns([3, 2])
+st.write("")
+left, right = st.columns([1.35, 1])
 with left:
-    st.markdown("### Suitable questions")
+    st.markdown("### Research capabilities")
     st.markdown(
         """
-- Compare the disclosed inventory policies of two companies for a specified year.
-- How did a retailer describe changes in its store footprint across two filings?
-- What principal risks did a company disclose in Item 1A?
-- Summarize a company’s business model and stakeholder value proposition.
-"""
+        - Compare companies or filing years using a consistent evidence pipeline.
+        - Investigate sales, margins, liquidity, risks, strategy, and operations.
+        - Review the exact filing excerpts supporting each answer.
+        - Inspect requirement coverage and optional technical diagnostics.
+        """
     )
 with right:
-    st.info(
-        "Answers use the project’s indexed annual filings. "
-        "The chatbot does not search the public web."
-    )
-    st.warning(
-        "This tool provides source-based informational analysis, not investment, "
-        "legal, tax, or accounting advice."
-    )
+    with st.container(border=True):
+        st.markdown("### Corpus boundaries")
+        st.write(
+            "Answers use indexed annual filings only; public-web search is disabled."
+        )
+        st.caption(
+            "Source-based informational research—not investment, legal, tax, "
+            "or accounting advice."
+        )
 
 st.page_link(
     "pages/1_Annual_Filings_Chat.py",
     label="Open research workspace",
     icon="📄",
+    use_container_width=True,
 )

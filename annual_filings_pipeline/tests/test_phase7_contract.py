@@ -18,7 +18,7 @@ class Phase7ContractTests(unittest.TestCase):
         text = (ROOT / "app/ui/pages/1_Annual_Filings_Chat.py").read_text()
         self.assertNotIn('text_input("Company ticker"', text)
         self.assertNotIn('number_input("Filing year"', text)
-        self.assertIn("api_client().chat(\n                    question,", text)
+        self.assertIn("api_client().chat(\n                    pending_question,", text)
         self.assertIn('"Technical panel"', text)
         self.assertNotIn("Professor", text)
 

@@ -38,6 +38,30 @@ class UiPhase12Tests(unittest.TestCase):
         self.assertEqual(metrics["End-to-end total"], "18.92 s")
         self.assertEqual(metrics["Routing catalog preload (startup only)"], "41.88 s")
 
+    def test_financial_currency_is_protected_from_latex_rendering(self):
+        text = (
+            ROOT / "app/ui/pages/1_Annual_Filings_Chat.py"
+        ).read_text()
+
+        self.assertIn("safe_filing_markdown(answer)", text)
+        self.assertIn(
+            'safe_filing_markdown(item["excerpt"])',
+            text,
+        )
+        self.assertIn("def safe_filing_markdown", text)
+
+    def test_request_is_persisted_before_generation_and_controls_are_locked(self):
+        text = (
+            ROOT / "app/ui/pages/1_Annual_Filings_Chat.py"
+        ).read_text()
+        self.assertIn("st.session_state.pending_question = question", text)
+        self.assertIn(
+            'pending_question = st.session_state.get("pending_question")',
+            text,
+        )
+        self.assertIn("disabled=request_pending", text)
+        self.assertIn("st.session_state.pending_question = None", text)
+
     def test_interface_remains_open_and_professional(self):
         text = (ROOT / "app/ui/pages/1_Annual_Filings_Chat.py").read_text()
         self.assertNotIn('text_input("Company ticker"', text)
@@ -45,6 +69,10 @@ class UiPhase12Tests(unittest.TestCase):
         self.assertNotIn("Professor", text)
         self.assertIn("one or more companies, filing years, or topics", text)
         self.assertIn('st.container(border=True)', text)
+        self.assertIn("System ready", text)
+        self.assertIn("Research answer", text)
+        self.assertIn("font-family: Inter", text)
+        self.assertIn("not api_ready", text)
 
 
 if __name__ == "__main__":

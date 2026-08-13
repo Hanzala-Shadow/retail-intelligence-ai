@@ -86,6 +86,32 @@ def test_punctuation_normalization_resolves_company_and_claim():
     assert detect_claims("supply-chain disruption risk") == ("supply chain disruption risk",)
 
 
+def test_ticker_resolution_is_case_insensitive_and_canonical():
+    tickers = {"AMZN", "CATO", "F"}
+    aliases = {"amazon": "AMZN", "cato corporation": "CATO", "ford": "F"}
+
+    assert detect_entities("What did amzn report?", tickers, aliases) == ("AMZN",)
+    assert detect_entities("Compare AmZn with cAtO", tickers, aliases) == (
+        "AMZN", "CATO",
+    )
+    assert detect_entities("What risks did $f disclose?", tickers, aliases) == ("F",)
+
+
+def test_alias_targets_are_canonicalized_case_insensitively():
+    assert detect_entities(
+        "Compare Amazon and Cato Corporation",
+        {"AMZN", "CATO"},
+        {"amazon": "amzn", "cato corporation": "cato"},
+    ) == ("AMZN", "CATO")
+
+
+def test_source_resolver_accepts_noncanonical_ticker_case():
+    resolver = SourceResolver([
+        FilingRecord("AMZN", 2024, "10-K", "amzn-24"),
+    ])
+    assert resolver.resolve("amzn", 2024).ticker == "AMZN"
+
+
 def test_explicit_10k_year_excludes_fiscal_content_year():
     assert detect_filing_years(
         "According to the 2025 10-K, why did expenses change in fiscal 2024?"

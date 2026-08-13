@@ -446,12 +446,27 @@ def normalize_for_matching(value: str) -> str:
 
 
 def detect_entities(question: str, known_tickers: set[str], aliases: dict[str, str]) -> tuple[str, ...]:
-    found = {token for token in re.findall(r"\b[A-Z]{2,6}\b", question) if token in known_tickers}
+    # Resolve symbols against the corpus catalog instead of using capitalization
+    # as an identity signal. This supports lower/mixed-case and one-character
+    # tickers while always returning the canonical catalog spelling.
+    canonical_tickers = {
+        ticker.casefold(): ticker
+        for ticker in known_tickers
+    }
+    found: set[str] = set()
+    for token in re.findall(
+        r"(?<![A-Za-z0-9])\$?([A-Za-z][A-Za-z0-9.-]{0,9})(?![A-Za-z0-9])",
+        question,
+    ):
+        canonical = canonical_tickers.get(token.casefold())
+        if canonical is not None:
+            found.add(canonical)
     normalized_question = normalize_for_matching(question)
     for alias, ticker in aliases.items():
+        canonical = canonical_tickers.get(ticker.casefold())
         normalized_alias = normalize_for_matching(alias)
-        if ticker in known_tickers and normalized_alias and _phrase_present(normalized_question, normalized_alias):
-            found.add(ticker)
+        if canonical and normalized_alias and _phrase_present(normalized_question, normalized_alias):
+            found.add(canonical)
     return tuple(sorted(found))
 
 
@@ -597,7 +612,12 @@ class SourceResolver:
         return cls(records)
 
     def resolve(self, ticker: str, year: int, doc_type: str = "10-K") -> FilingRecord:
-        matches = [r for r in self.records if r.ticker == ticker and r.filing_year == year and r.doc_type == doc_type]
+        matches = [
+            r for r in self.records
+            if r.ticker.casefold() == ticker.casefold()
+            and r.filing_year == year
+            and r.doc_type.casefold() == doc_type.casefold()
+        ]
         if not matches:
             raise ContractError("SOURCE_NOT_FOUND", f"No eligible {doc_type} source for {ticker} {year}")
         if len(matches) != 1:
