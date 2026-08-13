@@ -1,0 +1,10 @@
+# Shell scripts must check out with LF even on Windows. A .sh file carrying
+# CRLF fails on Linux before it runs a single line -- the kernel reads the
+# shebang as "/usr/bin/env bash\r" and reports "bad interpreter: no such file
+# or directory". The Ubuntu runner is committed from a Windows checkout, so
+# without this rule it would arrive on the server broken.
+*.sh text eol=lf
+
+# PowerShell is the Windows side of the same pair; keep it CRLF explicitly
+# rather than leaving it to whatever core.autocrlf a given clone has set.
+*.ps1 text eol=crlf

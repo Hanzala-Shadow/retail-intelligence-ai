@@ -1,0 +1,2 @@
+# Keep the committed tokenizer byte-exact across checkouts.
+bge-base-en-v1.5-tokenizer/** -text

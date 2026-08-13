@@ -1,0 +1,23 @@
+ESG pipeline test run
+
+command      : C:\Users\Aziz\Documents\ChatGPT Codex\Retail-Document-Intelligence\venv\Scripts\python.exe -m pytest -q
+interpreter  : 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]
+platform     : Windows-11-10.0.26200-SP0
+dependencies : requirements-dev.txt (requirements.txt + pytest)
+timestamp_utc: 2026-08-13T04:05:23Z
+git commit   : ff9a6b2c0ce2a26cd0e5b6c6a4968f4af316c6f8
+git dirty    : no
+
+--- installed ---
+pytest==9.1.1
+numpy==2.5.2
+SQLAlchemy==2.0.52
+tiktoken==0.13.0
+transformers==5.14.1
+python-dotenv==1.2.2
+
+--- output ---
+............sss...........................................................................................................                         [100%]
+119 passed, 3 skipped, 70 subtests passed in 125.31s (0:02:05)
+
+exit status  : 0

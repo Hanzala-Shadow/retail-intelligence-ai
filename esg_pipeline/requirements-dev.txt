@@ -1,0 +1,7 @@
+# Test tooling. Separate from requirements.txt because a production install
+# should not carry it, but the transfer package's acceptance gates require a
+# recorded test run -- so it has to be declared somewhere rather than assumed
+# present on whichever machine happens to run the suite.
+-r requirements.txt
+
+pytest==9.1.1

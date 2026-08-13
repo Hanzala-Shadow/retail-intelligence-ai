@@ -91,3 +91,13 @@ data_v2/00_reference/*
 
 # Generated annual-filings historical corpus and batch work
 data_history/
+
+# Generated ESG corpus and offline QA database
+esg_pipeline/data/
+esg_pipeline/venv/
+esg_pipeline/logs/
+annual_filings_pipeline/.env
+annual_filings_pipeline/venv/
+annual_filings_pipeline/logs/
+annual_filings_pipeline/data_history/
+esg_pipeline/.env

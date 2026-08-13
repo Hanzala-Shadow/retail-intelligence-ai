@@ -1,0 +1,74 @@
+{
+  "generated_at_utc": "2026-08-13T04:05:22Z",
+  "source_commit": "ff9a6b2c0ce2a26cd0e5b6c6a4968f4af316c6f8",
+  "dataset_id": "esg_docling_fusion_v2",
+  "chunker_version": "esg_chunk_v4",
+  "database": {
+    "path": "data/esg.db",
+    "sha256": "1dc9019979546644d8781acb837cafda8e3daa15d2dbe99eab1a53570281c88c",
+    "size_bytes": 272281600,
+    "sqlite_version": "3.45.3",
+    "quick_check": "ok",
+    "integrity_check": "ok",
+    "foreign_key_violations": 0,
+    "empty_referenced_tables": [
+      "source_approvals"
+    ],
+    "live_sidecars": [],
+    "tables": {
+      "annual_filings": 0,
+      "chunks": 50530,
+      "companies": 193,
+      "documents": 681,
+      "extraction_artifacts": 687,
+      "file_aliases": 686,
+      "logical_sources": 685,
+      "sections": 18710,
+      "source_approvals": 0,
+      "source_versions": 687,
+      "sustainability_reports": 681
+    }
+  },
+  "duplicate_ids": {
+    "documents.doc_id": 0,
+    "sections.section_id": 0,
+    "chunks.chunk_id": 0,
+    "chunks.external_chunk_id": 0
+  },
+  "canonical_counts": {
+    "documents_db": 681,
+    "sections_db": 18710,
+    "chunks_db": 50530,
+    "sections_index_rows": 18710,
+    "chunks_index_rows": 50530,
+    "eligible_chunks": 49754,
+    "excluded_chunks": 776,
+    "other_action_chunks": 0,
+    "section_files_on_disk": 18710,
+    "chunk_files_on_disk": 50530
+  },
+  "mismatches": {
+    "sections_index_vs_files": 0,
+    "chunks_index_vs_files": 0,
+    "sections_db_vs_index": 0,
+    "chunks_db_vs_index": 0
+  },
+  "citation": {
+    "chunks_checked": 50530,
+    "not_citation_ready": 0,
+    "not_verified_exact": 0,
+    "chunk_text_sha256_missing": 0,
+    "embedding_text_sha256_missing": 0,
+    "page_range_invalid": 0,
+    "offset_invalid": 0,
+    "slices_verified": 50530,
+    "parsed_text_missing": 0,
+    "offset_overflow": 0,
+    "slice_hash_mismatch": 0,
+    "deep_verification": true
+  },
+  "acceptance": {
+    "pass": true,
+    "failures": []
+  }
+}

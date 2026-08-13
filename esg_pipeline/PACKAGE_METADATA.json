@@ -1,0 +1,56 @@
+{
+  "package_id": "esg-pipeline-v2-20260813T040110Z",
+  "dataset_id": "esg_docling_fusion_v2",
+  "chunker_version": "esg_chunk_v4",
+  "created_at_utc": "2026-08-13T04:01:10Z",
+  "source_commit": "ff9a6b2c0ce2a26cd0e5b6c6a4968f4af316c6f8",
+  "source_tree_dirty": false,
+  "target_platform": "Ubuntu 24.04 / Python 3.12 or 3.13",
+  "raw_pdfs_included": false,
+  "counts": {
+    "documents": 681,
+    "sections": 18710,
+    "chunks": 50530,
+    "eligible_chunks": 49754,
+    "excluded_chunks": 776
+  },
+  "guide_baseline_counts": {
+    "documents": 682,
+    "sections": 18707,
+    "chunks": 50510,
+    "eligible_chunks": 49734,
+    "excluded_chunks": 776
+  },
+  "count_deltas_vs_guide": {
+    "documents": -1,
+    "sections": 3,
+    "chunks": 20,
+    "eligible_chunks": 20,
+    "excluded_chunks": 0
+  },
+  "database": {
+    "path": "data/esg.db",
+    "role": "offline_qa_mirror",
+    "sha256": "1dc9019979546644d8781acb837cafda8e3daa15d2dbe99eab1a53570281c88c",
+    "size_bytes": 272281600,
+    "quick_check": "ok",
+    "integrity_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "known_exceptions": [
+    {
+      "id": "locally-minted-source-versions",
+      "summary": "Four identity IDs were minted on the packaging machine rather than issued upstream: source_version_id and extraction_artifact_id for BBY-BEST BUY CO INC-2016.pdf and COST-COSTCO WHOLESALE CORP-2020.pdf.",
+      "why": "Drive replaced both files on 2026-08-07, after the catalog snapshot. The corpus holds the current bytes (confirmed against Drive by md5 on 2026-08-12); the catalog described the superseded ones, so both documents carried no identity at all.",
+      "risk": "If the upstream Drive system later issues its own IDs for the same bytes, the two will disagree and nothing will detect it. Resolve by replacing these four IDs with upstream's when available.",
+      "visible_in": "esg_file_catalog.csv review_reason on the affected rows"
+    },
+    {
+      "id": "ges-duplicate-alias",
+      "summary": "The loader logs 'conflicting catalog rows' for logical source ls_199108d2ad0d75ec066ffbee and artifact ea_b8f079115d5fb4d3e26840cb.",
+      "why": "GES-GUESS INC-2020-2021.pdf and GES-GUESS-2021-2020.pdf are one file stored in Drive under two names, identical sha256. One row is the canonical alias, the other carries duplicate_of_source_version_id.",
+      "risk": "None. This is the file_alias layer modelling two names for one source version, which is what it exists for. Documented rather than fixed.",
+      "visible_in": "esg_file_catalog.csv canonical_alias / duplicate_of_source_version_id"
+    }
+  ]
+}

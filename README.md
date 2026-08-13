@@ -1,49 +1,23 @@
-# Retail Intelligence Pipeline
+# Retail Intelligence AI
 
-2-week sprint: collect SEC 10-K filings and sustainability/ESG reports for publicly traded retailers, parse and chunk them into a structured PostgreSQL database, and prepare a RAG-ready document corpus.
+This repository contains two isolated document-intelligence pipelines.
 
-## Folder Structure
+## Annual filings pipeline
 
-- data/00_reference/ - companies.csv, filings.csv, sustainability_urls.csv
-- data/01_raw/10k/ - raw downloaded 10-K HTML files
-- data/01_raw/sustainability/ - raw ESG/Sustainability PDFs
-- data/02_interim/ - cleaned text files
-- data/03_sections/ - extracted document sections
-- data/04_chunks/ - chunked text
-- data/05_db/ - database validation outputs
-- logs/ - application logs
-- src/ - Python source code
+Location: `annual_filings_pipeline/`
 
-## Documentation
+Processes SEC annual filings and supports the deployed annual-filings research application, PostgreSQL retrieval system, remote embedding/reranking services, and grounded answer generation.
 
-- `ARCHITECTURE.md` - system overview and pipeline map
-- `docs/DATABASE.md` - PostgreSQL schema and migrations
-- `docs/ESG_PIPELINE.md` - ESG parsing, sectioning, chunking, QA, and DB load
-- `docs/AI_RAG_ARCHITECTURE.md` - next-phase RAG indexing rules
-- `docs/RAG_EVALUATION_PLAN.md` - RAG evaluation gates and metrics
-- `docs/RAG_EVAL_HARNESS.md` - retrieval evaluation harness: inputs, gates, and model selection
+## ESG pipeline
 
-## Getting Started
+Location: `esg_pipeline/`
 
-python -m venv venv
+Processes sustainability and ESG reports through document fusion, sectioning, chunking, citation validation, offline QA, and PostgreSQL relational storage.
 
-Windows:
-venv\Scripts\Activate.ps1
+## Runtime boundaries
 
-Install dependencies:
-
-pip install -r requirements.txt
-
-Copy:
-
-Copy-Item .env.template .env
-
-Fill in your credentials inside .env.
-
-## Team
-
-Project Owner: Dr. Ayse Cetinel
-
-Daily Technical Leads:
-- Hanzala
-- Ibraheem
+- Annual-filings database: `retail_pipeline`
+- ESG database: `esg`
+- Annual application services use only `annual_filings_pipeline/`
+- Generated datasets, virtual environments, secrets, logs, and database backups are not committed
+- Database backups remain under `/home/ubuntu/backups/`
